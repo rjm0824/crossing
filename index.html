@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Crossing">
+<meta name="theme-color" content="#0b1d2c">
+<title>Crossing · Goof n' Off</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{--bg:#0b1d2c;--panel:#112a3e;--line:#1f4260;--ink:#e8f1f7;--soft:#9fb7c9;--go:#2fbf71;--maybe:#f2b33d;--no:#e5484d;--accent:#5cc8ff}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) 40px env(safe-area-inset-left)}
+header{padding:14px 16px 6px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+header h1{font-size:20px;margin:0;letter-spacing:.2px}
+header .upd{color:var(--soft);font-size:12px;text-align:right}
+main{max-width:900px;margin:0 auto;padding:0 12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+.card h2{font-size:15px;margin:0 0 8px;color:var(--soft);font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+.days{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px}
+.days button{flex:0 0 auto;background:#0e2333;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:14px}
+.days button.on{background:var(--accent);color:#04121c;border-color:var(--accent);font-weight:700}
+.call{display:flex;gap:14px;align-items:center}
+.badge{flex:0 0 auto;width:96px;height:96px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;color:#06131c;text-align:center;line-height:1.1}
+.badge.go{background:var(--go)}.badge.maybe{background:var(--maybe)}.badge.no{background:var(--no);color:#fff}.badge.na{background:#38556b;color:#dfe9f0;font-size:15px}
+.call .why{font-size:15px}
+.call .why b{font-size:18px;display:block;margin-bottom:4px}
+.flags{margin:8px 0 0;padding-left:18px;color:var(--soft);font-size:14px}
+.deps{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;margin-top:10px}
+.dep{border-radius:10px;padding:6px 8px;font-size:13px;border:1px solid var(--line);background:#0e2333;text-align:center}
+.dep b{display:block;font-size:15px}
+.dep.go{border-color:var(--go)}.dep.maybe{border-color:var(--maybe)}.dep.no{border-color:var(--no);opacity:.75}
+.dep.best{outline:2px solid var(--accent)}
+#map{height:360px;border-radius:12px;border:1px solid var(--line)}
+.maprow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;font-size:13px;color:var(--soft);flex-wrap:wrap}
+.maprow button,.btn{background:#0e2333;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:14px;text-decoration:none;display:inline-block}
+.btn.primary{background:var(--accent);color:#04121c;border-color:var(--accent);font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--soft);font-weight:600;font-size:12px;text-transform:uppercase}
+td.g{color:var(--go)}td.m{color:var(--maybe)}td.n{color:var(--no);font-weight:700}
+.scroll{overflow-x:auto}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kv div{background:#0e2333;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.kv span{display:block;color:var(--soft);font-size:12px}
+.kv b{font-size:17px}
+.links{display:flex;flex-wrap:wrap;gap:8px}
+.note{color:var(--soft);font-size:12px;margin-top:8px}
+.track{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.dot{width:12px;height:12px;border-radius:50%;background:#38556b;display:inline-block}
+.dot.live{background:var(--go);box-shadow:0 0 0 4px rgba(47,191,113,.25)}
+.boat-ico{background:var(--accent);border:2px solid #fff;border-radius:50%;width:16px;height:16px}
+.err{color:var(--maybe);font-size:13px}
+input[type=password]{background:#0e2333;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px;font-size:15px;width:160px}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚓ Crossing · Goof n' Off</h1>
+  <div class="upd" id="upd">Loading…</div>
+</header>
+<main>
+
+<section class="card">
+  <div class="days" id="days"></div>
+  <div class="call" id="call"><div class="badge na">…</div><div class="why">Pulling the forecast…</div></div>
+  <ul class="flags" id="flags"></ul>
+  <div class="deps" id="deps"></div>
+  <div class="note">Departure options from the Palm Beach Inlet. The call scores seas and wind at each point along the route at the hour you'd pass it (cruise ~26 kt / 30 mph). Your limits: under 3 ft = go; 3–4 ft = crossable, not comfortable; over 4 ft = no; no north wind against the Gulf Stream. <b>A draft, not a decision:</b> check NWS and your charts, then make the call.</div>
+</section>
+
+<section class="card">
+  <h2>Route &amp; radar</h2>
+  <div id="map"></div>
+  <div class="maprow">
+    <span id="radarTime">Radar: loading…</span>
+    <span>
+      <button id="radarBtn">Radar on</button>
+      <button id="fitBtn">Fit route</button>
+    </span>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Boat position</h2>
+  <div class="track"><span class="dot" id="trackDot"></span><span id="trackText">Tracking not set up yet.</span></div>
+  <div class="note" id="trackNote">Family can watch the boat on the map. Positions are rounded to about a mile and stop once the boat is near Green Turtle.</div>
+  <div id="captain" style="display:none;margin-top:10px">
+    <div class="track">
+      <input type="password" id="capKey" placeholder="Captain key">
+      <button class="btn primary" id="capStart">Start sharing</button>
+      <button class="btn" id="capStop" style="display:none">Stop</button>
+    </div>
+    <div class="note">Captain mode: keep this page open on the helm iPad with Auto-Lock off. It sends the boat's rough position every 5 minutes.</div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Hour by hour along the route</h2>
+  <div class="scroll"><table id="legs"></table></div>
+  <div class="note">Seas = significant wave height (ft) and period (s). Wind in knots with direction it blows from. Model data (Open-Meteo / NOAA GFS-Wave, ECMWF); it smooths things out, so expect bigger sets.</div>
+</section>
+
+<section class="card">
+  <h2>Inside the Sea of Abaco</h2>
+  <div class="kv" id="inside"></div>
+  <div class="note">Inside chop is estimated from the wind (the cays block ocean swell). Whale Cay passage goes outside: watch for a rage when there's big northeast swell, and wait it out or take the inside route on a good tide.</div>
+</section>
+
+<section class="card">
+  <h2>Tides · arrival · fuel</h2>
+  <div class="kv" id="tff"></div>
+  <div class="note" id="tideNote"></div>
+</section>
+
+<section class="card">
+  <h2>Check the sources</h2>
+  <div class="links">
+    <a class="btn" href="https://forecast.weather.gov/product.php?site=MFL&amp;issuedby=MFL&amp;product=CWF">NWS Miami waters</a>
+    <a class="btn" href="https://www.nhc.noaa.gov/text/MIAOFFNT3.shtml">NHC offshore (Bahamas)</a>
+    <a class="btn" href="https://www.windfinder.com/#8/26.85/-78.70">Windfinder</a>
+    <a class="btn" href="https://www.windy.com/26.85/-78.70?waves,26.85,-78.70,8">Windy waves</a>
+    <a class="btn" href="https://www.buoyweather.com/">Buoyweather</a>
+    <a class="btn" href="https://www.ndbc.noaa.gov/station_page.php?station=41114">Buoy: Fort Pierce</a>
+    <a class="btn" href="https://www.star.nesdis.noaa.gov/GOES/sector.php?sat=G19&amp;sector=car">Satellite</a>
+    <a class="btn" href="https://claude.ai">Ask Claude</a>
+  </div>
+  <div style="margin-top:10px" class="links">
+    <button class="btn primary" id="gpxBtn">Download route (GPX for the Garmin)</button>
+  </div>
+  <div class="note">GPX: save it, then send it to the GPSMAP 1242xsv through the Garmin ActiveCaptain app (or a microSD card). Waypoints are approximate: check them against your BlueChart charts before you run them.</div>
+</section>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// ---------- Settings ----------
+const CRUISE_KT = 26;                 // ~30 mph
+const FUEL_TANK = 215, BURN_LOW = 150, BURN_HIGH = 180, ROUTE_NM_REF = 150; // RJ's numbers for a full crossing
+const TZ = 'America/New_York';
+// Boat tracking endpoint (Google Apps Script web app URL). Leave empty until set up.
+const TRACK_URL = '';
+const NOAA_TIDE_STATION = '8722670';  // Lake Worth Pier (Palm Beach)
+
+// Route (approximate; check against charts). ocean:true = open-ocean leg where Gulf Stream rules apply.
+const WP = [
+  {id:'inlet',  name:'Palm Beach Inlet', lat:26.7726, lon:-80.0300},
+  {id:'stream', name:'Gulf Stream',      lat:26.8600, lon:-79.5600, ocean:true},
+  {id:'memory', name:'Memory Rock',      lat:26.9450, lon:-79.1150, ocean:true},
+  {id:'mangrove',name:'Mangrove Cay',    lat:26.9250, lon:-78.6250},
+  {id:'sale',   name:'Great Sale Cay',   lat:26.9500, lon:-78.2200},
+  {id:'crab',   name:'Crab Cay',         lat:26.9400, lon:-77.6000},
+  {id:'gtc',    name:'Green Turtle Cay', lat:26.7700, lon:-77.3300},
+];
+// Extra forecast points (not on the run line)
+const INSIDE = {name:'Sea of Abaco (inside)', lat:26.7000, lon:-77.2000};
+const WHALE  = {name:'Whale Cay (outside)',   lat:26.7400, lon:-77.1700};
+
+// ---------- Helpers ----------
+const $ = id => document.getElementById(id);
+const toRad = d => d*Math.PI/180;
+function nm(a,b){const R=3440.065,dLat=toRad(b.lat-a.lat),dLon=toRad(b.lon-a.lon);const x=Math.sin(dLat/2)**2+Math.cos(toRad(a.lat))*Math.cos(toRad(b.lat))*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x));}
+const cum=[0];for(let i=1;i<WP.length;i++)cum.push(cum[i-1]+nm(WP[i-1],WP[i]));
+const TOTAL_NM = cum[cum.length-1];
+const dirName = d => d==null?'–':['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(d/22.5)%16];
+const isNorthish = d => d!=null && (d>=300 || d<=60);
+const fmtT = d => d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone:TZ});
+const fmtDay = d => d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',timeZone:TZ});
+function etParts(d){const p=new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hour12:false}).formatToParts(d);const o={};p.forEach(x=>o[x.type]=x.value);return o;}
+function etKey(d){const o=etParts(d);return `${o.year}-${o.month}-${o.day}T${o.hour==='24'?'00':o.hour}:00`;}
+function etDate(d){const o=etParts(d);return `${o.year}-${o.month}-${o.day}`;}
+// Build a Date for a given ET day + local hours (handles EST/EDT via offset probe)
+function etTime(dayStr, hours){const [y,m,dd]=dayStr.split('-').map(Number);const noon=new Date(Date.UTC(y,m-1,dd,17));const etHour=+etParts(noon).hour%24;const offset=17-etHour;return new Date(Date.UTC(y,m-1,dd)+(hours+offset)*3600e3);}
+
+// ---------- Data ----------
+let FC = null; // {points:[{marine,wind}], inside, whale, daily}
+async function getJSON(u){const r=await fetch(u);if(!r.ok)throw new Error(r.status+' '+u.split('?')[0]);return r.json();}
+async function loadForecast(){
+  const pts=[...WP,INSIDE,WHALE];
+  const lat=pts.map(p=>p.lat).join(','), lon=pts.map(p=>p.lon).join(',');
+  const marineU=`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_direction,sea_level_height_msl&length_unit=imperial&timezone=${encodeURIComponent(TZ)}&forecast_days=5&cell_selection=sea`;
+  const windU=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation_probability,weather_code&daily=sunrise,sunset&wind_speed_unit=kn&timezone=${encodeURIComponent(TZ)}&forecast_days=5`;
+  const [m,w]=await Promise.all([getJSON(marineU),getJSON(windU)]);
+  const mA=Array.isArray(m)?m:[m], wA=Array.isArray(w)?w:[w];
+  const idx=a=>{const map={};a.hourly.time.forEach((t,i)=>map[t]=i);return map;};
+  const all=pts.map((p,i)=>({p,m:mA[i],w:wA[i],mi:idx(mA[i]),wi:idx(wA[i])}));
+  FC={route:all.slice(0,WP.length),inside:all[WP.length],whale:all[WP.length+1],daily:wA[0].daily};
+}
+function at(pt,key){ // forecast values at an hour key "YYYY-MM-DDTHH:00"
+  const i=pt.mi[key], j=pt.wi[key];
+  const g=(o,k,ix)=>ix==null||!o.hourly[k]?null:o.hourly[k][ix];
+  return {wave:g(pt.m,'wave_height',i),per:g(pt.m,'wave_period',i),wdir:g(pt.m,'wave_direction',i),swell:g(pt.m,'swell_wave_height',i),sdir:g(pt.m,'swell_wave_direction',i),sea:g(pt.m,'sea_level_height_msl',i),
+          wind:g(pt.w,'wind_speed_10m',j),dir:g(pt.w,'wind_direction_10m',j),gust:g(pt.w,'wind_gusts_10m',j),rain:g(pt.w,'precipitation_probability',j),code:g(pt.w,'weather_code',j)};
+}
+const hourKey = d => etKey(new Date(Math.round(d.getTime()/3600e3)*3600e3));
+
+// ---------- Scoring ----------
+function scoreRun(dep){
+  const rows=[],flags=[];let worstWave=0,level=0; // 0 go,1 maybe,2 no
+  FC.route.forEach((pt,i)=>{
+    const t=new Date(dep.getTime()+cum[i]/CRUISE_KT*3600e3);
+    const v=at(pt,hourKey(t));rows.push({wp:WP[i],t,v});
+    if(v.wave!=null){worstWave=Math.max(worstWave,v.wave);
+      if(v.wave>4)level=Math.max(level,2);else if(v.wave>=3)level=Math.max(level,1);}
+    if((WP[i].ocean||i===0)&&isNorthish(v.dir)&&v.wind!=null){
+      if(v.wind>=15){level=2;flags.push(`North wind ${Math.round(v.wind)} kt against the Gulf Stream at ${WP[i].name}`);}
+      else if(v.wind>=10){level=Math.max(level,1);flags.push(`${dirName(v.dir)} ${Math.round(v.wind)} kt in the Stream at ${WP[i].name}: short, steep seas likely`);} }
+    if(v.code!=null&&v.code>=95){level=Math.max(level,1);flags.push(`Thunderstorms possible near ${WP[i].name} around ${fmtT(t)}`);}
+    else if(v.rain!=null&&v.rain>=60)flags.push(`Rain likely (${v.rain}%) near ${WP[i].name}`);
+    if(v.gust!=null&&v.gust>=25){level=Math.max(level,1);flags.push(`Gusts to ${Math.round(v.gust)} kt at ${WP[i].name}`);}
+  });
+  const missing=rows.some(r=>r.v.wave==null&&r.v.wind==null);
+  return {dep,rows,flags:[...new Set(flags)],worstWave,level:missing?-1:level};
+}
+const LV=['go','maybe','no'], LVTXT=['GO','CROSS-<br>ABLE','NO-GO'];
+
+// ---------- Render ----------
+let DAY=null;
+function dayList(){const out=[];const now=new Date();for(let i=0;i<4;i++){out.push(etDate(new Date(now.getTime()+i*86400e3)));}return out;}
+function renderDays(){
+  const box=$('days');box.innerHTML='';
+  dayList().forEach(d=>{const b=document.createElement('button');b.textContent=fmtDay(etTime(d,12));if(d===DAY)b.className='on';b.onclick=()=>{DAY=d;try{localStorage.setItem('crossDay',d)}catch(e){};render();};box.appendChild(b);});
+}
+function render(){
+  renderDays();
+  if(!FC)return;
+  const now=new Date();
+  const opts=[];for(let h=5.5;h<=11;h+=0.5){const dep=etTime(DAY,h);if(dep>now-1800e3)opts.push(scoreRun(dep));}
+  const deps=$('deps');deps.innerHTML='';
+  if(!opts.length){$('call').innerHTML='<div class="badge na">Past</div><div class="why">No departure windows left for this day. Pick another day.</div>';$('flags').innerHTML='';renderLegs(null);return;}
+  const valid=opts.filter(o=>o.level>=0);
+  const best=valid.length?valid.reduce((a,b)=>(b.level<a.level||(b.level===a.level&&b.worstWave<a.worstWave))?b:a):null;
+  opts.forEach(o=>{const d=document.createElement('div');d.className='dep '+(o.level<0?'':LV[o.level])+(o===best?' best':'');d.innerHTML=`<b>${fmtT(o.dep)}</b>${o.level<0?'no data':(o.worstWave.toFixed(1)+' ft max')}`;d.onclick=()=>{showCall(o,o===best);renderLegs(o);};deps.appendChild(d);});
+  if(best){showCall(best,true);renderLegs(best);}else{$('call').innerHTML='<div class="badge na">No data</div><div class="why">The forecast doesn\'t reach this day yet.</div>';renderLegs(null);}
+  renderInside(best);renderTFF(best);
+}
+function showCall(o,isBest){
+  const t=o.rows,arr=t[t.length-1].t;
+  const txt=o.level===0?'Looks like a go':o.level===1?'Crossable, not comfortable':'Not today';
+  $('call').innerHTML=`<div class="badge ${LV[o.level]}">${LVTXT[o.level]}</div><div class="why"><b>${txt}</b>${isBest?'Best departure':'Departure'} <b style="display:inline;font-size:inherit">${fmtT(o.dep)}</b> · worst seas ${o.worstWave.toFixed(1)} ft · Green Turtle about ${fmtT(arr)}</div>`;
+  $('flags').innerHTML=o.flags.map(f=>`<li>${f}</li>`).join('')||'<li>No wind-against-Stream, storm or gust flags.</li>';
+}
+function cls(v,lo,hi){return v==null?'':v>hi?'n':v>=lo?'m':'g';}
+function renderLegs(o){
+  const t=$('legs');
+  if(!o){t.innerHTML='';return;}
+  t.innerHTML='<tr><th>Point</th><th>Pass</th><th>Seas</th><th>Wind</th><th>Rain</th></tr>'+o.rows.map(r=>{const v=r.v;
+    const windCls=(isNorthish(v.dir)&&(r.wp.ocean||r.wp.id==='inlet'))?cls(v.wind,10,14.9):cls(v.wind,15,20);
+    return `<tr><td>${r.wp.name}<br><small style="color:var(--soft)">${Math.round(cum[WP.indexOf(r.wp)])} nm</small></td><td>${fmtT(r.t)}</td><td class="${cls(v.wave,3,4)}">${v.wave==null?'–':v.wave.toFixed(1)+' ft'}<br><small>${v.per==null?'':v.per.toFixed(0)+'s '+dirName(v.wdir)}</small></td><td class="${windCls}">${v.wind==null?'–':Math.round(v.wind)+' kt '+dirName(v.dir)}<br><small>${v.gust==null?'':'gusts '+Math.round(v.gust)}</small></td><td>${v.rain==null?'–':v.rain+'%'}</td></tr>`;}).join('');
+}
+function chop(w){if(w==null)return '–';if(w<10)return 'under 1 ft';if(w<15)return '1–2 ft';if(w<20)return '2–3 ft';return '3+ ft, sloppy';}
+function renderInside(o){
+  const when=o?o.rows[o.rows.length-1].t:etTime(DAY,14);
+  const k=hourKey(when), iv=at(FC.inside,k), wv=at(FC.whale,k);
+  const rage=wv.wave!=null&&(wv.wave>=5||(wv.swell>=4&&wv.sdir!=null&&wv.sdir>=0&&wv.sdir<=110));
+  $('inside').innerHTML=`
+    <div><span>Wind inside at ${fmtT(when)}</span><b>${iv.wind==null?'–':Math.round(iv.wind)+' kt '+dirName(iv.dir)}</b></div>
+    <div><span>Estimated chop inside</span><b>${chop(iv.wind)}</b></div>
+    <div><span>Whale Cay passage (outside)</span><b style="color:${rage?'var(--no)':'inherit'}">${wv.wave==null?'–':wv.wave.toFixed(1)+' ft'}${wv.swell!=null?' · swell '+wv.swell.toFixed(1)+' ft '+dirName(wv.sdir):''}</b></div>
+    <div><span>Whale Cay call</span><b style="color:${rage?'var(--no)':'var(--go)'}">${wv.wave==null?'–':rage?'Possible rage: wait or go inside':'Looks passable'}</b></div>`;
+}
+async function renderTFF(o){
+  const arr=o?o.rows[o.rows.length-1].t:null;
+  const dist=TOTAL_NM, hrs=dist/CRUISE_KT;
+  const fuelLo=Math.round(BURN_LOW*dist/ROUTE_NM_REF), fuelHi=Math.round(BURN_HIGH*dist/ROUTE_NM_REF);
+  const di=FC.daily.time.indexOf(DAY);
+  const sunrise=di>=0?new Date(FC.daily.sunrise[di]+':00'):null;
+  let tideTxt='–',tideNote='';
+  try{const tides=await noaaTides(DAY);tideTxt=tides.slice(0,4).map(x=>`${x.type==='H'?'High':'Low'} ${x.time}`).join(' · ');tideNote='Palm Beach tides: NOAA Lake Worth Pier (8722670). ';}
+  catch(e){tideTxt='Tide service didn\'t load';}
+  const gt=tideAt(FC.route[FC.route.length-1],DAY);
+  $('tff').innerHTML=`
+    <div><span>Distance (inlet → Green Turtle)</span><b>${Math.round(dist)} nm</b></div>
+    <div><span>Run time at ${CRUISE_KT} kt</span><b>${Math.floor(hrs)}h ${Math.round((hrs%1)*60)}m</b></div>
+    <div><span>Arrive Green Turtle</span><b>${arr?fmtT(arr):'–'}</b></div>
+    <div><span>Fuel (215 gal tank)</span><b>${fuelLo}–${fuelHi} gal · ${FUEL_TANK-fuelHi}–${FUEL_TANK-fuelLo} left</b></div>
+    <div><span>Sunrise / first light</span><b>${sunrise?fmtT(sunrise)+' / ~'+fmtT(new Date(sunrise.getTime()-25*60e3)):'–'}</b></div>
+    <div><span>Palm Beach tides</span><b style="font-size:14px">${tideTxt}</b></div>
+    <div style="grid-column:1/-1"><span>Green Turtle tide (model, rough)</span><b style="font-size:14px">${gt}</b></div>`;
+  $('tideNote').textContent=tideNote+'Green Turtle tide is from an ocean model, fine for timing but not for depth. Check your tide tables for skinny water.';
+}
+async function noaaTides(day){
+  const d=day.replace(/-/g,'');
+  const u=`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=goofnoff_crossing&begin_date=${d}&range=24&datum=MLLW&station=${NOAA_TIDE_STATION}&time_zone=lst_ldt&units=english&interval=hilo&format=json`;
+  const j=await getJSON(u);if(!j.predictions)throw new Error('no tides');
+  return j.predictions.map(p=>({type:p.type,time:new Date(p.t.replace(' ','T')).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}));
+}
+function tideAt(pt,day){
+  const s=pt.m.hourly.sea_level_height_msl;if(!s)return '–';
+  const ts=pt.m.hourly.time;const out=[];
+  for(let i=1;i<ts.length-1;i++){if(!ts[i].startsWith(day))continue;const a=s[i-1],b=s[i],c=s[i+1];if(b==null||a==null||c==null)continue;
+    if(b>a&&b>=c)out.push('High ~'+fmtT(new Date(ts[i]+':00')));else if(b<a&&b<=c)out.push('Low ~'+fmtT(new Date(ts[i]+':00')));}
+  return out.slice(0,4).join(' · ')||'–';
+}
+
+// ---------- Map ----------
+let map,routeLine,radarLayer=null,radarOn=true,boatMarker=null,trail=null;
+function initMap(){
+  map=L.map('map',{zoomControl:true,attributionControl:true});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:15,subdomains:'abcd',attribution:'© OpenStreetMap © CARTO'}).addTo(map);
+  L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png',{maxZoom:17,attribution:'© OpenSeaMap'}).addTo(map);
+  routeLine=L.polyline(WP.map(p=>[p.lat,p.lon]),{color:'#5cc8ff',weight:3,dashArray:'6 6'}).addTo(map);
+  WP.forEach((p,i)=>L.circleMarker([p.lat,p.lon],{radius:5,color:'#fff',weight:1,fillColor:p.ocean?'#f2b33d':'#5cc8ff',fillOpacity:1}).addTo(map).bindPopup(`<b>${p.name}</b><br>${Math.round(cum[i])} nm from the inlet`));
+  map.fitBounds(routeLine.getBounds(),{padding:[20,20]});
+  $('fitBtn').onclick=()=>map.fitBounds(routeLine.getBounds(),{padding:[20,20]});
+  $('radarBtn').onclick=()=>{radarOn=!radarOn;$('radarBtn').textContent=radarOn?'Radar on':'Radar off';if(radarLayer){radarOn?radarLayer.addTo(map):map.removeLayer(radarLayer);}};
+  loadRadar();setInterval(loadRadar,10*60e3);
+}
+let radarFrames=[],radarIdx=0,radarTimer=null,radarLayers=[];
+async function loadRadar(){
+  try{const j=await getJSON('https://api.rainviewer.com/public/weather-maps.json');
+    const frames=(j.radar&&j.radar.past||[]).slice(-6);if(!frames.length)throw 0;
+    radarLayers.forEach(l=>map.removeLayer(l));
+    radarLayers=frames.map(f=>L.tileLayer(`${j.host}${f.path}/256/{z}/{x}/{y}/2/1_1.png`,{opacity:0,maxNativeZoom:7,maxZoom:15,attribution:'Radar © RainViewer'}));
+    radarLayers.forEach(l=>l.addTo(map));radarFrames=frames;radarIdx=frames.length-1;
+    clearInterval(radarTimer);
+    const show=()=>{radarLayers.forEach((l,i)=>l.setOpacity(radarOn&&i===radarIdx?0.6:0));radarLayer=radarLayers[radarIdx];$('radarTime').textContent='Radar '+fmtT(new Date(radarFrames[radarIdx].time*1000))+(radarIdx===radarFrames.length-1?' (latest)':'');};
+    show();radarTimer=setInterval(()=>{radarIdx=(radarIdx+1)%radarFrames.length;show();},900);
+  }catch(e){$('radarTime').textContent='Radar unavailable right now';}
+}
+
+// ---------- GPX ----------
+function gpx(){
+  const pts=WP.map(p=>`  <rtept lat="${p.lat}" lon="${p.lon}"><name>${p.name}</name></rtept>`).join('\n');
+  const wps=WP.map(p=>`<wpt lat="${p.lat}" lon="${p.lon}"><name>${p.name}</name></wpt>`).join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Goof n' Off Crossing" xmlns="http://www.topografix.com/GPX/1/1">\n${wps}\n<rte><name>PBI to Green Turtle</name>\n${pts}\n</rte>\n</gpx>\n`;
+}
+$('gpxBtn').onclick=()=>{const b=new Blob([gpx()],{type:'application/gpx+xml'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='PBI-to-Green-Turtle.gpx';document.body.appendChild(a);a.click();a.remove();};
+
+// ---------- Boat tracking ----------
+const NEAR_GTC_NM = 4;
+async function loadTrack(){
+  if(!TRACK_URL){$('trackText').textContent='Tracking not set up yet.';return;}
+  try{const j=await getJSON(TRACK_URL+'?t='+Date.now());const pts=(j.points||[]).filter(p=>p.lat&&p.lon);
+    if(!pts.length){$('trackText').textContent='No position yet. The boat hasn\'t started sharing.';return;}
+    const last=pts[pts.length-1],t=new Date(last.t),mins=Math.round((Date.now()-t)/60e3);
+    const ll=[last.lat,last.lon];
+    if(!boatMarker){boatMarker=L.marker(ll,{icon:L.divIcon({className:'',html:'<div class="boat-ico"></div>',iconSize:[16,16]})}).addTo(map).bindPopup("Goof n' Off");}
+    boatMarker.setLatLng(ll);
+    if(trail)map.removeLayer(trail);trail=L.polyline(pts.map(p=>[p.lat,p.lon]),{color:'#2fbf71',weight:3}).addTo(map);
+    const left=nm({lat:last.lat,lon:last.lon},WP[WP.length-1]);
+    const sog=last.sog?Math.round(last.sog):null;
+    const eta=sog&&sog>3?new Date(Date.now()+left/sog*3600e3):null;
+    $('trackDot').className='dot'+(mins<20&&last.status!=='arrived'?' live':'');
+    $('trackText').innerHTML=last.status==='arrived'?`<b>Arrived near Green Turtle</b> · ${fmtT(t)}`:`Last seen <b>${mins} min ago</b> · ${Math.round(left)} nm to Green Turtle${sog?' · '+sog+' kt':''}${eta?' · ETA ~'+fmtT(eta):''}`;
+  }catch(e){$('trackText').innerHTML='<span class="err">Couldn\'t load the boat position.</span>';}
+}
+// Captain mode: open the page with #captain on the helm iPad
+let watchId=null,lastSent=0,lastPos=null;
+function setupCaptain(){
+  if(location.hash!=='#captain')return;
+  $('captain').style.display='block';
+  try{const k=localStorage.getItem('capKey');if(k)$('capKey').value=k;}catch(e){}
+  $('capStart').onclick=()=>{
+    if(!TRACK_URL){alertBox('Tracking endpoint not set yet.');return;}
+    const key=$('capKey').value.trim();if(!key){alertBox('Enter the captain key first.');return;}
+    try{localStorage.setItem('capKey',key);}catch(e){}
+    if(!navigator.geolocation){alertBox('This browser has no location.');return;}
+    watchId=navigator.geolocation.watchPosition(p=>onPos(p,key),e=>alertBox('Location: '+e.message),{enableHighAccuracy:true,maximumAge:60000});
+    $('capStart').style.display='none';$('capStop').style.display='inline-block';
+    $('trackNote').textContent='Sharing is on. Keep this page open and the screen awake.';
+  };
+  $('capStop').onclick=()=>{if(watchId!=null)navigator.geolocation.clearWatch(watchId);watchId=null;$('capStart').style.display='inline-block';$('capStop').style.display='none';$('trackNote').textContent='Sharing stopped.';};
+}
+function alertBox(m){$('trackNote').innerHTML='<span class="err">'+m+'</span>';}
+function onPos(p,key){
+  const now=Date.now();if(now-lastSent<5*60e3)return;
+  const lat=p.coords.latitude,lon=p.coords.longitude;
+  const near=nm({lat,lon},WP[WP.length-1])<NEAR_GTC_NM||lon>-77.36;
+  let sog=p.coords.speed!=null?p.coords.speed*1.94384:null;
+  if(sog==null&&lastPos){const h=(now-lastPos.t)/3600e3;if(h>0)sog=nm(lastPos,{lat,lon})/h;}
+  lastPos={lat,lon,t:now};lastSent=now;
+  const body={key,lat:Math.round(lat*50)/50,lon:Math.round(lon*50)/50,sog:sog==null?'':Math.round(sog),status:near?'arrived':'underway'};
+  fetch(TRACK_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)}).catch(()=>{});
+  $('trackNote').textContent='Sent '+new Date(now).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})+(near?' · arrived, sharing stopped':'');
+  if(near&&watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null;}
+}
+
+// ---------- Boot ----------
+(async function(){
+  const days=dayList();
+  let saved=null;try{saved=localStorage.getItem('crossDay');}catch(e){}
+  DAY=days.includes(saved)?saved:(days.find(d=>d==='2026-11-15')||days[0]);
+  renderDays();initMap();setupCaptain();
+  try{await loadForecast();$('upd').textContent='Updated '+fmtT(new Date());render();}
+  catch(e){$('upd').textContent='Forecast failed to load';$('call').innerHTML='<div class="badge na">Offline</div><div class="why">Couldn\'t reach the forecast service. Pull to refresh, or use the source links below.</div>';}
+  loadTrack();setInterval(loadTrack,2*60e3);
+  setInterval(async()=>{try{await loadForecast();$('upd').textContent='Updated '+fmtT(new Date());render();}catch(e){}},30*60e3);
+})();
+</script>
+</body>
+</html>
