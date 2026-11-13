@@ -54,6 +54,10 @@ td.g{color:var(--go)}td.m{color:var(--maybe)}td.n{color:var(--no);font-weight:70
 .dot.live{background:var(--go);box-shadow:0 0 0 4px rgba(47,191,113,.25)}
 .boat-ico{background:var(--accent);border:2px solid #fff;border-radius:50%;width:16px;height:16px}
 .err{color:var(--maybe);font-size:13px}
+.tide{width:100%;height:auto;display:block;margin:4px 0 10px}
+.tide text{fill:var(--soft);font-size:17px}
+.tide text.k{font-weight:700;letter-spacing:.6px;font-size:16px}
+.tide text.h{fill:var(--accent)}
 input[type=password]{background:#0e2333;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px;font-size:15px;width:160px}
 </style>
 </head>
@@ -112,6 +116,8 @@ input[type=password]{background:#0e2333;color:var(--ink);border:1px solid var(--
 
 <section class="card">
   <h2>Tides · arrival · fuel</h2>
+  <svg class="tide" id="tidePB" viewBox="0 0 540 112" aria-label="Palm Beach tide curve"></svg>
+  <svg class="tide" id="tideGT" viewBox="0 0 540 112" aria-label="Green Turtle tide curve"></svg>
   <div class="kv" id="tff"></div>
   <div class="note" id="tideNote"></div>
 </section>
@@ -271,8 +277,14 @@ async function renderTFF(o){
   const di=FC.daily.time.indexOf(DAY);
   const sunrise=di>=0?new Date(FC.daily.sunrise[di]+':00'):null;
   let tideTxt='–',tideNote='';
-  try{const tides=await noaaTides(DAY);tideTxt=tides.slice(0,4).map(x=>`${x.type==='H'?'High':'Low'} ${x.time}`).join(' · ');tideNote='Palm Beach tides: NOAA Lake Worth Pier (8722670). ';}
-  catch(e){tideTxt='Tide service didn\'t load';}
+  const dep=o?o.dep.getTime():null,arrMs=arr?arr.getTime():null,nowMark=etDate(new Date())===DAY?{ms:Date.now(),color:'#e8f1f7',label:'now',dash:true}:null;
+  try{const ev=await noaaTides(DAY);const d0=etTime(DAY,0).getTime(),d1=etTime(DAY,24).getTime();
+    tideTxt=ev.filter(e=>e.ms>=d0&&e.ms<d1).map(x=>`${x.type==='H'?'High':'Low'} ${fmtT(new Date(x.ms))}`).join(' · ');
+    tideNote='Palm Beach tides: NOAA Lake Worth Pier (8722670). ';
+    drawTideCurve($('tidePB'),'PALM BEACH INLET TIDE',cosLevel(ev),ev,DAY,[nowMark,dep&&{ms:dep,color:'#2fbf71',label:'leave'}]);}
+  catch(e){tideTxt='Tide service didn\'t load';$('tidePB').innerHTML='';}
+  const gpt=FC.route[FC.route.length-1];
+  if(!drawTideCurve($('tideGT'),'GREEN TURTLE TIDE (MODEL)',modelLevel(gpt),modelEvents(gpt,DAY),DAY,[nowMark,arrMs&&{ms:arrMs,color:'#f2b33d',label:'arrive'}]))$('tideGT').innerHTML='';
   const gt=tideAt(FC.route[FC.route.length-1],DAY);
   $('tff').innerHTML=`
     <div><span>Distance (inlet → Green Turtle)</span><b>${Math.round(dist)} nm</b></div>
@@ -284,12 +296,38 @@ async function renderTFF(o){
     <div style="grid-column:1/-1"><span>Green Turtle tide (model, rough)</span><b style="font-size:14px">${gt}</b></div>`;
   $('tideNote').textContent=tideNote+'Green Turtle tide is from an ocean model, fine for timing but not for depth. Check your tide tables for skinny water.';
 }
+const tideCache={};
 async function noaaTides(day){
-  const d=day.replace(/-/g,'');
-  const u=`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=goofnoff_crossing&begin_date=${d}&range=24&datum=MLLW&station=${NOAA_TIDE_STATION}&time_zone=lst_ldt&units=english&interval=hilo&format=json`;
+  if(tideCache[day])return tideCache[day];
+  const prev=etDate(new Date(etTime(day,12).getTime()-86400e3)).replace(/-/g,'');
+  const u=`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&application=goofnoff_crossing&begin_date=${prev}&range=72&datum=MLLW&station=${NOAA_TIDE_STATION}&time_zone=lst_ldt&units=english&interval=hilo&format=json`;
   const j=await getJSON(u);if(!j.predictions)throw new Error('no tides');
-  return j.predictions.map(p=>({type:p.type,time:new Date(p.t.replace(' ','T')).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}));
+  const ev=j.predictions.map(p=>{const [dd,tt]=p.t.split(' ');const [h,m]=tt.split(':').map(Number);return {type:p.type,ft:parseFloat(p.v),ms:etTime(dd,h+m/60).getTime()};}).sort((a,b)=>a.ms-b.ms);
+  return tideCache[day]=ev;
 }
+// Tide curve (same look as Alfi's TV): half-cosine between highs and lows, markers for departure/arrival and now.
+function svgEl(svg,tag,attrs,text){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;svg.appendChild(e);return e;}
+function drawTideCurve(svg,title,level,events,day,marks){
+  svg.innerHTML='';
+  const d0=etTime(day,0).getTime(),d1=etTime(day,24).getTime();
+  const W=540,X0=24,X1=W-24;
+  const samples=[];for(let k=0;k<=96;k++){const ms=d0+(d1-d0)*k/96;const v=level(ms);if(v==null)return false;samples.push([ms,v]);}
+  const vs=samples.map(s=>s[1]),lo=Math.min(...vs),hi=Math.max(...vs);
+  const x=ms=>X0+(X1-X0)*(ms-d0)/(d1-d0),y=v=>76-(v-lo)/((hi-lo)||1)*40;
+  const pts=samples.map(([ms,v])=>x(ms).toFixed(1)+','+y(v).toFixed(1));
+  svgEl(svg,'text',{x:0,y:16,class:'k'},title);
+  svgEl(svg,'polygon',{points:X0+',80 '+pts.join(' ')+' '+X1+',80',fill:'#5cc8ff','fill-opacity':0.12});
+  svgEl(svg,'polyline',{points:pts.join(' '),fill:'none',stroke:'#5cc8ff','stroke-width':2.5,'stroke-linejoin':'round'});
+  events.filter(e=>e.ms>=d0&&e.ms<d1).forEach(e=>{const v=level(e.ms);svgEl(svg,'circle',{cx:x(e.ms),cy:y(v),r:3.5,fill:'#5cc8ff'});
+    svgEl(svg,'text',{x:Math.min(Math.max(x(e.ms),36),W-36),y:106,'text-anchor':'middle',class:e.type==='H'?'h':''},(e.type==='H'?'H ':'L ')+fmtT(new Date(e.ms)).replace(':00','').replace(' AM','a').replace(' PM','p'));});
+  (marks||[]).forEach(m=>{if(!m||m.ms<d0||m.ms>d1)return;const cx=x(m.ms);svgEl(svg,'line',{x1:cx,x2:cx,y1:28,y2:82,stroke:m.color,'stroke-width':1.5,'stroke-dasharray':m.dash?'3 3':''});
+    svgEl(svg,'circle',{cx,cy:y(level(m.ms)),r:4.5,fill:m.color});svgEl(svg,'text',{x:Math.min(Math.max(cx,40),W-40),y:34,'text-anchor':'middle',style:'fill:'+m.color+';font-weight:700'},m.label);});
+  return true;
+}
+function cosLevel(ev){return ms=>{let i=ev.findLastIndex(e=>e.ms<=ms);if(i<0||i>=ev.length-1)return null;const a=ev[i],b=ev[i+1];const u=(ms-a.ms)/(b.ms-a.ms);return (a.ft+b.ft)/2+(a.ft-b.ft)/2*Math.cos(Math.PI*u);};}
+function modelLevel(pt){const t=pt.m.hourly.time,s=pt.m.hourly.sea_level_height_msl;if(!s)return ()=>null;const ms=t.map(x=>new Date(x+':00').getTime());
+  return q=>{let i=ms.findLastIndex(m=>m<=q);if(i<0||i>=ms.length-1||s[i]==null||s[i+1]==null)return null;const u=(q-ms[i])/(ms[i+1]-ms[i]);return s[i]+(s[i+1]-s[i])*u;};}
+function modelEvents(pt,day){const t=pt.m.hourly.time,s=pt.m.hourly.sea_level_height_msl,out=[];if(!s)return out;for(let i=1;i<t.length-1;i++){const a=s[i-1],b=s[i],c=s[i+1];if(a==null||b==null||c==null)continue;if(b>a&&b>=c)out.push({type:'H',ms:new Date(t[i]+':00').getTime()});else if(b<a&&b<=c)out.push({type:'L',ms:new Date(t[i]+':00').getTime()});}return out;}
 function tideAt(pt,day){
   const s=pt.m.hourly.sea_level_height_msl;if(!s)return '–';
   const ts=pt.m.hourly.time;const out=[];
