@@ -42,8 +42,9 @@ function doGet() {
   // Only show the last 24 hours, so an old trip never shows up on the map.
   const cutoff = Date.now() - 24 * 3600 * 1000;
   const points = rows
-    .filter(r => r[0] instanceof Date && r[0].getTime() > cutoff)
-    .map(r => ({ t: r[0].toISOString(), lat: r[1], lon: r[2], sog: r[3], status: r[4] }));
+    .map(r => ({ d: new Date(r[0]), r: r }))
+    .filter(x => !isNaN(x.d.getTime()) && x.d.getTime() > cutoff)
+    .map(x => ({ t: x.d.toISOString(), lat: x.r[1], lon: x.r[2], sog: x.r[3], status: x.r[4] }));
   return out_({ points });
 }
 
