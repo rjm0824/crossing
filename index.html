@@ -58,6 +58,12 @@ td.g{color:var(--go)}td.m{color:var(--maybe)}td.n{color:var(--no);font-weight:70
 .dot.live{background:var(--go);box-shadow:0 0 0 4px rgba(47,191,113,.25)}
 .boat-ico{width:34px;height:34px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
 .err{color:var(--maybe);font-size:13px}
+.chk{list-style:none;padding:0;margin:6px 0 0}
+.chk li{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}
+.chk input{width:22px;height:22px;flex:none;margin-top:1px;accent-color:var(--go)}
+.chk li.done span{color:var(--soft);text-decoration:line-through}
+.chk small{display:block;color:var(--soft);font-size:12px;margin-top:2px}
+.chk a{color:var(--accent)}
 .tide{width:100%;height:auto;display:block;margin:4px 0 10px}
 .tide text{fill:var(--soft);font-size:17px}
 .tide text.k{font-weight:700;letter-spacing:.6px;font-size:16px}
@@ -120,6 +126,12 @@ input[type=password]{background:#0e2333;color:var(--ink);border:1px solid var(--
     </div>
     <div class="note">Trip docs opens your private Drive folder (your Google sign-in only). Customs: Cruising Permit &gt; Pleasure Craft &gt; Create Inbound.</div>
   </div>
+</section>
+<section class="card" id="goday" style="display:none">
+  <h2>Go-day checklist</h2>
+  <ol class="chk" id="chkList"></ol>
+  <div class="track" style="margin-top:8px"><span class="note" id="chkCount"></span><button class="btn" id="chkReset">Reset</button></div>
+  <div class="note">Captain mode only. Ticks save on this device.</div>
 </section>
 
 <section class="card">
@@ -467,6 +479,40 @@ window.addEventListener('hashchange',()=>location.reload());
   catch(e){$('upd').textContent='Forecast failed to load';$('call').innerHTML='<div class="badge na">Offline</div><div class="why">Couldn\'t reach the forecast service. Pull to refresh, or use the source links below.</div>';}
   loadTrack();setInterval(loadTrack,2*60e3);
   setInterval(async()=>{try{await loadForecast();$('upd').textContent='Updated '+fmtT(new Date());render();}catch(e){}},30*60e3);
+})();
+
+// Go-day checklist (captain mode only; ticks in localStorage on this device)
+(function(){
+  if(!location.hash.startsWith('#captain'))return;
+  const ITEMS=[
+    ['Final weather call','Check the call card above; go only on a green or a yellow you accept.'],
+    ['Starlink to Roam + Ocean Mode','In the Starlink app on the boat; it takes effect right away.'],
+    ['Float plan texts sent','To Mom and Raul: route, departure, ETA, this page\'s link.'],
+    ['Fuel and reserve check','215 gal tank; crossing burns ~150 to 180 gal. Note the gauge.'],
+    ['Current registration + insurance aboard','Copies also in <a href="https://drive.google.com/drive/folders/1u51aeIJ9toHbiC0g27jImnC4RvHu-O4h" target="_blank" rel="noopener">trip docs</a>.'],
+    ['Start sharing position','Box above; positions begin outside the inlet.'],
+    ['Click2Clear filed and paid','<a href="https://www.bahamascustoms.gov.bs/?p=5024" target="_blank" rel="noopener">Bahamas Customs</a>: Cruising Permit, Pleasure Craft, Create Inbound. 30-day permit + fishing.'],
+    ['Q flag up at Green Turtle','Only the captain goes ashore until cleared.'],
+    ['Cleared: permit stamped and signed','Then the courtesy flag goes up.'],
+    ['Whale Cay passage check','See Inside the Sea of Abaco; skip it in a big northeast swell.'],
+    ['Arrived at Coconut Grove: stop sharing','Then text Mom and Raul you\'re in.']
+  ];
+  const KEY='goday-ticks';let t={};try{t=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(t))}catch(e){}};
+  const ol=$('chkList');
+  function draw(){
+    ol.innerHTML='';let n=0;
+    ITEMS.forEach(([title,hint],i)=>{
+      const li=document.createElement('li');if(t[i]){li.className='done';n++;}
+      const cb=document.createElement('input');cb.type='checkbox';cb.checked=!!t[i];
+      cb.onchange=()=>{t[i]=cb.checked;save();draw();};
+      const sp=document.createElement('span');sp.innerHTML='<b>'+(i+1)+'. '+title+'</b><small>'+hint+'</small>';
+      li.append(cb,sp);ol.append(li);
+    });
+    $('chkCount').textContent=n+' of '+ITEMS.length+' done';
+  }
+  $('chkReset').onclick=()=>{t={};save();draw();};
+  $('goday').style.display='block';draw();
 })();
 </script>
 </body>
