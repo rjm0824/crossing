@@ -91,7 +91,7 @@ input[type=password]{background:#0e2333;color:var(--ink);border:1px solid var(--
 <section class="card">
   <h2>Boat position</h2>
   <div class="track"><span class="dot" id="trackDot"></span><span id="trackText">Tracking not set up yet.</span></div>
-  <div class="note" id="trackNote">Family can watch the boat on the map. Positions are rounded to about a mile and stop once the boat is near Green Turtle.</div>
+  <div class="note" id="trackNote">Family can watch the boat on the map. Positions start once the boat is outside the Palm Beach Inlet, are rounded to about a mile, and stop near Green Turtle.</div>
   <div id="captain" style="display:none;margin-top:10px">
     <div class="track">
       <input type="password" id="capKey" placeholder="Captain key">
@@ -392,13 +392,15 @@ async function loadTrack(){
 // Captain mode: open the page with #captain on the helm iPad
 let watchId=null,lastSent=0,lastPos=null;
 function setupCaptain(){
-  if(location.hash!=='#captain')return;
+  if(location.hash!=='#captain'&&location.hash!=='#captain-test')return;
+  const TEST=location.hash==='#captain-test';
   $('captain').style.display='block';
   try{const k=localStorage.getItem('capKey');if(k)$('capKey').value=k;}catch(e){}
   $('capStart').onclick=()=>{
     if(!TRACK_URL){alertBox('Tracking endpoint not set yet.');return;}
     const key=$('capKey').value.trim();if(!key){alertBox('Enter the captain key first.');return;}
     try{localStorage.setItem('capKey',key);}catch(e){}
+    if(TEST){sendPos(key,26.77,-79.98,0,'underway');$('trackNote').textContent='Test point sent (offshore of the inlet). Check the map in a minute, then delete the row in the Crossing Tracker sheet.';return;}
     if(!navigator.geolocation){alertBox('This browser has no location.');return;}
     watchId=navigator.geolocation.watchPosition(p=>onPos(p,key),e=>alertBox('Location: '+e.message),{enableHighAccuracy:true,maximumAge:60000});
     $('capStart').style.display='none';$('capStop').style.display='inline-block';
@@ -407,15 +409,21 @@ function setupCaptain(){
   $('capStop').onclick=()=>{if(watchId!=null)navigator.geolocation.clearWatch(watchId);watchId=null;$('capStart').style.display='inline-block';$('capStop').style.display='none';$('trackNote').textContent='Sharing stopped.';};
 }
 function alertBox(m){$('trackNote').innerHTML='<span class="err">'+m+'</span>';}
+function sendPos(key,lat,lon,sog,status){
+  const body={key,lat:Math.round(lat*50)/50,lon:Math.round(lon*50)/50,sog:sog==null?'':Math.round(sog),status};
+  fetch(TRACK_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)}).catch(()=>{});
+}
 function onPos(p,key){
   const now=Date.now();if(now-lastSent<5*60e3)return;
   const lat=p.coords.latitude,lon=p.coords.longitude;
   const near=nm({lat,lon},WP[WP.length-1])<NEAR_GTC_NM||lon>-77.36;
   let sog=p.coords.speed!=null?p.coords.speed*1.94384:null;
   if(sog==null&&lastPos){const h=(now-lastPos.t)/3600e3;if(h>0)sog=nm(lastPos,{lat,lon})/h;}
-  lastPos={lat,lon,t:now};lastSent=now;
-  const body={key,lat:Math.round(lat*50)/50,lon:Math.round(lon*50)/50,sog:sog==null?'':Math.round(sog),status:near?'arrived':'underway'};
-  fetch(TRACK_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)}).catch(()=>{});
+  lastPos={lat,lon,t:now};
+  // Privacy: nothing is sent until the boat is east of the inlet (offshore), so home and the ICW never show.
+  if(lon<-80.02){$('trackNote').textContent='Waiting until you\'re outside the inlet to start sharing.';return;}
+  lastSent=now;
+  sendPos(key,lat,lon,sog,near?'arrived':'underway');
   $('trackNote').textContent='Sent '+new Date(now).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})+(near?' · arrived, sharing stopped':'');
   if(near&&watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null;}
 }
