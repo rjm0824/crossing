@@ -56,7 +56,7 @@ td.g{color:var(--go)}td.m{color:var(--maybe)}td.n{color:var(--no);font-weight:70
 .track{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .dot{width:12px;height:12px;border-radius:50%;background:#38556b;display:inline-block}
 .dot.live{background:var(--go);box-shadow:0 0 0 4px rgba(47,191,113,.25)}
-.boat-ico{background:var(--accent);border:2px solid #fff;border-radius:50%;width:16px;height:16px}
+.boat-ico{width:34px;height:34px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
 .err{color:var(--maybe);font-size:13px}
 .tide{width:100%;height:auto;display:block;margin:4px 0 10px}
 .tide text{fill:var(--soft);font-size:17px}
@@ -392,7 +392,12 @@ async function loadTrack(){
     if(!pts.length){$('trackText').textContent='No position yet. The boat hasn\'t started sharing.';return;}
     const last=pts[pts.length-1],t=new Date(last.t),mins=Math.round((Date.now()-t)/60e3);
     const ll=[last.lat,last.lon];
-    if(!boatMarker){boatMarker=L.marker(ll,{icon:L.divIcon({className:'',html:'<div class="boat-ico"></div>',iconSize:[16,16]})}).addTo(map).bindPopup("Goof n' Off");}
+    // Heading from the last two different positions; default east-northeast (toward Abaco)
+    let hdg=75;for(let i=pts.length-2;i>=0;i--){const a=pts[i];if(a.lat!==last.lat||a.lon!==last.lon){const y=Math.sin(toRad(last.lon-a.lon))*Math.cos(toRad(last.lat)),x=Math.cos(toRad(a.lat))*Math.sin(toRad(last.lat))-Math.sin(toRad(a.lat))*Math.cos(toRad(last.lat))*Math.cos(toRad(last.lon-a.lon));hdg=(Math.atan2(y,x)*180/Math.PI+360)%360;break;}}
+    const boatSvg=`<svg class="boat-ico" viewBox="0 0 34 34" style="transform:rotate(${hdg}deg)"><path d="M17 2 C22 8 24 14 24 22 L24 30 Q17 33 10 30 L10 22 C10 14 12 8 17 2 Z" fill="#ffffff" stroke="#0b1d2c" stroke-width="1.5"/><rect x="13" y="15" width="8" height="7" rx="1.5" fill="#5cc8ff" stroke="#0b1d2c" stroke-width="1"/><path d="M17 4 L17 11" stroke="#2fbf71" stroke-width="2" stroke-linecap="round"/></svg>`;
+    const icon=L.divIcon({className:'',html:boatSvg,iconSize:[34,34],iconAnchor:[17,17]});
+    if(!boatMarker){boatMarker=L.marker(ll,{icon,zIndexOffset:1000}).addTo(map).bindPopup("Goof n' Off");}
+    else boatMarker.setIcon(icon);
     boatMarker.setLatLng(ll);
     if(trail)map.removeLayer(trail);trail=L.polyline(pts.map(p=>[p.lat,p.lon]),{color:'#2fbf71',weight:3}).addTo(map);
     const left=nm({lat:last.lat,lon:last.lon},WP[WP.length-1]);
