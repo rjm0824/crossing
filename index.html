@@ -74,6 +74,7 @@ input[type=password]{background:#0e2333;color:var(--ink);border:1px solid var(--
 <body>
 <header>
   <h1>⚓ Crossing · Goof n' Off</h1>
+  <div class="note" id="dirBar"></div>
   <div class="upd" id="upd">Loading…</div>
 </header>
 <main>
@@ -83,7 +84,7 @@ input[type=password]{background:#0e2333;color:var(--ink);border:1px solid var(--
   <div class="call" id="call"><div class="badge na">…</div><div class="why">Pulling the forecast…</div></div>
   <ul class="flags" id="flags"></ul>
   <div class="deps" id="deps"></div>
-  <div class="note">Tap a time to see it. ★ marks the best departure. Departure options from the Palm Beach Inlet. The call scores seas and wind at each point along the route at the hour you'd pass it (cruise ~26 kt / 30 mph). Your limits: under 3 ft = go; 3–4 ft = crossable, not comfortable; over 4 ft = no; no north wind against the Gulf Stream. <b>A draft, not a decision:</b> check NWS and your charts, then make the call.</div>
+  <div class="note">Tap a time to see it. ★ marks the best departure. <span id="depFrom">Departure options from the Palm Beach Inlet.</span> The call scores seas and wind at each point along the route at the hour you'd pass it (cruise ~26 kt / 30 mph). Your limits: under 3 ft = go; 3–4 ft = crossable, not comfortable; over 4 ft = no; no north wind against the Gulf Stream. <b>A draft, not a decision:</b> check NWS and your charts, then make the call.</div>
 </section>
 
 <section class="card">
@@ -182,7 +183,7 @@ const TRACK_URL = 'https://script.google.com/macros/s/AKfycbwo_BRHW7Qf9M_cJu0r97
 const NOAA_TIDE_STATION = '8722670';  // Lake Worth Pier (Palm Beach)
 
 // Route (approximate; check against charts). ocean:true = open-ocean leg where Gulf Stream rules apply.
-const WP = [
+const WP_OUT = [
   {id:'inlet',  name:'Palm Beach Inlet', lat:26.7726, lon:-80.0300},
   {id:'stream', name:'Gulf Stream',      lat:26.8600, lon:-79.5600, ocean:true},
   {id:'memory', name:'Memory Rock',      lat:26.9450, lon:-79.1150, ocean:true},
@@ -191,6 +192,15 @@ const WP = [
   {id:'crab',   name:'Crab Cay',         lat:26.9400, lon:-77.6000},
   {id:'gtc',    name:'Green Turtle Cay', lat:26.7700, lon:-77.3300},
 ];
+// Trip home (?trip=home): Guana > Whale Cay > Green Turtle > the same route back to the inlet.
+const HOME = new URLSearchParams(location.search).get('trip')==='home';
+const WP = HOME ? [
+  {id:'guana', name:'Guana Cay', lat:26.6950, lon:-77.1300},
+  {id:'whale', name:'Whale Cay Passage', lat:26.7400, lon:-77.1900},
+  ...WP_OUT.slice().reverse()
+] : WP_OUT;
+const ORIG = WP[0].name, DEST = WP[WP.length-1].name;
+const GTI = WP.findIndex(p=>p.id==='gtc');
 // Extra forecast points (not on the run line)
 const INSIDE = {name:'Sea of Abaco (inside)', lat:26.7000, lon:-77.2000};
 const WHALE  = {name:'Whale Cay (outside)',   lat:26.7400, lon:-77.1700};
@@ -241,7 +251,7 @@ function scoreRun(dep){
     const v=at(pt,hourKey(t));rows.push({wp:WP[i],t,v});
     if(v.wave!=null){worstWave=Math.max(worstWave,v.wave);
       if(v.wave>4)level=Math.max(level,2);else if(v.wave>=3)level=Math.max(level,1);}
-    if((WP[i].ocean||i===0)&&isNorthish(v.dir)&&v.wind!=null){
+    if((WP[i].ocean||WP[i].id==='inlet')&&isNorthish(v.dir)&&v.wind!=null){
       if(v.wind>=15){level=2;flags.push(`North wind ${Math.round(v.wind)} kt against the Gulf Stream at ${WP[i].name}`);}
       else if(v.wind>=10){level=Math.max(level,1);flags.push(`${dirName(v.dir)} ${Math.round(v.wind)} kt in the Stream at ${WP[i].name}: short, steep seas likely`);} }
     if(v.code!=null&&v.code>=95){level=Math.max(level,1);flags.push(`Thunderstorms possible near ${WP[i].name} around ${fmtT(t)}`);}
@@ -277,7 +287,7 @@ function render(){
 function showCall(o,isBest){
   const t=o.rows,arr=t[t.length-1].t;
   const txt=o.level===0?'Looks like a go':o.level===1?'Crossable, not comfortable':'Not today';
-  $('call').innerHTML=`<div class="badge ${LV[o.level]}">${LVTXT[o.level]}</div><div class="why"><b>${txt}</b>${isBest?'Best departure':'Departure'} <b style="display:inline;font-size:inherit">${fmtT(o.dep)}</b> · worst seas ${o.worstWave.toFixed(1)} ft · Green Turtle about ${fmtT(arr)}</div>`;
+  $('call').innerHTML=`<div class="badge ${LV[o.level]}">${LVTXT[o.level]}</div><div class="why"><b>${txt}</b>${isBest?'Best departure':'Departure'} <b style="display:inline;font-size:inherit">${fmtT(o.dep)}</b> · worst seas ${o.worstWave.toFixed(1)} ft · ${DEST} about ${fmtT(arr)}</div>`;
   $('flags').innerHTML=o.flags.map(f=>`<li>${f}</li>`).join('')||'<li>No wind-against-Stream, storm or gust flags.</li>';
 }
 function cls(v,lo,hi){return v==null?'':v>hi?'n':v>=lo?'m':'g';}
@@ -310,15 +320,15 @@ async function renderTFF(o){
   try{const ev=await noaaTides(DAY);const d0=etTime(DAY,0).getTime(),d1=etTime(DAY,24).getTime();
     tideTxt=ev.filter(e=>e.ms>=d0&&e.ms<d1).map(x=>`${x.type==='H'?'High':'Low'} ${fmtT(new Date(x.ms))}`).join(' · ');
     tideNote='Palm Beach tides: NOAA Lake Worth Pier (8722670). ';
-    drawTideCurve($('tidePB'),'PALM BEACH INLET TIDE',cosLevel(ev),ev,DAY,[nowMark,dep&&{ms:dep,color:'#2fbf71',label:'leave'}]);}
+    drawTideCurve($('tidePB'),'PALM BEACH INLET TIDE',cosLevel(ev),ev,DAY,[nowMark,HOME?(arrMs&&{ms:arrMs,color:'#f2b33d',label:'arrive'}):(dep&&{ms:dep,color:'#2fbf71',label:'leave'})]);}
   catch(e){tideTxt='Tide service didn\'t load';$('tidePB').innerHTML='';}
-  const gpt=FC.route[FC.route.length-1];
-  if(!drawTideCurve($('tideGT'),'GREEN TURTLE TIDE (MODEL)',modelLevel(gpt),modelEvents(gpt,DAY),DAY,[nowMark,arrMs&&{ms:arrMs,color:'#f2b33d',label:'arrive'}]))$('tideGT').innerHTML='';
-  const gt=tideAt(FC.route[FC.route.length-1],DAY);
+  const gpt=FC.route[GTI];
+  if(!drawTideCurve($('tideGT'),'GREEN TURTLE TIDE (MODEL)',modelLevel(gpt),modelEvents(gpt,DAY),DAY,[nowMark,HOME?(dep&&{ms:dep,color:'#2fbf71',label:'leave'}):(arrMs&&{ms:arrMs,color:'#f2b33d',label:'arrive'})]))$('tideGT').innerHTML='';
+  const gt=tideAt(FC.route[GTI],DAY);
   $('tff').innerHTML=`
-    <div><span>Distance (inlet → Green Turtle)</span><b>${Math.round(dist)} nm</b></div>
+    <div><span>Distance (${ORIG} → ${DEST})</span><b>${Math.round(dist)} nm</b></div>
     <div><span>Run time at ${CRUISE_KT} kt</span><b>${Math.floor(hrs)}h ${Math.round((hrs%1)*60)}m</b></div>
-    <div><span>Arrive Green Turtle</span><b>${arr?fmtT(arr):'–'}</b></div>
+    <div><span>Arrive ${DEST}</span><b>${arr?fmtT(arr):'–'}</b></div>
     <div><span>Fuel (215 gal tank)</span><b>${fuelLo}–${fuelHi} gal · ${FUEL_TANK-fuelHi}–${FUEL_TANK-fuelLo} left</b></div>
     <div><span>Sunrise / first light</span><b>${sunrise?fmtT(sunrise)+' / ~'+fmtT(new Date(sunrise.getTime()-25*60e3)):'–'}</b></div>
     <div><span>Palm Beach tides</span><b style="font-size:14px">${tideTxt}</b></div>
@@ -397,7 +407,7 @@ async function loadRadar(){
 function gpx(){
   const pts=WP.map(p=>`  <rtept lat="${p.lat}" lon="${p.lon}"><name>${p.name}</name></rtept>`).join('\n');
   const wps=WP.map(p=>`<wpt lat="${p.lat}" lon="${p.lon}"><name>${p.name}</name></wpt>`).join('\n');
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Goof n' Off Crossing" xmlns="http://www.topografix.com/GPX/1/1">\n${wps}\n<rte><name>PBI to Green Turtle</name>\n${pts}\n</rte>\n</gpx>\n`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Goof n' Off Crossing" xmlns="http://www.topografix.com/GPX/1/1">\n${wps}\n<rte><name>${ORIG} to ${DEST}</name>\n${pts}\n</rte>\n</gpx>\n`;
 }
 $('gpxBtn').onclick=()=>{const b=new Blob([gpx()],{type:'application/gpx+xml'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='PBI-to-Green-Turtle.gpx';document.body.appendChild(a);a.click();a.remove();};
 
@@ -410,7 +420,7 @@ async function loadTrack(){
     const last=pts[pts.length-1],t=new Date(last.t),mins=Math.round((Date.now()-t)/60e3);
     const ll=[last.lat,last.lon];
     // Heading from the last two different positions; default east-northeast (toward Abaco)
-    let hdg=75;for(let i=pts.length-2;i>=0;i--){const a=pts[i];if(a.lat!==last.lat||a.lon!==last.lon){const y=Math.sin(toRad(last.lon-a.lon))*Math.cos(toRad(last.lat)),x=Math.cos(toRad(a.lat))*Math.sin(toRad(last.lat))-Math.sin(toRad(a.lat))*Math.cos(toRad(last.lat))*Math.cos(toRad(last.lon-a.lon));hdg=(Math.atan2(y,x)*180/Math.PI+360)%360;break;}}
+    let hdg=HOME?255:75;for(let i=pts.length-2;i>=0;i--){const a=pts[i];if(a.lat!==last.lat||a.lon!==last.lon){const y=Math.sin(toRad(last.lon-a.lon))*Math.cos(toRad(last.lat)),x=Math.cos(toRad(a.lat))*Math.sin(toRad(last.lat))-Math.sin(toRad(a.lat))*Math.cos(toRad(last.lat))*Math.cos(toRad(last.lon-a.lon));hdg=(Math.atan2(y,x)*180/Math.PI+360)%360;break;}}
     const boatSvg=`<svg class="boat-ico" viewBox="0 0 34 34" style="transform:rotate(${hdg}deg)"><path d="M17 2 C22 8 24 14 24 22 L24 30 Q17 33 10 30 L10 22 C10 14 12 8 17 2 Z" fill="#ffffff" stroke="#0b1d2c" stroke-width="1.5"/><rect x="13" y="15" width="8" height="7" rx="1.5" fill="#5cc8ff" stroke="#0b1d2c" stroke-width="1"/><path d="M17 4 L17 11" stroke="#2fbf71" stroke-width="2" stroke-linecap="round"/></svg>`;
     const icon=L.divIcon({className:'',html:boatSvg,iconSize:[34,34],iconAnchor:[17,17]});
     if(!boatMarker){boatMarker=L.marker(ll,{icon,zIndexOffset:1000}).addTo(map).bindPopup("Goof n' Off");}
@@ -421,7 +431,7 @@ async function loadTrack(){
     const sog=last.sog?Math.round(last.sog):null;
     const eta=sog&&sog>3?new Date(Date.now()+left/sog*3600e3):null;
     $('trackDot').className='dot'+(mins<20&&last.status!=='arrived'?' live':'');
-    $('trackText').innerHTML=last.status==='arrived'?`<b>Arrived near Green Turtle</b> · ${fmtT(t)}`:`Last seen <b>${mins} min ago</b> · ${Math.round(left)} nm to Green Turtle${sog?' · '+sog+' kt':''}${eta?' · ETA ~'+fmtT(eta):''}`;
+    $('trackText').innerHTML=last.status==='arrived'?`<b>Arrived near ${DEST}</b> · ${fmtT(t)}`:`Last seen <b>${mins} min ago</b> · ${Math.round(left)} nm to ${DEST}${sog?' · '+sog+' kt':''}${eta?' · ETA ~'+fmtT(eta):''}`;
   }catch(e){$('trackText').innerHTML='<span class="err">Couldn\'t load the boat position.</span>';}
 }
 // Captain mode: open the page with #captain on the helm iPad
@@ -456,12 +466,14 @@ function sendPos(key,lat,lon,sog,status){
 function onPos(p,key){
   const now=Date.now();if(now-lastSent<5*60e3)return;
   const lat=p.coords.latitude,lon=p.coords.longitude;
-  const near=nm({lat,lon},WP[WP.length-1])<NEAR_GTC_NM||lon>-77.36;
+  const near=HOME?(nm({lat,lon},WP[WP.length-1])<2||lon<-80.0):(nm({lat,lon},WP[WP.length-1])<NEAR_GTC_NM||lon>-77.36);
   let sog=p.coords.speed!=null?p.coords.speed*1.94384:null;
   if(sog==null&&lastPos){const h=(now-lastPos.t)/3600e3;if(h>0)sog=nm(lastPos,{lat,lon})/h;}
   lastPos={lat,lon,t:now};
   // Privacy: nothing is sent until the boat is east of the inlet (offshore), so home and the ICW never show.
   if(lon<-80.02){$('trackNote').textContent='Waiting until you\'re outside the inlet to start sharing.';return;}
+  // Trip home: nothing is sent until the boat is west of Green Turtle, so the Abaco house never shows.
+  if(HOME&&lon>-77.36){$('trackNote').textContent='Waiting until you\'re past Green Turtle to start sharing.';return;}
   lastSent=now;
   sendPos(key,lat,lon,sog,near?'arrived':'underway');
   $('trackNote').textContent='Sent '+new Date(now).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})+(near?' · arrived, sharing stopped':'');
@@ -484,7 +496,17 @@ window.addEventListener('hashchange',()=>location.reload());
 // Go-day checklist (captain mode only; ticks in localStorage on this device)
 (function(){
   if(!location.hash.startsWith('#captain'))return;
-  const ITEMS=[
+  const ITEMS=HOME?[
+    ['Final weather call','Check the call card above; go only on a green or a yellow you accept.'],
+    ['Starlink to Roam + Ocean Mode','In the Starlink app on the boat; it takes effect right away.'],
+    ['Float plan texts sent','To Mom and Raul: route, departure, ETA and the trip-home link.'],
+    ['Fuel and reserve check','Top up at Green Turtle if the reserve looks thin.'],
+    ['Whale Cay passage check','See Inside the Sea of Abaco; go inside or wait in a big northeast swell.'],
+    ['Registration, insurance, permit aboard','Copies also in <a href="https://drive.google.com/drive/folders/1u51aeIJ9toHbiC0g27jImnC4RvHu-O4h" target="_blank" rel="noopener">trip docs</a>.'],
+    ['Start sharing position','Box above; positions begin past Green Turtle.'],
+    ['Report arrival in CBP ROAM','Right after you reach Palm Beach; DTOPS decal number ready.'],
+    ['Stop sharing, text Mom and Raul','Home safe.']
+  ]:[
     ['Final weather call','Check the call card above; go only on a green or a yellow you accept.'],
     ['Starlink to Roam + Ocean Mode','In the Starlink app on the boat; it takes effect right away.'],
     ['Float plan texts sent','To Mom and Raul: route, departure, ETA, this page\'s link.'],
@@ -513,6 +535,18 @@ window.addEventListener('hashchange',()=>location.reload());
   }
   $('chkReset').onclick=()=>{t={};save();draw();};
   $('goday').style.display='block';draw();
+})();
+
+// Direction switch: trip over (default) or trip home (?trip=home), keeping #captain if set
+(function(){
+  const h=location.hash||'';
+  const other=HOME?location.pathname+h:location.pathname+'?trip=home'+h;
+  $('dirBar').innerHTML=(HOME?'<b>Trip home:</b> Guana → Palm Beach':'<b>Trip over:</b> Palm Beach → Green Turtle')+' · <a href="'+other+'" style="color:var(--accent)">'+(HOME?'switch to trip over':'switch to trip home')+'</a>';
+  if(HOME){
+    $('depFrom').textContent='Departure options from Guana Cay (via Whale Cay and Green Turtle).';
+    $('trackNote').textContent='Family can watch the boat on the map. Positions start once the boat is past Green Turtle, are rounded to about a mile, and stop at the Palm Beach Inlet.';
+    document.title='Trip home · Goof n\' Off';
+  }
 })();
 </script>
 </body>
