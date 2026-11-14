@@ -97,6 +97,7 @@ input[type=password]{background:#0e2333;color:var(--ink);border:1px solid var(--
       <input type="password" id="capKey" placeholder="Captain key">
       <button class="btn primary" id="capStart">Start sharing</button>
       <button class="btn" id="capStop" style="display:none">Stop</button>
+      <button class="btn" id="capTest">Send test point</button>
     </div>
     <div class="note">Captain mode: keep this page open on the helm iPad with Auto-Lock off. It sends the boat's rough position every 5 minutes.</div>
   </div>
@@ -392,19 +393,24 @@ async function loadTrack(){
 // Captain mode: open the page with #captain on the helm iPad
 let watchId=null,lastSent=0,lastPos=null;
 function setupCaptain(){
-  if(location.hash!=='#captain'&&location.hash!=='#captain-test')return;
-  const TEST=location.hash==='#captain-test';
+  if(!location.hash.startsWith('#captain'))return;
   $('captain').style.display='block';
   try{const k=localStorage.getItem('capKey');if(k)$('capKey').value=k;}catch(e){}
   $('capStart').onclick=()=>{
     if(!TRACK_URL){alertBox('Tracking endpoint not set yet.');return;}
     const key=$('capKey').value.trim();if(!key){alertBox('Enter the captain key first.');return;}
     try{localStorage.setItem('capKey',key);}catch(e){}
-    if(TEST){sendPos(key,26.77,-79.98,0,'underway');$('trackNote').textContent='Test point sent (offshore of the inlet). Check the map in a minute, then delete the row in the Crossing Tracker sheet.';return;}
     if(!navigator.geolocation){alertBox('This browser has no location.');return;}
     watchId=navigator.geolocation.watchPosition(p=>onPos(p,key),e=>alertBox('Location: '+e.message),{enableHighAccuracy:true,maximumAge:60000});
     $('capStart').style.display='none';$('capStop').style.display='inline-block';
     $('trackNote').textContent='Sharing is on. Keep this page open and the screen awake.';
+  };
+  $('capTest').onclick=()=>{
+    const key=$('capKey').value.trim();if(!key){alertBox('Enter the captain key first.');return;}
+    try{localStorage.setItem('capKey',key);}catch(e){}
+    sendPos(key,26.77,-79.98,0,'underway');
+    $('trackNote').textContent='Test point sent (just offshore of the inlet). Reload in a minute to see the boat dot, then delete the row in the Crossing Tracker sheet.';
+    setTimeout(loadTrack,8000);
   };
   $('capStop').onclick=()=>{if(watchId!=null)navigator.geolocation.clearWatch(watchId);watchId=null;$('capStart').style.display='inline-block';$('capStop').style.display='none';$('trackNote').textContent='Sharing stopped.';};
 }
@@ -429,6 +435,7 @@ function onPos(p,key){
 }
 
 // ---------- Boot ----------
+window.addEventListener('hashchange',()=>location.reload());
 (async function(){
   const days=dayList();
   let saved=null;try{saved=localStorage.getItem('crossDay');}catch(e){}
