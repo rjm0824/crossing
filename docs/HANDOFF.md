@@ -58,15 +58,21 @@ in two design docs, both reviewed with Elephant-Goldfish:
 for the Live screen and family page design doc and review, and for a review of
 the tracker service code before it is merged.
 
-**Plugins in cloud sessions:** the three plugins in `.claude/settings.json` did
-not load by themselves in the Nov 19 cloud session. They loaded after running,
-from the repo folder: `claude plugin marketplace add
-google/elephant-goldfish-model`, then `claude plugin install egm@egm --scope
-project` and the same for `claude-code-setup@claude-plugins-official` and
-`frontend-design@claude-plugins-official`. The install rewrites
-`.claude/settings.json` (same content, different layout); restore it with `git
-checkout -- .claude/settings.json`. The install does not survive into a new
-session. A build does not need the plugins; a design review does.
+**Plugins in cloud sessions:** start every Crossing App session in the cloud
+environment named **crossing** (pick it instead of Default when starting the
+session). Its setup script installs the three plugins in
+`.claude/settings.json` (Elephant-Goldfish, Claude Code Setup, Frontend design)
+at session start. Created Nov 19; not yet proven in a fresh session. To check:
+type `/` and look for `egm:egm-review`.
+
+If the plugins are missing (a session started on Default, or the script did
+not work), install them by hand from the repo folder: `claude plugin
+marketplace add google/elephant-goldfish-model`, then `claude plugin install
+egm@egm --scope user`, and the same for
+`claude-code-setup@claude-plugins-official` and
+`frontend-design@claude-plugins-official`. They load a few minutes later and do
+not survive into a new session. A build does not need the plugins; a design
+review does.
 
 ## Where things stand
 - **Live today:** https://rjm0824.github.io/crossing/ (one page, `index.html`). Go/no-go vs RJ's limits, best departure time, route map with radar, tides, hour-by-hour seas and wind, Sea of Abaco inside conditions, fuel and arrival, GPX download, captain tracking to a Google Sheet via Apps Script, family link.
