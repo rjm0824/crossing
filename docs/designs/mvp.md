@@ -1,7 +1,7 @@
 # Crossing App MVP (Phase 1, Friends Version)
 
 *   **Author:** RJ (rjm0824)
-*   **Status:** Draft (revision 2, after review round 1)
+*   **Status:** Draft (revision 3, after review rounds 1 and 2)
 *   **Date:** 2026-11-19
 
 --------------------------------------------------------------------------------
@@ -58,9 +58,11 @@ The captain decides.
 *   **Reusable code in the preview page:** distance (`nm`), the verdict
     (`scoreRun`), distance left and arrival estimate (`loadTrack`), keep the
     screen awake (`keepAwake`, `resumed`), sending positions (`sendPos`,
-    `onPos`), the route file (`gpx`), tide curves, and the checklist. The MVP
-    moves these into separate files and builds on them. It does not rewrite
-    them.
+    `onPos`), the route file (`gpx`), tide curves, and the checklist. Distance
+    and keep-awake carry over as they are. The others have RJ's boat, route and
+    limits written into them (for example the 4 ft and 15 kt limits, a 4 nm
+    arrival distance, and a send that cannot tell whether it failed). The MVP
+    reworks those to read the saved setup. That rework is real build time.
 
 ## The Problem
 
@@ -87,15 +89,19 @@ link, and holds the two secrets the app needs (an invite code and the AI key).
 *   **Sharing:** a captain starts a trip with one tap and sends one link.
     Whoever opens it sees the boat on a map with an arrival estimate, with no
     app and no login.
-*   **The family link closes:** 2 hours after the trip ends, the family page
-    stops showing any position and says "This trip has ended."
+*   **Location stops on arrival:** when a trip ends, the family page stops
+    showing any position at once. It shows "Arrived at [place] at [time]" for 2
+    hours, then "This trip has ended."
+*   **The home dock is not shown:** no position is sent until the boat is about
+    1 nm from where the trip started.
 *   **Trips:** a captain can save trips ahead of time, see past trips, and copy
     a past trip as a new one.
 *   **No signal:** positions, check-ins and the "trip ended" message recorded
-    with no signal are kept on the phone and sent when signal returns.
+    with no signal are kept on the device and sent when signal returns and the
+    app is open in front.
 *   **No false alarm from a quiet arrival:** a boat that arrives where there is
-    no phone signal is not shown as overdue once its positions reach the
-    service.
+    no phone signal is not shown as overdue once the app has been opened with
+    signal.
 *   **Cost at friends scale (up to about 25 captains):** $0 per month for
     hosting. The AI setup helper costs about 1 to 2 cents per setup that uses
     typed answers, paid from prepaid credit in RJ's own Anthropic account
@@ -113,8 +119,9 @@ link, and holds the two secrets the app needs (an invite code and the AI key).
     text without the captain tapping Send. Followers are not told anything
     unless they open the family page or set the reminder it offers. A texting
     service is Phase 2.
-*   **Loading the app with no signal.** The app's files are not saved for
-    offline use in the MVP. A page that is already open keeps working offline.
+*   **Loading the app with no signal, during the eight steps.** It is added
+    last, before promote (W16). A page that is already open keeps working
+    offline.
 *   **Accounts, logins, passwords, payments.** Phase 2.
 *   **Later features** listed in `docs/feature-map.md`: route library, route
     file import, Garmin ActiveCaptain, satellite messenger (inReach) tracking,
@@ -127,11 +134,17 @@ link, and holds the two secrets the app needs (an invite code and the AI key).
 
 **Decided by RJ on Nov 19:**
 
-*   The MVP is all eight steps (not a reduced set), built in stages: a usable
-    first version as early as possible, then added to, with all eight steps in
-    the preview by Nov 29.
+*   The MVP is all eight steps, built in stages and tested as it goes. The
+    target for all eight in the preview is Nov 29. A slip is acceptable.
 *   The AI setup helper is its own step, built after onboarding works without
     it.
+*   A second device (the helm iPad) can do the tracking for a trip.
+*   Two copies of the tracker service: preview and live.
+*   Messages inside the app between captain and followers, and real text
+    messages sent by the app, are the first things built after the MVP, ahead
+    of accounts and payments. See Future Improvements.
+*   Every captain can save several trips, plan future trips, keep past trips
+    and copy a trip. Tracking starts only when the captain taps Start trip.
 
 **Working choices (the reviewers' and author's recommendations; RJ has not
 objected and can change any of them):**
@@ -143,14 +156,14 @@ objected and can change any of them):**
 | W3 | Followers are typed in by first name. No reading of the phone's contacts. | iPhone Safari does not offer contact access to web pages. |
 | W4 | No notifications in the MVP. Trip reminders are an "Add to calendar" button. | Web notifications on iPhone need the Home Screen app first. |
 | W5 | The service keeps a trip's data for 7 days after it ends, then deletes it. The captain's device keeps its own copy for My Trips. | Stricter than today's privacy promise. |
-| W6 | The service knows only trips. There is no captain record and no register step. | Less to build, less data held. |
+| W6 | The service knows only trips while they are tracked. Saved, future and past trips live on the captain's device. There is no captain record and no register step. | Less to build, less data held. Trip history does not follow the captain to a new phone until accounts exist; the backup link covers that. |
 | W7 | One shared invite code, which RJ can change at any time. | Simple. Changing it does not affect trips already started. |
-| W8 | A second device (the helm iPad) can do the tracking for a trip. | Matches how RJ tracks today. Frees the phone. Gives a way to end a trip if one device dies. |
-| W9 | Two copies of the tracker service: preview and live. | Keeps the "preview first" rule for service changes. |
 | W10 | Positions are stored at full phone precision while the trip's data is kept. | The family link is private per trip, and the last known position is the number a follower may need to read to the Coast Guard. |
 | W11 | Battery level is shown only where the phone provides it. "Signal" is replaced by "No update for X min". | iPhone Safari does not give web pages battery or signal. |
 | W12 | Trips beyond the forecast show "Forecast opens [date]" with no typical-conditions numbers. | The app has no historical data. |
 | W13 | Service updates publish when a pull request that changes the service folder is merged. RJ connects his Cloudflare account to the repo once. | No Cloudflare key in the repo or in chat. |
+| W15 | No position is sent until the boat is about 1 nm from the trip's start. The captain can turn this off per trip. | Today's page sends nothing until the boat is outside the inlet, so the home dock never shows. This keeps that protection for any route. |
+| W16 | Loading the app with no signal is added after the eight steps and before promote. | It matters on the water (a restarted iPad cannot reopen the page offshore), but a saved copy can show an old version during daily testing. |
 | W14 | Only the tracker service and the Live screen with the family page get their own design doc and full review. Other steps ship as pull requests under this document with a lighter check. | Needed to reach Nov 29. This changes the "design doc per feature" rule in `CLAUDE.md` for the MVP only, and needs RJ's explicit OK. |
 
 ## Open Questions
@@ -160,15 +173,15 @@ objected and can change any of them):**
     site is not used (exact rule to verify). Adding the page to the Home
     Screen is the usual protection. But the Home Screen app may keep its data
     apart from Safari, so a friend who sets up in Safari and then adds the icon
-    could open an empty app. This needs a 10-minute test on RJ's iPhone before
-    the onboarding step is built. The answer decides whether "Add to Home
-    Screen" comes first or last in setup.
-*   **Q2. What does "launch on Nov 29" mean?** This document assumes: all eight
-    steps merged into the preview. Moving the preview to the live page needs
-    the tracker to have worked on real water first.
-*   **Q3. Will a real-water test happen before Nov 29?** If RJ has a crossing
-    or a coastal run in that window, the tracker, Live screen and family page
-    are built first so they can be tested on it.
+    could open an empty app. RJ ran the test on Nov 19; the result for the
+    Home Screen icon is being confirmed. The answer decides whether "Add to
+    Home Screen" comes first or last in setup.
+*   **Q2. Does a calendar entry with an alert open correctly from a web page**
+    on iPhone and Android? The follower reminder and the trip reminder depend
+    on it. To test on RJ's iPhone before the family page is built. If it does
+    not work, the fallback is the overdue time written in the Start trip text.
+*   **Q3. Will a real trip on the water happen before Nov 29?** Promote needs
+    one. If RJ has one coming, Stage 1 must be merged before it.
 
 ## Critical User Journeys (CUJs)
 
@@ -233,8 +246,8 @@ objected and can change any of them):**
 ### CUJ 7: Tracking from the helm iPad
 
 *   **Given**: A trip was started on the captain's phone.
-*   **When**: The captain taps "Track from another device" and scans the code
-    shown with the helm iPad.
+*   **When**: The captain taps "Track from another device", sends the link
+    it offers to the iPad (AirDrop or a text to self), and opens it there.
 *   **Then**: The iPad opens the Live screen for that trip and does the
     tracking. The phone is free for calls and photos.
 
@@ -258,11 +271,12 @@ objected and can change any of them):**
 
 *   **Given**: The boat reaches the destination where the device has no data.
 *   **When**: The overdue time passes. Later the device gets signal.
-*   **Then**: Until signal returns the family page says overdue and shows how
-    old the last position is and how far it was from the destination. When the
-    queued positions arrive, the service sees the boat reached the destination,
-    marks the trip arrived at the time of that position, and the overdue notice
-    is replaced by "Arrived at [time]".
+*   **Then**: The device ends the trip itself and queues "trip ended" with the
+    arrival time. It shows "Open this page when you have signal so your
+    followers see you arrived." Until then the family page says overdue, with
+    how old the last position is and how far it was from the destination. Once
+    the page is open with signal, the queue is sent, and the family page shows
+    "Arrived at [place] at [time]" for 2 hours counted from that moment.
 
 ### CUJ 11: Overdue
 
@@ -319,7 +333,8 @@ secrets can live.
 | Boat photo | Captain's device only | Followers do not see it in the MVP. |
 | For each trip: boat name, captain's first name, route, planned arrival, overdue time, positions, check-ins | Tracker service for 7 days after the trip ends, and the captain's device | The family page needs them. |
 | Typed setup answers (may include boat details and follower first names) | Pass through the tracker service to the AI. Not stored by the service. | Only when the captain types and the AI helper is on. |
-| Invite code, AI key | Tracker service settings and RJ's password manager | Never in the repo, the page or chat. |
+| AI key | Tracker service settings and RJ's password manager | Never in the repo, the page or chat. |
+| Invite code | Tracker service settings, RJ's password manager, the invite link RJ texts, and each invited friend's device | A shared, low-value code. Never in the repo or the page's code. RJ can change it. |
 
 Storage on the device: small settings in the browser's simple key-value store;
 the photo, trip tracks and the send queue in the browser's database (IndexedDB),
@@ -364,7 +379,8 @@ secrets:
 
 *   The **trip key** lets a device add positions and events, change the overdue
     time, end the trip and delete it. The captain's device keeps it. "Track
-    from another device" hands it to the helm iPad as a scannable code.
+    from another device" hands it to the helm iPad in a link, with the route
+    and cruise speed the iPad needs.
 *   The **family key** only lets someone read the trip. The family link is the
     family page address with the family key after a `#`. The part after `#` is
     not sent to GitHub.
@@ -378,37 +394,39 @@ protection. The service stores only a scrambled copy of each secret.
 | Request | Needs | What it does |
 | --- | --- | --- |
 | Start trip | Invite code | Stores boat name, first name, route, planned arrival, overdue time. Returns the trip key and family key. |
-| Add to trip | Trip key | Accepts a batch of positions and events (check-in, passed a waypoint, overdue time changed, trip ended). Duplicates are ignored. |
+| Add to trip | Trip key | Accepts a batch of positions and events (check-in, passed a waypoint, overdue time changed, trip ended, sharing resumed). Each carries the time it happened, so "trip ended" can be in the past. Duplicates are ignored. |
+| New family link | Trip key | Replaces the family key, so a forwarded link stops working. |
 | Read trip | Family key | Returns status, the trail since the time the page last asked, events, route, planned arrival, and whether the trip is overdue. After the family link closes it returns only "This trip has ended." |
 | Delete trip | Trip key | Deletes the trip and its positions. |
 | AI helper | Invite code | Passes the typed answers to Claude Haiku and returns form values. Added in the AI step. |
 
 **Rules:**
 
-*   **Arrival is decided in two places with one rule.** The device ends the
-    trip when two position readings in a row are within about half a nautical
-    mile of the destination. The service applies the same rule to positions it
-    receives, so a late batch can mark a trip arrived in the past.
+*   **The device decides arrival** (see Step 6) and tells the service. The
+    service does not work out arrival itself.
 *   **Overdue** is worked out when the family page asks: the overdue time has
     passed and the trip has not ended. Nothing runs on a timer for it.
-*   **The family link closes** 2 hours after the trip ends.
+*   **After a trip ends** the service stops returning positions at once. For
+    2 hours, counted from when it learned of the end, it returns only how the
+    trip ended, the place name and the time. Then the family link closes.
 *   **Auto-end:** a trip with no end and no new position for 24 hours is ended
     by the daily clean-up job and marked "Sharing stopped, no updates." A late
-    batch for it is still accepted and can change it to arrived.
+    batch for it is still accepted and an arrival in it changes the trip to arrived.
 *   **The daily clean-up job** deletes trips that ended more than 7 days ago.
     It is the only thing that runs on its own. It is free.
 *   **All text from devices** (boat name, first name, waypoint names) is
     length-limited by the service and shown as plain text only, never as page
     code.
-*   **Request limits:** Cloudflare's built-in rate limiting, a cap on trips
-    started per invite code per day, and a daily ceiling on AI helper calls.
-*   **Preview and live copies** of the service and database run side by side.
-    The preview page uses the preview copy. A service change is merged, tested
-    on the preview copy, and published to the live copy as part of promote.
+*   **Request limits:** one daily cap on trips started and one on AI helper
+    calls.
+*   **Preview and live copies.** Until promote only the preview copy exists,
+    and merging a service change publishes it there. The live copy is created
+    at promote. After that, a merged change publishes to the preview copy and
+    reaches the live copy through a promote pull request.
 *   **Free-tier check (to verify in the step doc):** the limits that matter are
     daily requests and daily database rows read. The design keeps both low: the
-    family page asks only for what is new, each trip has one summary row, and
-    the page refreshes less often when it is not in front. If a daily limit is
+    family page asks only for what is new and refreshes less often when it is
+    not in front. If a daily limit is
     reached, devices keep queuing and the family page says "Tracking is
     temporarily unavailable. Last update [time]."
 
@@ -447,11 +465,14 @@ verdict.
 *   **Limits:** presets Cautious (3 ft, 12 kt), Standard (4 ft, 15 kt),
     Experienced (5 ft, 18 kt); plus and minus buttons; a "No north wind in the
     Gulf Stream" switch.
-*   **Route:** a route is an ordered list of named points with a start and a
-    destination. The captain picks a preset (West Palm to Abaco via Green
+*   **Route:** a route is an ordered list of named points with a start, a
+    destination, an arrival distance, and a mark on each point that lies in the
+    Gulf Stream (the north-wind rule applies there). Presets carry these. For a
+    tapped route the captain ticks which points are in the Stream. The captain picks a preset (West Palm to Abaco via Green
     Turtle; Fort Lauderdale to Bimini; Miami to Bimini) or taps points on the
     map and names them. The nearest tide station is picked automatically. The
-    trip home is the same route reversed.
+    trip home is the route reversed; the Abaco preset keeps its own home route
+    as today.
 *   **Followers:** first names typed in. A phone number is optional and only
     pre-fills the text at Start trip.
 *   **Permissions:** location during a trip, and keep the screen on.
@@ -463,9 +484,9 @@ verdict.
 
 **Boat photo.** "Add a photo of your boat" opens the phone's photo picker or
 camera. The app shrinks the photo and saves it on the device. It is not
-uploaded. With no photo the boat card shows an outline for the boat type; only
-the center console outline exists today (`docs/mockups/boat.png`), so three
-more simple outlines are drawn in this step.
+uploaded. With no photo the boat card shows an outline for the boat type; the
+onboarding mockup already holds simple outlines for all four boat types, and
+`docs/mockups/boat.png` is the center console drawing.
 
 ### Step 4: Plan Screen
 
@@ -520,8 +541,9 @@ trip.
     (1, 5, 10 or 30 minutes; default 5).
 *   **The send queue** is part of this step. Positions, check-ins, overdue-time
     changes and "trip ended" are saved on the device first and then sent. What
-    fails to send stays queued and goes as one batch when signal returns. The
-    screen shows "Saved 6 updates, will send when signal returns."
+    fails to send stays queued and goes as one batch when signal returns and
+    the page is open in front. The screen shows "Saved 6 updates, will send
+    when signal returns. Keep this page open."
 *   **Distance left** is measured along the planned route from the point on the
     route nearest the boat.
 *   **Speed** is the GPS speed reading averaged over the last 10 to 15 minutes
@@ -537,11 +559,20 @@ trip.
 *   **Check-in:** "Send 'All good' to family" adds a check-in with the time.
 *   **Waypoints:** passing a named point is detected from the continuous GPS
     readings, not only the uploaded ones.
-*   **Arrival:** two readings in a row within about half a nautical mile of the
-    destination end the trip. "Stop sharing now" ends it by hand. For 10
-    minutes after either, "Resume sharing" undoes it.
-*   **Track from another device:** shows a code carrying the trip key. If two
-    devices send positions, the service keeps both, ordered by time.
+*   **Arrival:** the trip ends when the boat is inside the route's arrival
+    distance of the destination, or is within 4 nm of it and has been stopped
+    for 10 minutes (the boat usually ends at a dock, not at the route's last
+    point). Presets set their own arrival distance; a tapped route defaults to
+    1 nm. "Stop sharing now" ends it by hand. For 10 minutes after either,
+    "Resume sharing" undoes it.
+*   **After arrival** the screen says "Open this page when you have signal so
+    your followers see you arrived" until the queue is empty.
+*   **Start gate:** no position is sent until the boat is about 1 nm from the
+    start (W15). The family page shows "Trip started. Position appears once
+    underway."
+*   **Track from another device:** offers a link carrying the trip key, the
+    route and the cruise speed. If two devices send positions, the service
+    keeps both, ordered by time.
 *   Wording describes where the boat is and when it may arrive. It never tells
     the captain where to steer.
 
@@ -553,10 +584,14 @@ trip.
 *   Status card: "[First name] is 38 nm out", "Arriving about 1:52 PM", "last
     update 2 min ago", speed, time underway.
 *   Refreshes every 30 seconds while in front, less often when not.
-*   States: underway, slow, stopped, no recent update, overdue, arrived,
-    sharing stopped, tracking temporarily unavailable, ended.
+*   States: started (no position yet), underway, slow, stopped, no recent
+    update, overdue, arrived, sharing stopped, tracking temporarily
+    unavailable, ended.
 *   The overdue notice always gives the age of the last position and its
-    distance from the destination.
+    distance from the destination. When that distance is under 4 nm the notice
+    leads with "Last heard close to [place]". It never says the boat is fine.
+*   After a trip ends the map and position are removed. The page shows
+    "Arrived at [place] at [time]" or "Sharing stopped at [time]".
 *   "Remind me at [overdue time]" adds a calendar entry on the follower's phone
     with an alert and a link back to the page. Its text is "Check on [first
     name]'s trip", not "overdue", because the captain may have arrived or added
@@ -572,8 +607,9 @@ trip.
     leaves out boat name, followers, photo, trips, the invite code and any
     trip key.
 *   **Back up my setup** is a different link, worded as private ("Keep this for
-    yourself"), that also carries boat name, followers and saved trips. It
-    restores a wiped or new device and moves a setup from phone to iPad.
+    yourself"), that also carries boat name, followers and upcoming trips. It
+    does not carry past trips or their tracks, which are too large for a link.
+    It restores a wiped or new device and moves a setup from phone to iPad.
 *   The receiving app checks every value in either link and shows them for
     review before saving.
 
@@ -669,7 +705,7 @@ trip.
 
 | Risk | What people see | Mitigation | What remains |
 | --- | --- | --- | --- |
-| Boat arrives with no signal | Family page says overdue | Queue "trip ended"; service marks arrival from late positions; notice shows last position's age and distance from destination | A false overdue notice until the device gets signal. Wording goes to RJ's attorney. |
+| Boat arrives with no signal | Family page says overdue | Device ends the trip itself and queues "trip ended"; prompt to open the page once there is signal; notice shows last position's age and distance from destination | A false overdue notice until the captain opens the page with signal. If the phone stays in a pocket, it stays overdue. Wording goes to RJ's attorney. |
 | Tracking device locks, crashes or dies | "No update for X min", then overdue | Keep-awake request; second device can track; captain tells followers the overdue time in the first text | Tracking stops until a device reopens the page. |
 | Nobody has the family page open | Nobody is told the boat is overdue | "Remind me" calendar entry; overdue time in the first text | Depends on each follower tapping once. |
 | Tracker service down or over its daily limit | Devices queue; family page says tracking unavailable | Low request design; share text still sent at Start trip | No live tracking during the outage. |
@@ -679,7 +715,7 @@ trip.
 | Invite code leaks | Strangers can start trips and call the AI helper | Daily caps; $5 monthly AI limit; RJ changes the code | Friends not yet set up need the new invite link. |
 | Harmful text in a name or a setup link | Could run as code on the page | Plain-text display only; length limits; every link value checked | Reviewed in each step's pull request. |
 | A service database leak | Positions, first names, boat names, routes of the last 7 days | Short retention; no phone numbers, no follower names, no accounts stored | That 7 days of trips. |
-| Schedule slips | All eight steps not in preview by Nov 29 | Staged order below; smallest pieces last | Share my setup and the AI step land after Nov 29. |
+| Schedule slips | All eight steps not in preview by Nov 29 | Staged order below; usable Stage 1 first | RJ has accepted a slip. At one tested pull request a day the last step lands around Dec 6. |
 
 ### Safety Wording
 
@@ -696,16 +732,17 @@ describes both trackers.
 
 | Step | Change to `privacy.html` in the same pull request |
 | --- | --- |
-| 2 | Preview trips are stored with Cloudflare; the live page still uses Google. Boat name, first name, route and planned arrival are stored for a trip. Kept 7 days after the trip ends. Positions at full precision. Captain can delete a trip from the app. Deletion by email needs the family link, because there are no accounts. |
+| 2 | Preview trips are stored with Cloudflare; the live page still uses Google. Boat name, first name, route and planned arrival are stored for a trip. Kept 7 days after the trip ends. Positions at full precision, none within about 1 nm of the start. Captain can delete a trip from the app. A deletion request by email is handled by RJ in the Cloudflare dashboard using the trip's date and boat name, because there are no accounts. Replace "your boat details stay on your phone" and "kept until you ask" with the accurate versions. |
 | 3 | The boat photo stays on the device. |
-| 7 | Followers see the last position for 2 hours after the trip ends. Battery level only where the phone provides it. |
+| 7 | Followers see no position after the trip ends; the arrival place name and time show for 2 hours. Battery level only where the phone provides it. Remove "signal strength". |
 | 8 | The backup link contains follower first names and trips. |
 | AI step | Typed setup answers, which may include follower first names, go to Anthropic through the tracker service and are not stored by the service. |
 
 ### Secrets
 
-The AI key and invite code live only in the tracker service's settings and
-RJ's password manager. Trip keys and family keys are made by the service.
+The AI key lives only in the tracker service's settings and RJ's password
+manager. The invite code is also held on invited friends' devices. Trip keys
+and family keys are made by the service.
 
 ### Cost
 
@@ -744,41 +781,52 @@ RJ's password manager. Trip keys and family keys are made by the service.
 ## Build Order
 
 This section replaces the template's detailed implementation plan. The tracker
-service and the Live screen with family page get their own design docs
-(W14). The other steps are built from this document.
+service and the Live screen with family page get their own design docs (W14).
+The other steps are built from this document.
 
-**Stage 1: usable on the water** (RJ's boat and route, already in the preview
-page)
+**Target: all of it in the preview by Nov 29. RJ has accepted that it may
+slip.** The list below is 2 design docs and 15 pull requests. At one tested
+pull request per day it ends around Dec 6. Reaching Nov 29 needs two small
+pull requests tested on about half the days. Dates are given for Stage 1 only;
+later stages get dates once Stage 1 shows the real pace.
 
-| Day | Work | RJ does |
-| --- | --- | --- |
-| Nov 20 | Step 2: tracker service, preview copy | Create a free Cloudflare account; connect the repo; add an invite code as a setting (about 15 minutes, guided) |
-| Nov 21 | Split the preview page into files; Step 6: Live screen with the send queue | Test in a car or on the boat |
-| Nov 22 | Step 7: family page; Start trip share text | Open the family link on a second phone |
+**Stage 1: usable on the water** (RJ's boat and route, as in the preview page)
 
-After Stage 1, RJ can start a trip, share a family link that closes, and
-track from the helm iPad.
+| # | Target | Work | RJ does |
+| --- | --- | --- | --- |
+| 1 | Nov 20 | Design doc and review: tracker service | Read the summary and decide the findings. Create a free Cloudflare account (about 15 minutes, guided). |
+| 2 | Nov 21 | Pull request: split the preview page into files, no change in behaviour | Check the preview looks and works as before. |
+| 3 | Nov 21 | Pull request: tracker service, preview copy, with a small test page that starts and reads a trip | Connect the repo to Cloudflare; add the invite code as a setting; open the test page. |
+| 4 | Nov 22 | Design doc and review: Live screen and family page | Read the summary and decide the findings. Run the calendar test (Q2). |
+| 5 | Nov 23 | Pull request: Start trip, Live screen, send queue, start gate | Test in a car. |
+| 6 | Nov 24 | Pull request: family page, reminder, "Track from another device" | Open the family link on a second phone; track from the iPad. |
 
-**Stage 2: friends can set up**
+After Stage 1, RJ can start a trip, share a family link that closes, and track
+from the helm iPad.
 
-| Day | Work | RJ does |
-| --- | --- | --- |
-| Nov 23 | Step 3: onboarding without AI, boat photo | The Q1 iPhone test beforehand |
-| Nov 24 | Step 4: Plan screen, parts A and B | |
-| Nov 25 | Step 5: saved trips and My Trips | |
+**Stage 2: friends can set up** (in this order)
+
+| # | Work |
+| --- | --- |
+| 7 | App frame: bottom bar, Menu, Settings, Family tab, My Boat profile, Safety checklist |
+| 8 | Onboarding screens without AI: welcome, safety box, questions, boat, limits, followers, permissions, first verdict; verdict code reads the saved setup |
+| 9 | Routes: the two Bimini presets and tap-your-own points |
+| 10 | Boat photo and outlines |
+| 11 | Plan screen part A: re-skin with the saved setup |
+| 12 | Plan screen part B: temperatures, brief, best day |
+| 13 | Plan screen part B: model agreement, marine warnings, fuel adjustment, float plan page |
+| 14 | Saved trips and My Trips |
 
 **Stage 3: finish**
 
-| Day | Work | RJ does |
+| # | Work | RJ does |
 | --- | --- | --- |
-| Nov 26 | Step 8: Share my setup and self-backup | |
-| Nov 27 | AI step: setup helper | Create an Anthropic API key with a $5 limit; add it as a Cloudflare setting |
-| Nov 28 | Spare day for fixes | |
-| Nov 29 | All steps in preview. Promote pull request opened if the real-trip test is done. | Approve or hold |
+| 15 | Share my setup and self-backup | |
+| 16 | AI setup helper | Create an Anthropic API key with a $5 limit; add it as a Cloudflare setting. |
+| 17 | Loading with no signal (W16), then the promote pull request | One real trip on the water first. Approve or hold. |
 
-Each day's pull request must be tested and merged in that day's 5:00 to
-5:45 PM block for the dates to hold. A missed or failed day moves everything
-after it by a day.
+Each pull request is tested and merged in RJ's 5:00 to 5:45 PM block. A missed
+or failed day moves everything after it by a day.
 
 --------------------------------------------------------------------------------
 
@@ -794,10 +842,16 @@ after it by a day.
 
 ### Future Improvements
 
-*   **Texts and overdue alerts** sent to followers who are not watching (Phase
-    2, texting service).
+*   **Messages inside the app**, first after the MVP: captain and followers
+    type to each other on the family page. No outside service. $0.
+*   **Real text messages sent by the app**, next: float plan, "Made it" and
+    overdue alerts to followers who are not watching. Needs a texting service:
+    roughly $5 to $15 per month at friends scale plus a one-time registration
+    of about $20 (figures to verify before any purchase). Carrier approval
+    takes days to weeks, so the registration can be started during the MVP
+    build once RJ says go.
 *   **Accounts and server backup** of setup and trips (Phase 2).
-*   **Tracking with the phone locked** and loading with no signal (Phase 3).
+*   **Tracking with the phone locked** (Phase 3).
 *   **Followers see the boat photo or a line drawing.**
 *   **Limits per trip**, route file import, satellite messenger on the map.
 
