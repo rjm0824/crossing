@@ -11,35 +11,36 @@ and hands them to whoever opens that trip's family link. Full design:
     after their last update, and old daily counters. No cost.
 *   **The one secret:** `INVITE_CODE`, set in the Cloudflare dashboard and kept
     in Keeper. It is never in this folder, the page or chat.
-*   **Publishing:** merging a pull request that changes this folder publishes
-    it to the preview copy automatically (once step 3 below is done).
+*   **Publishing:** merging a pull request to `main` republishes it to the
+    preview copy automatically.
 
 Planning aid, not a navigation or rescue tool. It shows the last position a
 device sent and cannot call for help.
 
-## RJ's steps (one time, about 15 minutes)
+## How it is set up (done Nov 19, 2026)
 
-Done already: the free Cloudflare account and the `crossing-preview` database.
-
-1.  **Connect the repo.** Cloudflare dashboard → Workers & Pages → Create →
-    Import a repository → `rjm0824/crossing`. Settings:
-    *   Project name: `crossing-tracker-preview` (exactly)
-    *   Root directory: `tracker-service`
-    *   Deploy command: `npx wrangler d1 migrations apply DB --remote && npx wrangler deploy`
-    *   Build watch paths: include `tracker-service/*`
-2.  **Add the invite code.** Worker → Settings → Variables and Secrets → Add →
-    type **Secret**, name `INVITE_CODE`, value: a code of at least 12
-    characters (Keeper can generate one). Save it in Keeper first.
-3.  **Copy the address.** Worker → Settings → Domains & Routes → the address
-    ending in `workers.dev`.
-4.  **Test it.** Open
+*   **Address:** `https://crossing-tracker-preview.rj-2a3.workers.dev`
+    (not a secret).
+*   **Cloudflare project:** Workers & Pages → `crossing-tracker-preview`,
+    connected to GitHub `rjm0824/crossing` with "Connect GitHub".
+*   **Build settings** (Settings → Builds):
+    *   Build command: empty
+    *   Root directory: empty (the deploy command moves into the folder itself)
+    *   Deploy command:
+        `cd tracker-service && npm ci && npx wrangler d1 migrations apply DB --remote && npx wrangler deploy`
+*   **Invite code:** Settings → Variables and Secrets → `INVITE_CODE`, type
+    Secret, Production only. The code is in Keeper.
+*   **Test:** open
     `https://rjm0824.github.io/crossing/next/tracker-test.html`, paste the
     address and the invite code, tap **Run all checks**. All 10 should pass.
 
-**If step 1's publish fails on the database change:** open the
-`crossing-preview` database → Console, paste the contents of
-`migrations/0001_init.sql`, run it, change the deploy command to
-`npx wrangler deploy`, and retry the deploy.
+**Optional: rebuild only when this folder changes.** Today Cloudflare
+republishes after every merge to `main`, which is harmless and free. To narrow
+it: Settings → Builds → Build watch paths → Include: `tracker-service/*`.
+
+**If a publish ever fails on a database change:** open the `crossing-preview`
+database → Console, paste the contents of the new file in `migrations/`, run
+it, then retry the deploy.
 
 ## Everyday tasks
 
