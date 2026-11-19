@@ -143,6 +143,13 @@ link, and holds the two secrets the app needs (an invite code and the AI key).
 *   Messages inside the app between captain and followers, and real text
     messages sent by the app, are the first things built after the MVP, ahead
     of accounts and payments. See Future Improvements.
+*   A trip that never ended is kept 30 days after its last update.
+*   Only the tracker service and the Live screen with the family page get
+    their own design doc and full review; other steps are built from this
+    document with a lighter check. This relaxes the "design doc per feature"
+    rule in `CLAUDE.md` for the MVP only.
+*   Home Screen test (RJ's iPhone, Nov 19): the Home Screen app kept the picks
+    made in Safari. "Add to Home Screen" is therefore the last step of setup.
 *   Every captain can save several trips, plan future trips, keep past trips
     and copy a trip. Tracking starts only when the captain taps Start trip.
 
@@ -164,23 +171,14 @@ objected and can change any of them):**
 | W13 | Service updates publish when a pull request that changes the service folder is merged. RJ connects his Cloudflare account to the repo once. | No Cloudflare key in the repo or in chat. |
 | W15 | No position is sent until the boat is about 1 nm from the trip's start. The captain can turn this off per trip. | Today's page sends nothing until the boat is outside the inlet, so the home dock never shows. This keeps that protection for any route. |
 | W16 | Loading the app with no signal is added after the eight steps and before promote. | It matters on the water (a restarted iPad cannot reopen the page offshore), but a saved copy can show an old version during daily testing. |
-| W14 | Only the tracker service and the Live screen with the family page get their own design doc and full review. Other steps ship as pull requests under this document with a lighter check. | Needed to reach Nov 29. This changes the "design doc per feature" rule in `CLAUDE.md` for the MVP only, and needs RJ's explicit OK. |
 
 ## Open Questions
 
-*   **Q1. Does a Home Screen app share saved data with Safari on iPhone?**
-    Safari can delete a website's saved data after about 7 days in which the
-    site is not used (exact rule to verify). Adding the page to the Home
-    Screen is the usual protection. But the Home Screen app may keep its data
-    apart from Safari, so a friend who sets up in Safari and then adds the icon
-    could open an empty app. RJ ran the test on Nov 19; the result for the
-    Home Screen icon is being confirmed. The answer decides whether "Add to
-    Home Screen" comes first or last in setup.
-*   **Q2. Does a calendar entry with an alert open correctly from a web page**
+*   **Q1. Does a calendar entry with an alert open correctly from a web page**
     on iPhone and Android? The follower reminder and the trip reminder depend
     on it. To test on RJ's iPhone before the family page is built. If it does
     not work, the fallback is the overdue time written in the Start trip text.
-*   **Q3. Will a real trip on the water happen before Nov 29?** Promote needs
+*   **Q2. Will a real trip on the water happen before Nov 29?** Promote needs
     one. If RJ has one coming, Stage 1 must be merged before it.
 
 ## Critical User Journeys (CUJs)
@@ -480,8 +478,7 @@ verdict.
 *   **Saved shape.** Setup saves boat, limits, routes and followers in one
     documented shape that the Plan screen, saved trips, the AI helper and Share
     my setup all read, so later steps add to it without a rebuild.
-*   **Add to Home Screen** is a step in setup. Whether it comes first or last
-    depends on Q1.
+*   **Add to Home Screen** is the last step in setup.
 
 **Boat photo.** "Add a photo of your boat" opens the phone's photo picker or
 camera. The app shrinks the photo and saves it on the device. It is not
@@ -782,7 +779,7 @@ and family keys are made by the service.
 ## Build Order
 
 This section replaces the template's detailed implementation plan. The tracker
-service and the Live screen with family page get their own design docs (W14).
+service and the Live screen with family page get their own design docs (decided Nov 19).
 The other steps are built from this document.
 
 **Target: all of it in the preview by Nov 29. RJ has accepted that it may

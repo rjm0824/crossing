@@ -91,11 +91,7 @@ record with its own two secrets.
 
 ## Open Questions
 
-*   **Q1. How long to keep a trip that never ended (RJ).** A boat that went
-    silent keeps its last position visible. This draft keeps such a trip for
-    30 days after its last activity, then deletes it. Ended trips are deleted
-    after 7 days. RJ to confirm 30 days.
-*   **Q2. Processing time.** The free plan allows 10 ms of processing per
+*   **Q1. Processing time.** The free plan allows 10 ms of processing per
     request. A 100-item batch must be measured against it in the build. If it
     does not fit, the batch cap is lowered.
 
@@ -469,7 +465,7 @@ share them.
 | Database calls per request | 50; a batched call counts as one | 3 at most | 3 at most |
 | Values per database statement | 100 | 12 | 12 |
 | Database size | 500 MB | Under 5 MB | Under 10 MB |
-| Processing time per request | 10 ms | To measure (Q2) | To measure (Q2) |
+| Processing time per request | 10 ms | To measure (Q1) | To measure (Q1) |
 | Daily timers per account | 5 | 1 | 1 |
 
 Assumptions: each boat has 3 followers reading every 30 seconds for 6 hours
@@ -884,7 +880,7 @@ Each phase leaves the repo in a working state.
 2.  `wrangler.jsonc`, the database file, `index.js`, `local-check.mjs`. Check:
     the service runs locally (`npx wrangler d1 migrations apply DB --local`,
     then `npx wrangler dev --test-scheduled`) and `local-check.mjs` passes.
-    The processing time for a 100-item batch is noted (Q2).
+    The processing time for a 100-item batch is noted (Q1).
 3.  `tracker-test.html`, `privacy.html`, `README.md`. Check: the page loads at
     phone and iPad widths and passes against the local service.
 4.  RJ's steps, then the test page against the published preview copy.
