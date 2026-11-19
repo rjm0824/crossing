@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Crossing App: onboarding</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:Inter,system-ui,sans-serif;color:#0E2233}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F3F6F8; overflow: hidden; font-family: Inter, system-ui, sans-serif; color: #0E2233">
+
+<sc-if value="{{isWelcome}}" hint-placeholder-val="{{ true }}">
+<div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; background: #0E2233; color: #FFFFFF; padding: 56px 24px 32px; height: 844px; box-sizing: border-box">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<span style="font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: #A9C3D3">[App name]</span>
+<span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 40px; font-weight: 700; line-height: 1.05">Know when to go.</span>
+<span style="font-size: 16px; line-height: 1.5; color: #CFDDE6">Seas, wind and tides along your whole route, checked against your limits. And the people who worry about you can watch you cross, live, from one link.</span>
+</div>
+<div style="background: #17324A; border-radius: 18px; height: 220px; display: flex; align-items: center; justify-content: center; color: #8FB1C6; font-size: 14px">[Boat crossing live on a map; Mom’s phone on shore shows “On the way · ETA 12:40”]</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<button type="button" onClick="{{start}}" style="min-height: 56px; border: none; border-radius: 14px; background: #FFFFFF; color: #0E2233; font-size: 17px; font-weight: 700; cursor: pointer">Set up my boat</button>
+<button type="button" onClick="{{startFriend}}" style="min-height: 52px; border: 1px solid #3B5568; border-radius: 14px; background: transparent; color: #FFFFFF; font-size: 15px; font-weight: 600; cursor: pointer">A friend sent me their setup</button>
+<span style="font-size: 12px; color: #8FB1C6; text-align: center">About 2 minutes. Free while we test it with friends.</span>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{inFlow}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; height: 844px">
+
+<div style="padding: 18px 20px 12px; background: #0E2233; color: #FFFFFF; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<button type="button" onClick="{{back}}" style="min-width: 44px; min-height: 36px; border: 1px solid #3B5568; background: transparent; color: #FFFFFF; border-radius: 10px; font-size: 13px; padding: 0 10px; cursor: pointer">Back</button>
+<span style="font-size: 12px; color: #A9C3D3">Step {{stepNum}} of 7</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px">
+<sc-for list="{{bars}}" as="b" hint-placeholder-count="7">
+<span style="height: 4px; border-radius: 2px; background: {{b.c}}"></span>
+</sc-for>
+</div>
+<span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 24px; font-weight: 700">{{title}}</span>
+</div>
+
+<div style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+
+<sc-if value="{{isSafety}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<div style="background: #FFFFFF; border-radius: 16px; padding: 16px; border: 1px solid #DCE4EA; display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.45">
+<span><b>This is a planning aid, not a navigation tool.</b></span>
+<span>Forecasts can be wrong. Use your charts, plotter, VHF and your own eyes. The captain always decides.</span>
+<span>The family link is a courtesy. It never replaces a VHF radio, an EPIRB or calling the Coast Guard.</span>
+</div>
+<button type="button" onClick="{{toggleAgree}}" style="min-height: 72px; border: 2px solid {{agreeBorder}}; border-radius: 14px; background: #FFFFFF; color: #0E2233; text-align: left; padding: 10px 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 15px">
+<span style="width: 24px; height: 24px; border-radius: 6px; border: 2px solid #0F5F7A; background: {{agreeFill}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex: 0 0 auto">{{agreeMark}}</span>
+<span>I understand. I'm the captain and I make the call. I agree to the <u style="color: #0F5F7A">Terms of use</u> and <u style="color: #0F5F7A">Privacy statement</u>.</span>
+</button>
+<span style="font-size: 12px; color: #4A5E6D">Final wording to be reviewed by an attorney before launch.</span>
+</div>
+</sc-if>
+
+<sc-if value="{{isTell}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 13px; color: #4A5E6D">A few quick questions. Talk, type or tap an answer. I'll fill in the forms and you check them.</span>
+<sc-for list="{{msgs}}" as="m" hint-placeholder-count="3">
+<div style="display: flex; justify-content: {{m.align}}">
+<span style="max-width: 80%; padding: 10px 12px; border-radius: 16px; background: {{m.bg}}; color: {{m.fg}}; font-size: 15px; line-height: 1.4; border: 1px solid {{m.border}}">{{m.text}}</span>
+</div>
+</sc-for>
+<sc-if value="{{chatOpen}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 8px; padding-top: 4px">
+<span style="font-size: 12px; color: #4A5E6D">Question {{qNum}} of 7</span>
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<sc-for list="{{chips}}" as="c" hint-placeholder-count="3">
+<button type="button" onClick="{{c.pick}}" style="min-height: 44px; border: 1px solid #8FB1C6; border-radius: 999px; background: #FFFFFF; color: #0F4A60; font-size: 14px; font-weight: 600; padding: 0 14px; cursor: pointer">{{c.label}}</button>
+</sc-for>
+</div>
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 8px">
+<div style="min-height: 48px; border: 1px solid #B9C8D3; border-radius: 14px; background: #FFFFFF; color: #7A8C99; font-size: 14px; display: flex; align-items: center; padding: 0 12px">Type an answer…</div>
+<button type="button" onClick="{{speak}}" aria-label="Talk" style="min-height: 48px; border: none; border-radius: 14px; background: #0F5F7A; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer">● Talk</button>
+</div>
+<span style="font-size: 12px; color: #4A5E6D">No signal? Tap the answers or use the keyboard. You can skip and fill the forms yourself.</span>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isBoat}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="background: #FFFFFF; border: 1px solid #DCE4EA; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px">
+<sc-if value="{{noPhoto}}" hint-placeholder-val="{{ true }}">
+<button type="button" onClick="{{togglePhoto}}" style="height: 140px; width: 100%; border-radius: 12px; background: #F3F6F8; border: 2px dashed #8FA9BA; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: #0F5F7A; cursor: pointer">
+<span style="font-size: 28px; line-height: 1">📷</span>
+<span style="font-size: 15px; font-weight: 700">Add a photo of your boat</span>
+<span style="font-size: 12px; color: #4A5E6D">A side view works best. We'll turn it into a line drawing.</span>
+</button>
+</sc-if>
+<sc-if value="{{hasPhoto}}" hint-placeholder-val="{{ false }}">
+<div style="border-radius: 12px; background: #F1F6F9; border: 1px solid #DCE4EA; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0 8px; text-align: center">
+<img src="./boat.png" alt="Line drawing of your boat" style="width: 100%; height: 120px; object-fit: contain; display: block">
+<span style="font-size: 12px; color: #4A5E6D">{{boatTitle}}</span>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: center">
+<span style="font-size: 12px; color: #136C3A; font-weight: 600">✓ Photo added</span>
+<button type="button" onClick="{{togglePhoto}}" style="min-height: 36px; border: none; background: transparent; color: #0F5F7A; font-size: 13px; font-weight: 600; cursor: pointer">Use a different photo</button>
+</div>
+</sc-if>
+<span style="font-size: 11px; color: #4A5E6D">No photo? Skip it. You'll see a simple outline for your boat type until you add one.</span>
+</div>
+<sc-if value="{{showFilled}}" hint-placeholder-val="{{ true }}">
+<span style="font-size: 13px; color: #136C3A; background: #DDF1E4; border-radius: 10px; padding: 8px 10px">{{filledNote}}</span>
+</sc-if>
+<sc-for list="{{boatRows}}" as="r" hint-placeholder-count="5">
+<div style="background: #FFFFFF; border: 1px solid {{r.border}}; border-radius: 14px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 12px; color: #4A5E6D">{{r.label}}</span><span style="font-size: 16px; font-weight: 600">{{r.value}}</span></div>
+<span style="font-size: 13px; color: #0F5F7A; font-weight: 600">Edit</span>
+</div>
+</sc-for>
+<sc-if value="{{askBurn}}" hint-placeholder-val="{{ false }}">
+<div style="background: #FCEFD9; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 14px; font-weight: 600; color: #6B3A00">One thing I missed: about how much fuel do you burn at cruise?</span>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+<sc-for list="{{burnChips}}" as="c" hint-placeholder-count="3">
+<button type="button" onClick="{{c.pick}}" style="min-height: 44px; border: 1px solid #E0B97A; border-radius: 10px; background: #FFFFFF; font-size: 14px; font-weight: 600; cursor: pointer">{{c.label}}</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isLimits}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 15px; line-height: 1.45">Your limits decide GO or NO-GO. Start from a preset, then adjust.</span>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+<sc-for list="{{presets}}" as="p" hint-placeholder-count="3">
+<button type="button" onClick="{{p.pick}}" style="min-height: 56px; border: 2px solid {{p.border}}; border-radius: 12px; background: #FFFFFF; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px">
+<span style="font-size: 14px; font-weight: 700">{{p.label}}</span><span style="font-size: 11px; color: #4A5E6D">{{p.sub}}</span>
+</button>
+</sc-for>
+</div>
+<sc-for list="{{steppers}}" as="s" hint-placeholder-count="2">
+<div style="background: #FFFFFF; border: 1px solid #DCE4EA; border-radius: 14px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #4A5E6D">{{s.label}}</span><span style="font-size: 20px; font-weight: 700">{{s.value}}</span></div>
+<div style="display: flex; gap: 8px">
+<button type="button" onClick="{{s.down}}" aria-label="Less" style="width: 44px; height: 44px; border: 1px solid #B9C8D3; border-radius: 10px; background: #F3F6F8; font-size: 20px; cursor: pointer">−</button>
+<button type="button" onClick="{{s.up}}" aria-label="More" style="width: 44px; height: 44px; border: 1px solid #B9C8D3; border-radius: 10px; background: #F3F6F8; font-size: 20px; cursor: pointer">+</button>
+</div>
+</div>
+</sc-for>
+<button type="button" onClick="{{toggleNorth}}" style="min-height: 64px; border: 1px solid #DCE4EA; border-radius: 14px; background: #FFFFFF; color: #0E2233; text-align: left; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; cursor: pointer">
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">No north wind in the Gulf Stream</span><span style="font-size: 12px; color: #4A5E6D">Wind against the current stacks up steep waves</span></span>
+<span style="width: 50px; height: 30px; border-radius: 999px; background: {{northBg}}; position: relative; flex: 0 0 auto"><span style="position: absolute; top: 3px; left: {{northKnob}}; width: 24px; height: 24px; border-radius: 50%; background: #FFFFFF"></span></span>
+</button>
+</div>
+</sc-if>
+
+<sc-if value="{{isRoute}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 15px; line-height: 1.45">Pick your usual crossing. You can add more later, and the trip home flips it.</span>
+<sc-for list="{{routes}}" as="r" hint-placeholder-count="4">
+<button type="button" onClick="{{r.pick}}" style="min-height: 64px; border: 2px solid {{r.border}}; border-radius: 14px; background: #FFFFFF; color: #0E2233; text-align: left; padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; cursor: pointer">
+<span style="font-size: 15px; font-weight: 600">{{r.label}}</span><span style="font-size: 12px; color: #4A5E6D">{{r.sub}}</span>
+</button>
+</sc-for>
+<div style="background: #DCEAF2; border-radius: 14px; height: 130px; display: flex; align-items: center; justify-content: center; color: #31556C; font-size: 13px; border: 1px solid #BFD4E1">[Map preview of {{routeName}}]</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isContacts}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 15px; line-height: 1.45">Who should get your float plan and the link to follow you? They don't need the app.</span>
+<sc-for list="{{contacts}}" as="c" hint-placeholder-count="2">
+<div style="background: #FFFFFF; border: 1px solid #DCE4EA; border-radius: 14px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px">
+<div style="display: flex; align-items: center; gap: 10px"><span style="width: 36px; height: 36px; border-radius: 50%; background: #DCEAF2; color: #0F4A60; font-weight: 700; display: flex; align-items: center; justify-content: center">{{c.initial}}</span><span style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 15px; font-weight: 600">{{c.name}}</span><span style="font-size: 12px; color: #4A5E6D">{{c.how}}</span></span></div>
+<span style="font-size: 12px; font-weight: 600; color: #135C33; background: #DDF1E4; border-radius: 999px; padding: 4px 8px">{{c.tag}}</span>
+</div>
+</sc-for>
+<button type="button" onClick="{{addContact}}" style="min-height: 52px; border: 1px dashed #8FA9BA; border-radius: 14px; background: transparent; color: #0F5F7A; font-size: 15px; font-weight: 600; cursor: pointer">+ Add from Contacts</button>
+<div style="background: #FFFFFF; border: 1px solid #DCE4EA; border-radius: 14px; padding: 12px 14px; font-size: 13px; line-height: 1.5; color: #4A5E6D">They get: your float plan when you start, waypoint pings, "Made it" when you arrive, and an alert if you're overdue.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isPerms}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 15px; line-height: 1.45">Three quick things so tracking works on the water.</span>
+<sc-for list="{{perms}}" as="p" hint-placeholder-count="3">
+<button type="button" onClick="{{p.toggle}}" style="min-height: 72px; border: 1px solid #DCE4EA; border-radius: 14px; background: #FFFFFF; color: #0E2233; text-align: left; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; cursor: pointer">
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">{{p.label}}</span><span style="font-size: 12px; color: #4A5E6D">{{p.sub}}</span></span>
+<span style="font-size: 12px; font-weight: 700; white-space: nowrap; padding: 6px 10px; border-radius: 999px; background: {{p.bg}}; color: {{p.fg}}">{{p.state}}</span>
+</button>
+</sc-for>
+<span style="font-size: 12px; color: #4A5E6D">Your location is only shared while a trip is running, and stops when you arrive.</span>
+</div>
+</sc-if>
+
+</div>
+
+<div style="padding: 12px 16px 24px; background: #F3F6F8; border-top: 1px solid #DCE4EA">
+<button type="button" onClick="{{next}}" style="width: 100%; min-height: 56px; border: none; border-radius: 14px; background: {{nextBg}}; color: #FFFFFF; font-size: 17px; font-weight: 600; cursor: pointer">{{nextLabel}}</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isDone}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 48px 20px 28px; height: 844px; box-sizing: border-box">
+<span style="font-size: 13px; font-weight: 700; color: #136C3A; letter-spacing: 0.06em; text-transform: uppercase">You're set</span>
+<span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 30px; font-weight: 700; line-height: 1.1">Here's your first answer.</span>
+<div style="background: #FFFFFF; border-radius: 16px; padding: 16px; border: 1px solid #DCE4EA; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 13px; color: #4A5E6D">Tomorrow · {{routeName}}</span>
+<div style="display: flex; align-items: center; gap: 12px"><span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 34px; font-weight: 700; color: #136C3A">GO</span><span style="font-size: 14px">Best departure <b>7:00 AM</b>. Seas 2–3 ft, wind SE 10 kt.</span></div>
+</div>
+<div style="background: #FFFFFF; border-radius: 16px; padding: 14px 16px; border: 1px solid #DCE4EA; display: flex; flex-direction: column; gap: 6px; font-size: 14px">
+<span style="font-weight: 600">Tips</span>
+<span>• {{followNote}}</span>
+<span>• Add it to your Home Screen: Share → Add to Home Screen</span>
+<span>• Change anything later in ☰ Menu → Setup</span>
+</div>
+<div style="flex: 1"></div>
+<button type="button" style="min-height: 56px; border: none; border-radius: 14px; background: #0F5F7A; color: #FFFFFF; font-size: 17px; font-weight: 600; cursor: pointer">Open my plan</button>
+<button type="button" style="min-height: 48px; border: 1px solid #B9C8D3; border-radius: 14px; background: #FFFFFF; color: #0E2233; font-size: 15px; font-weight: 600; cursor: pointer">Share my setup with a friend</button>
+<button type="button" onClick="{{restart}}" style="min-height: 40px; border: none; background: transparent; color: #4A5E6D; font-size: 13px; cursor: pointer">↺ Start the mockup over</button>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = this.fresh(); }
+  fresh() { return { step: 0, agree: false, ans: [], hull: 0, color: 1, photo: false, seas: 4, wind: 15, preset: 1, north: true, route: 0, extra: false, perms: [false, false, false], friend: false }; }
+  renderVals() {
+    var st = this.state, self = this, step = st.step;
+    var set = function (o) { return function () { self.setState(o); }; };
+    var GREEN = '#136C3A';
+    var Q = [
+      ['What do you call her?', ['Goof n’ Off', 'Reel Therapy', 'No name yet']],
+      ['What kind of boat is she?', ['Center console', 'Walkaround', 'Express cruiser', 'Catamaran']],
+      ['How long, and what’s pushing her?', ['30 ft · twin outboards', '34 ft · triple outboards', '40 ft · twin diesels']],
+      ['Cruise speed and fuel tank?', ['26 kt · 150 gal', '30 kt · 300 gal', '20 kt · 400 gal']],
+      ['About how much fuel does she burn at cruise?', ['9 gph', '14 gph', 'Not sure']],
+      ['Where do you usually go?', ['West Palm → Green Turtle', 'Lauderdale → Bimini', 'Miami → Bimini', 'Somewhere else']],
+      ['Who worries when you’re out there? They can watch you cross, live, from one link. No app needed.', ['Haile + Mom', 'Just one person', 'Set up later']]
+    ];
+    var hullNames = ['Center console', 'Walkaround', 'Express cruiser', 'Catamaran'];
+    var ans = st.ans, done = ans.length >= Q.length;
+    var answer = function (v) {
+      var a = ans.concat([v]), o = { ans: a };
+      var hi = hullNames.indexOf(v); if (hi >= 0) o.hull = hi;
+      var ri = ['West Palm → Green Turtle', 'Lauderdale → Bimini', 'Miami → Bimini', 'Somewhere else'].indexOf(v); if (ri >= 0) o.route = ri;
+      self.setState(o);
+    };
+    var msgs = [];
+    for (var i = 0; i < Q.length && i <= ans.length; i++) {
+      msgs.push({ text: Q[i][0], align: 'flex-start', bg: '#FFFFFF', fg: '#0E2233', border: '#DCE4EA' });
+      if (i < ans.length) {
+        var t = ans[i];
+        if (i === 4 && t === 'Not sure') t = 'Not sure';
+        msgs.push({ text: t, align: 'flex-end', bg: '#0F5F7A', fg: '#FFFFFF', border: '#0F5F7A' });
+        if (i === 4 && ans[i] === 'Not sure') msgs.push({ text: 'No problem. I’ll estimate about 12 gph for a boat like yours. Check it after your first trip.', align: 'flex-start', bg: '#FCEFD9', fg: '#6B3A00', border: '#E0B97A' });
+      }
+    }
+    if (done) msgs.push({ text: 'Got it. I filled in your boat, route and who follows you. Next, check your boat.', align: 'flex-start', bg: '#DDF1E4', fg: '#135C33', border: '#B7DEC4' });
+    var chips = done ? [] : Q[ans.length][1].map(function (c) { return { label: c, pick: function () { answer(c); } }; });
+
+    // boat values
+    var f = st.friend, has = done || f;
+    var sp = (ans[3] || '').split(' · ');
+    var name = f ? 'Reel Therapy' : (ans[0] && ans[0] !== 'No name yet' ? ans[0] : 'Tap to add');
+    var size = f ? '32 ft · twin outboards' : (ans[2] || 'Length, engines');
+    var burn = f ? '12 gph' : (ans[4] === 'Not sure' ? '~12 gph (estimate)' : (ans[4] || 'gph'));
+    var boatRows = [['Boat name', name], ['Type of boat', f ? 'Walkaround' : (ans[1] || 'Center console, express cruiser…')], ['Length and engines', size], ['Cruise speed', f ? '28 kt' : (sp[0] || 'kt')], ['Fuel tank', f ? '200 gal' : (sp[1] || 'gal')], ['Fuel burn at cruise', burn]]
+      .map(function (r) { return { label: r[0], value: r[1], border: r[1].indexOf('estimate') >= 0 ? '#E0B97A' : '#DCE4EA' }; });
+    var tops = [
+      'M 150 64 L 152 44 L 180 44 L 182 63 M 128 28 L 206 28 M 138 28 L 146 58 M 198 28 L 190 58',
+      'M 118 62 L 124 44 L 204 44 L 244 58 M 124 44 L 130 28 L 198 28 L 204 44 M 140 52 L 196 52',
+      'M 84 62 Q 96 40 150 38 L 214 38 Q 252 42 266 57 M 120 50 L 220 48',
+      'M 108 60 L 112 32 L 228 32 L 240 58 M 124 44 L 216 44'
+    ];
+    var outboard = size.indexOf('diesel') >= 0 ? '' : 'M 6 56 L 22 56 L 22 98 L 12 98 L 12 80 L 6 74 Z';
+    var swDefs = [['Navy', '#1F3A5F'], ['Sea green', '#2E8B7A'], ['Red', '#B5332E'], ['Sand', '#D8C39A']];
+    var swatches = swDefs.map(function (w, i) { return { name: w[0], c: w[1], ring: i === st.color ? '#0E2233' : '#FFFFFF', pick: set({ color: i }) }; });
+    var hulls = hullNames.map(function (h, i) { return { label: h, border: i === st.hull ? '#0F5F7A' : '#DCE4EA', pick: set({ hull: i }) }; });
+
+    var presetDefs = [['Cautious', '3 ft · 12 kt', 3, 12], ['Standard', '4 ft · 15 kt', 4, 15], ['Experienced', '5 ft · 18 kt', 5, 18]];
+    var presets = presetDefs.map(function (p, i) { return { label: p[0], sub: p[1], border: i === st.preset ? '#0F5F7A' : '#DCE4EA', pick: set({ preset: i, seas: p[2], wind: p[3] }) }; });
+    var steppers = [
+      { label: 'Max seas', value: st.seas + ' ft', down: set({ seas: Math.max(1, st.seas - 1), preset: -1 }), up: set({ seas: Math.min(8, st.seas + 1), preset: -1 }) },
+      { label: 'Max wind', value: st.wind + ' kt', down: set({ wind: Math.max(5, st.wind - 1), preset: -1 }), up: set({ wind: Math.min(30, st.wind + 1), preset: -1 }) }
+    ];
+    var routeDefs = [['West Palm → Abaco via Green Turtle', '~120 nm · Lake Worth Inlet · Memory Rock'], ['Fort Lauderdale → Bimini', '~50 nm · Port Everglades'], ['Miami → Bimini', '~50 nm · Government Cut'], ['Tap my own points on the map', 'Anywhere; nearest tide station picked for you']];
+    var routes = routeDefs.map(function (r, i) { return { label: r[0], sub: r[1], border: i === st.route ? '#0F5F7A' : '#DCE4EA', pick: set({ route: i }) }; });
+    var routeName = ['West Palm → Green Turtle', 'Fort Lauderdale → Bimini', 'Miami → Bimini', 'your route'][st.route];
+    var who = ans[6];
+    var contacts = who === 'Set up later' ? [] : [{ initial: 'H', name: 'Haile', how: 'Text · (561) ···', tag: 'Added' }];
+    if (who !== 'Just one person' && who !== 'Set up later') contacts.push({ initial: 'M', name: 'Mom', how: 'Text · (561) ···', tag: 'Added' });
+    if (st.extra) contacts.push({ initial: 'R', name: 'Raul', how: 'Text · (305) ···', tag: 'Added' });
+    var permDefs = [['Location while a trip is on', 'Sends your position to your private tracker'], ['Notifications', 'Waypoints, check-in reminders, overdue warning'], ['Keep screen on while sharing', 'Stops the phone or iPad pausing tracking when it locks']];
+    var perms = permDefs.map(function (p, i) { var on = st.perms[i]; return { label: p[0], sub: p[1], state: on ? 'Allowed ✓' : 'Allow', bg: on ? '#DDF1E4' : '#0F5F7A', fg: on ? '#135C33' : '#FFFFFF', toggle: function () { var a = st.perms.slice(); a[i] = !a[i]; self.setState({ perms: a }); } }; });
+
+    var canNext = step === 1 ? st.agree : true;
+    var titles = ['', 'Safety first', 'Tell me about your boat', 'Your boat', 'Your limits', 'Your route', 'Who follows you', 'Tracking on the water'];
+    var bars = []; for (var k = 1; k <= 7; k++) bars.push({ c: k <= step ? '#FFFFFF' : '#3B5568' });
+    var nextLabels = ['', 'Continue', done ? 'Check my boat' : 'Skip, I’ll fill the forms', 'Looks right', 'Save my limits', 'Use this route', 'Continue', 'Finish'];
+    var names = contacts.map(function (c) { return c.name; });
+    return {
+      isWelcome: step === 0, inFlow: step >= 1 && step <= 7, isDone: step === 8,
+      start: set({ step: 1, friend: false }), startFriend: set({ step: 1, friend: true }),
+      back: set({ step: Math.max(0, step - (step === 3 && st.friend ? 2 : 1)) }),
+      next: function () { if (!canNext) return; var n = step + 1; if (step === 1 && st.friend) n = 3; self.setState({ step: n }); },
+      restart: function () { self.setState(self.fresh()); },
+      stepNum: step, bars: bars, title: titles[step] || '',
+      nextLabel: nextLabels[step] || 'Continue', nextBg: canNext ? (step === 2 && !done ? '#4A6F84' : '#0F5F7A') : '#9FB3C1',
+      isSafety: step === 1, isTell: step === 2, isBoat: step === 3, isLimits: step === 4, isRoute: step === 5, isContacts: step === 6, isPerms: step === 7,
+      toggleAgree: set({ agree: !st.agree }), agreeBorder: st.agree ? '#0F5F7A' : '#DCE4EA', agreeFill: st.agree ? '#0F5F7A' : '#FFFFFF', agreeMark: st.agree ? '✓' : '',
+      msgs: msgs, chatOpen: !done, chips: chips, qNum: Math.min(ans.length + 1, 7),
+      speak: function () { if (!done) answer(Q[ans.length][1][0]); },
+      showFilled: has, filledNote: f ? 'Pre-filled from your friend’s setup. Change anything that’s different.' : 'Filled in from your answers. Check it over.',
+      boatRows: boatRows, askBurn: false, burnChips: [],
+      bTop: tops[st.hull], bOut: outboard, bHull2: st.hull === 3 ? 'M 46 94 L 50 104 L 250 104 L 258 94' : '', bColor: swDefs[st.color][1], hullName: hullNames[st.hull], colorName: swDefs[st.color][0],
+      boatTitle: (name === 'Tap to add' ? 'Your boat' : name) + ' · ' + (f ? 'Walkaround' : (ans[1] || 'your boat')),
+      hulls: hulls, swatches: swatches,
+      togglePhoto: set({ photo: !st.photo }), photoBg: st.photo ? '#DDF1E4' : 'transparent',
+      noPhoto: !st.photo, hasPhoto: st.photo,
+      presets: presets, steppers: steppers, toggleNorth: set({ north: !st.north }), northBg: st.north ? GREEN : '#B9C8D3', northKnob: st.north ? '23px' : '3px',
+      routes: routes, routeName: routeName,
+      contacts: contacts, addContact: set({ extra: true }),
+      perms: perms,
+      followNote: names.length ? names.join(' and ') + ' get a link to watch you cross when you start a trip.' : 'Add the people who worry about you in ☰ Menu → Setup.'
+    };
+  }
+}
+</script>
+</body>
+</html>

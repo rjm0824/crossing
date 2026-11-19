@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Crossing App: home and menu</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:Inter,system-ui,sans-serif;color:#0E2233}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F3F6F8; overflow: hidden; font-family: Inter, system-ui, sans-serif; color: #0E2233">
+
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 12px; background: #0E2233; color: #FFFFFF">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A9C3D3">[App name]</span>
+<span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 22px; font-weight: 700">{{screenTitle}}</span>
+</div>
+<sc-if value="{{showBack}}" hint-placeholder-val="{{ false }}">
+<button type="button" onClick="{{goMenu}}" style="min-width: 44px; min-height: 44px; border: 1px solid #3B5568; background: transparent; color: #FFFFFF; border-radius: 10px; font-size: 14px; padding: 0 12px; cursor: pointer">Back</button>
+</sc-if>
+</div>
+
+<div style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+
+<sc-if value="{{isHome}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 12px">
+
+<div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px">
+<sc-for list="{{trips}}" as="tp" hint-placeholder-count="5">
+<button type="button" onClick="{{tp.pick}}" style="flex: 0 0 auto; min-height: 40px; border-radius: 999px; border: 1px solid {{tp.border}}; background: {{tp.bg}}; color: {{tp.fg}}; font-size: 13px; font-weight: 600; padding: 0 14px; cursor: pointer; white-space: nowrap">{{tp.label}}</button>
+</sc-for>
+</div>
+
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<span style="font-size: 14px; font-weight: 600">{{routeLabel}}</span>
+<button type="button" onClick="{{flipRoute}}" style="min-height: 36px; border: 1px solid #B9C8D3; border-radius: 999px; background: #FFFFFF; color: #0F5F7A; font-size: 13px; font-weight: 600; padding: 0 12px; cursor: pointer">⇄ {{flipLabel}}</button>
+</div>
+
+<sc-if value="{{isLive}}" hint-placeholder-val="{{ true }}">
+<div style="background: #FFFFFF; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; border: 1px solid #DCE4EA">
+<span style="font-size: 13px; color: #4A5E6D">Tomorrow · leave at {{d.t}}</span>
+<div style="display: flex; align-items: center; gap: 12px">
+<span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 34px; font-weight: 700; color: {{d.color}}">{{d.verdict}}</span>
+<span style="font-size: 14px; line-height: 1.35">{{d.sub}}</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<div style="background: #F3F6F8; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #4A5E6D">Seas</span><span style="font-weight: 600">{{d.seas}}</span></div>
+<div style="background: #F3F6F8; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #4A5E6D">Wind</span><span style="font-weight: 600">{{d.wind}}</span></div>
+<div style="background: #F3F6F8; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #4A5E6D">Arrive</span><span style="font-weight: 600">{{d.arrive}}</span></div>
+<div style="background: #F3F6F8; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #4A5E6D">Water temp</span><span style="font-weight: 600">{{d.water}}</span></div>
+<div style="background: #F3F6F8; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #4A5E6D">Air temp</span><span style="font-weight: 600">{{d.air}}</span></div>
+<div style="background: #F3F6F8; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #4A5E6D">Sunrise</span><span style="font-weight: 600">6:38 AM</span></div>
+</div>
+<span style="font-size: 14px; line-height: 1.45; background: #EEF5F9; border-radius: 10px; padding: 10px">{{d.brief}}</span>
+<span style="font-size: 12px; color: #136C3A">✓ No marine warnings on the route · ✓ No north wind in the Stream</span>
+</div>
+</sc-if>
+<sc-if value="{{notLive}}" hint-placeholder-val="{{ false }}">
+<div style="background: #FFFFFF; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; border: 1px solid #DCE4EA">
+<span style="font-size: 13px; color: #4A5E6D">{{tr.when}}</span>
+<div style="display: flex; align-items: center; gap: 12px">
+<span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 26px; font-weight: 700; color: {{tr.color}}; line-height: 1.1">{{tr.verdict}}</span>
+<span style="font-size: 14px; line-height: 1.35">{{tr.sub}}</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{tr.stats}}" as="k" hint-placeholder-count="3">
+<div style="background: #F3F6F8; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #4A5E6D">{{k.l}}</span><span style="font-weight: 600">{{k.v}}</span></div>
+</sc-for>
+</div>
+<span style="font-size: 14px; line-height: 1.45; background: #EEF5F9; border-radius: 10px; padding: 10px">{{tr.brief}}</span>
+</div>
+<div style="background: #FFFFFF; border-radius: 16px; border: 1px solid #DCE4EA; overflow: hidden; margin-top: 12px">
+<sc-for list="{{tr.rows}}" as="r" hint-placeholder-count="4">
+<div style="display: flex; justify-content: space-between; gap: 10px; padding: 11px 14px; border-bottom: 1px solid #EEF2F5; font-size: 14px"><span style="color: #4A5E6D">{{r.l}}</span><span style="font-weight: 600; text-align: right">{{r.v}}</span></div>
+</sc-for>
+<div style="padding: 10px 14px; font-size: 12px; color: #0F5F7A; font-weight: 600">Edit this trip</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isLive}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A5E6D; padding: 4px 4px 0">Departure times · tap to compare</span>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+<sc-for list="{{deps}}" as="x" hint-placeholder-count="4">
+<button type="button" onClick="{{x.pick}}" style="min-height: 56px; border-radius: 12px; border: 2px solid {{x.border}}; background: #FFFFFF; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 4px">
+<span style="font-size: 13px; font-weight: 700; color: #0E2233">{{x.t}}</span>
+<span style="font-size: 11px; font-weight: 600; color: {{x.color}}">{{x.short}}</span>
+</button>
+</sc-for>
+</div>
+
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A5E6D; padding: 4px 4px 0">Best day this week</span>
+<div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px">
+<sc-for list="{{days}}" as="y" hint-placeholder-count="5">
+<div style="background: {{y.bg}}; border-radius: 10px; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px">
+<span style="font-size: 12px; font-weight: 700">{{y.day}}</span>
+<span style="font-size: 11px; font-weight: 600; color: {{y.color}}">{{y.call}}</span>
+</div>
+</sc-for>
+</div>
+
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A5E6D; padding: 4px 4px 0">Hour by hour along the route</span>
+<div style="background: #FFFFFF; border-radius: 16px; border: 1px solid #DCE4EA; overflow: hidden">
+<sc-for list="{{legs}}" as="l" hint-placeholder-count="5">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 64px 52px 64px; gap: 6px; align-items: center; padding: 10px 12px; border-bottom: 1px solid #EEF2F5; font-size: 13px">
+<span style="display: flex; flex-direction: column; gap: 1px; min-width: 0"><span style="font-weight: 600">{{l.place}}</span><span style="font-size: 11px; color: #4A5E6D">Water {{l.water}} · Air {{l.air}}</span></span>
+<span style="color: #4A5E6D">{{l.time}}</span>
+<span style="font-weight: 600; color: {{l.color}}">{{l.seas}}</span>
+<span style="color: #4A5E6D">{{l.wind}}</span>
+</div>
+</sc-for>
+<div style="padding: 10px 12px; font-size: 12px; color: #4A5E6D; background: #F8FAFB">Forecast models: GFS 2–3 ft · European 2–3 ft · Google 3 ft · <b style="color: #136C3A">they agree</b></div>
+</div>
+</div>
+</sc-if>
+
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A5E6D; padding: 4px 4px 0">Route map + radar</span>
+<div style="background: #DCEAF2; border-radius: 16px; height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #31556C; font-size: 14px; border: 1px solid #BFD4E1">
+<span>[Route on the chart · animated radar]</span>
+<span style="font-size: 12px; background: #FFFFFF; border-radius: 999px; padding: 4px 10px">Full screen</span>
+</div>
+
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A5E6D; padding: 4px 4px 0">Tides</span>
+<div style="background: #FFFFFF; border-radius: 16px; padding: 14px 16px; border: 1px solid #DCE4EA; display: flex; flex-direction: column; gap: 12px">
+<sc-for list="{{tides}}" as="td" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; justify-content: space-between; gap: 8px; font-size: 13px"><span style="font-weight: 600">{{td.place}}</span><span style="color: #4A5E6D">{{td.note}}</span></div>
+<svg viewBox="0 0 320 76" width="100%" height="76" role="img" aria-label="{{td.aria}}" style="display: block">
+<line x1="0" y1="38" x2="320" y2="38" stroke="#E3EAEF" stroke-width="1"></line>
+<path d="{{td.fill}}" fill="#DCEAF2"></path>
+<path d="{{td.path}}" fill="none" stroke="#2F7FA6" stroke-width="2.5" stroke-linecap="round"></path>
+<line x1="{{td.nx}}" y1="4" x2="{{td.nx}}" y2="64" stroke="#C2410C" stroke-width="1.5" stroke-dasharray="3 3"></line>
+<circle cx="{{td.nx}}" cy="{{td.ny}}" r="6" fill="#C2410C" stroke="#FFFFFF" stroke-width="2"></circle>
+<text x="{{td.hx}}" y="10" text-anchor="middle" font-size="10" font-weight="700" fill="#0F4A60">HIGH {{td.hi}}</text>
+<text x="{{td.lx}}" y="74" text-anchor="middle" font-size="10" font-weight="700" fill="#0F4A60">LOW {{td.lo}}</text>
+</svg>
+</div>
+</sc-for>
+<span style="font-size: 11px; color: #4A5E6D">Orange dot = when you leave and when you arrive · 6 AM to 6 PM</span>
+</div>
+
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A5E6D; padding: 4px 4px 0">Inside water (Sea of Abaco)</span>
+<div style="background: #FFFFFF; border-radius: 16px; padding: 14px 16px; border: 1px solid #DCE4EA; display: flex; flex-direction: column; gap: 6px; font-size: 14px">
+<span>Sea of Abaco chop: <b>1–2 ft</b>, easy by arrival</span>
+<span>Whale Cay passage: <b style="color: #136C3A">no rage</b></span>
+</div>
+
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A5E6D; padding: 4px 4px 0">Fuel and arrival</span>
+<div style="background: #FFFFFF; border-radius: 16px; padding: 14px 16px; border: 1px solid #DCE4EA; display: flex; flex-direction: column; gap: 6px; font-size: 14px">
+<span>Fuel needed: <b>64 gal</b> of 150 · reserve left <b style="color: #136C3A">86 gal</b></span>
+<span style="font-size: 12px; color: #4A5E6D">Includes +8% for the forecast seas</span>
+<span>Arrive 1:40 PM · sunset 5:32 PM · sunrise 6:52 AM</span>
+</div>
+
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A5E6D; padding: 4px 4px 0">Get ready</span>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{ready}}" as="r" hint-placeholder-count="4">
+<button type="button" onClick="{{r.open}}" style="min-height: 64px; border: 1px solid #DCE4EA; border-radius: 14px; background: #FFFFFF; color: #0E2233; text-align: left; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; cursor: pointer">
+<span style="font-size: 14px; font-weight: 600">{{r.label}}</span>
+<span style="font-size: 12px; color: #4A5E6D">{{r.sub}}</span>
+</button>
+</sc-for>
+</div>
+
+<button type="button" onClick="{{goTrip}}" style="min-height: 56px; border: none; border-radius: 14px; background: #0F5F7A; color: #FFFFFF; font-size: 17px; font-weight: 600; cursor: pointer">Start trip &amp; share with family</button>
+<span style="font-size: 12px; color: #4A5E6D; text-align: center">Texts your float plan and starts the family link. Planning aid, not for navigation. The captain decides.</span>
+</div>
+</sc-if>
+
+<sc-if value="{{isTrip}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<span style="font-size: 12px; color: #8A4B00; background: #FCEFD9; border-radius: 10px; padding: 8px 10px">Keep this page open in front while sharing.</span>
+<div style="background: #DCEAF2; border-radius: 16px; height: 180px; display: flex; align-items: center; justify-content: center; color: #31556C; font-size: 14px; border: 1px solid #BFD4E1">[Live map: boat, route, radar]</div>
+<div style="background: #FFFFFF; border-radius: 16px; padding: 16px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; border: 1px solid #DCE4EA">
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #4A5E6D">Speed</span><span style="font-weight: 600; font-size: 18px">24 kt</span></div>
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #4A5E6D">Left to go</span><span style="font-weight: 600; font-size: 18px">38 nm</span></div>
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #4A5E6D">Live ETA</span><span style="font-weight: 600; font-size: 18px">1:52 PM</span></div>
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #4A5E6D">Underway</span><span style="font-weight: 600; font-size: 18px">2 h 41 m</span></div>
+</div>
+<button type="button" style="min-height: 52px; border: none; border-radius: 14px; background: #136C3A; color: #FFFFFF; font-size: 16px; font-weight: 600; cursor: pointer">Send "All good" to family</button>
+<div style="background: #FFFFFF; border-radius: 16px; padding: 14px 16px; border: 1px solid #DCE4EA; display: flex; flex-direction: column; gap: 6px; font-size: 14px">
+<span style="font-weight: 600">Waypoints (family gets a ping)</span>
+<span>✓ Left Lake Worth Inlet · 7:04 AM</span>
+<span>✓ Passed Memory Rock · 9:41 AM</span>
+<span style="color: #4A5E6D">○ Mangrove Cay · about 11:20 AM</span>
+</div>
+<div style="background: #FFFFFF; border-radius: 16px; padding: 14px 16px; border: 1px solid #DCE4EA; display: flex; flex-direction: column; gap: 6px; font-size: 14px">
+<span>Sharing: <b style="color: #136C3A">on</b> · every 5 min · 3 watching</span>
+<span>Check-in: if not arrived by <b>3:00 PM</b>, contacts get an overdue alert</span>
+<span style="font-size: 12px; color: #4A5E6D">Stops by itself at Green Turtle and texts "Made it"</span>
+</div>
+<button type="button" style="min-height: 48px; border: 1px solid #B9C8D3; border-radius: 14px; background: #FFFFFF; color: #B42318; font-size: 15px; font-weight: 600; cursor: pointer">Stop sharing now</button>
+</div>
+</sc-if>
+
+<sc-if value="{{isFamily}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<div style="background: #DCEAF2; border-radius: 16px; height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #31556C; font-size: 14px; border: 1px solid #BFD4E1"><span>[Live tracking map: boat, trail, route, wind]</span><span style="font-size: 12px; background: #FFFFFF; border-radius: 999px; padding: 4px 10px">Updated 2 min ago</span></div>
+<div style="background: #FFFFFF; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 6px; border: 1px solid #DCE4EA">
+<span style="font-size: 13px; color: #4A5E6D">Opens from one tap. No app or login.</span>
+<span style="font-family: 'Space Grotesk', Inter, sans-serif; font-size: 22px; font-weight: 700">RJ is 38 nm out</span>
+<span style="font-size: 15px">Arriving about <b>1:52 PM</b> · last update 2 min ago</span>
+<span style="font-size: 13px">24 kt · 2 h 41 m underway · wind SE 10 kt</span>
+<span style="font-size: 13px; color: #136C3A">Phone battery 76% · signal good</span>
+</div>
+<div style="background: #FFFFFF; border-radius: 16px; padding: 14px 16px; border: 1px solid #DCE4EA; display: flex; flex-direction: column; gap: 6px; font-size: 14px">
+<span>✓ "All good" from RJ · 9:45 AM</span>
+<span>✓ Passed Memory Rock · 9:41 AM</span>
+<span>✓ Left Lake Worth Inlet · 7:04 AM</span>
+</div>
+<span style="font-size: 12px; color: #4A5E6D; padding: 0 4px">If RJ isn't in by 3:00 PM, this page shows an overdue alert with his last known position. The link expires when he arrives.</span>
+</div>
+</sc-if>
+
+<sc-if value="{{isTrips}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<button type="button" onClick="{{newTrip}}" style="min-height: 52px; border: none; border-radius: 14px; background: #0F5F7A; color: #FFFFFF; font-size: 16px; font-weight: 600; cursor: pointer">+ Plan a new trip</button>
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A5E6D; padding: 6px 4px 0">Upcoming</span>
+<sc-for list="{{upcoming}}" as="u" hint-placeholder-count="3">
+<button type="button" onClick="{{u.open}}" style="min-height: 68px; border: 1px solid {{u.border}}; border-radius: 14px; background: #FFFFFF; color: #0E2233; text-align: left; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; cursor: pointer">
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 16px; font-weight: 600">{{u.name}}</span><span style="font-size: 13px; color: #4A5E6D">{{u.detail}}</span></span>
+<span style="font-size: 12px; font-weight: 700; white-space: nowrap; padding: 4px 8px; border-radius: 999px; background: {{u.tagBg}}; color: {{u.tagFg}}">{{u.tag}}</span>
+</button>
+</sc-for>
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A5E6D; padding: 6px 4px 0">Past trips</span>
+<sc-for list="{{past}}" as="q" hint-placeholder-count="3">
+<div style="border: 1px solid #DCE4EA; border-radius: 14px; background: #FFFFFF; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; gap: 10px"><span style="font-size: 16px; font-weight: 600">{{q.name}}</span><span style="font-size: 13px; color: #4A5E6D; white-space: nowrap">{{q.date}}</span></div>
+<span style="font-size: 13px; color: #4A5E6D">{{q.stats}}</span>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px">
+<button type="button" style="min-height: 40px; border: 1px solid #B9C8D3; border-radius: 10px; background: #FFFFFF; color: #0E2233; font-size: 13px; font-weight: 600; cursor: pointer">View track</button>
+<button type="button" onClick="{{q.dup}}" style="min-height: 40px; border: 1px solid #0F5F7A; border-radius: 10px; background: #EEF5F9; color: #0F5F7A; font-size: 13px; font-weight: 600; cursor: pointer">⧉ Duplicate as new</button>
+</div>
+</div>
+</sc-for>
+<sc-if value="{{dupNote}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 13px; color: #135C33; background: #DDF1E4; border-radius: 10px; padding: 10px 12px">{{dupText}}</span>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isMenu}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 13px; color: #4A5E6D; padding: 0 4px">Side tools. You never need these to cross.</span>
+<sc-for list="{{menuItems}}" as="m" hint-placeholder-count="7">
+<button type="button" onClick="{{m.open}}" style="min-height: 64px; border: 1px solid #DCE4EA; border-radius: 14px; background: #FFFFFF; color: #0E2233; text-align: left; padding: 12px 16px; display: flex; flex-direction: column; gap: 2px; cursor: pointer">
+<span style="font-size: 16px; font-weight: 600">{{m.label}}</span>
+<span style="font-size: 13px; color: #4A5E6D">{{m.sub}}</span>
+</button>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{isSub}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 13px; color: #4A5E6D; padding: 0 4px">{{subIntro}}</span>
+<sc-for list="{{subRows}}" as="s" hint-placeholder-count="4">
+<div style="background: #FFFFFF; border: 1px solid #DCE4EA; border-radius: 14px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<span style="font-size: 15px; font-weight: 600">{{s.title}}</span>
+<span style="font-size: 13px; color: #4A5E6D">{{s.detail}}</span>
+</div>
+<span style="font-size: 12px; font-weight: 600; white-space: nowrap; padding: 4px 8px; border-radius: 999px; background: {{s.tagBg}}; color: {{s.tagFg}}">{{s.tag}}</span>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+</div>
+
+<nav aria-label="Main" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: #FFFFFF; border-top: 1px solid #DCE4EA; padding: 6px 6px 18px">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+<button type="button" onClick="{{t.open}}" style="min-height: 52px; border: none; background: transparent; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: {{t.color}}; font-size: 12px; font-weight: {{t.weight}}; white-space: nowrap; padding: 0 2px">
+<span style="width: 22px; height: 3px; border-radius: 2px; background: {{t.bar}}"></span>
+<span>{{t.label}}</span>
+</button>
+</sc-for>
+</nav>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { screen: 'home', dep: 1, home: false, trip: 0, dup: '' }; }
+  renderVals() {
+    var st = this.state, s = st.screen, self = this;
+    var go = function (x) { return function () { self.setState({ screen: x }); }; };
+    var ok = { bg: '#DDF1E4', fg: '#135C33' }, soon = { bg: '#FCEFD9', fg: '#8A4B00' }, info = { bg: '#E3EEF5', fg: '#0F4A60' }, later = { bg: '#EDE7F6', fg: '#5B3E96' };
+    var row = function (title, detail, tag, c) { return { title: title, detail: detail, tag: tag, tagBg: c.bg, tagFg: c.fg }; };
+    var GREEN = '#136C3A', AMBER = '#8A4B00', RED = '#B42318';
+    var depData = [
+      { t: '6:00', verdict: 'CROSSABLE', short: 'Bumpy', color: AMBER, sub: 'Inside your limits, but rough early.', seas: '3–4 ft', wind: 'SE 14 kt', arrive: '12:40 PM', water: '79°F', air: '72°F', brief: 'Doable, but the Stream is lumpy until about 8. Wait an hour if you can.' },
+      { t: '7:00', verdict: 'GO', short: '★ Best', color: GREEN, sub: 'Inside your limits. Best time today.', seas: '2–3 ft', wind: 'SE 10 kt', arrive: '1:40 PM', water: '79°F', air: '74°F', brief: 'Seas ease after sunrise. Smoothest window of the day, and the Sea of Abaco is calm by the time you get in.' },
+      { t: '8:00', verdict: 'GO', short: 'Good', color: GREEN, sub: 'Inside your limits.', seas: '2–3 ft', wind: 'SE 11 kt', arrive: '2:40 PM', water: '79°F', air: '76°F', brief: 'Fine ride. A little more chop inside by mid-afternoon.' },
+      { t: '10:00', verdict: 'NO-GO', short: 'Over', color: RED, sub: 'Wind over your limit by noon.', seas: '4–5 ft', wind: 'SE 19 kt', arrive: '4:40 PM', water: '79°F', air: '79°F', brief: 'Wind builds past your 15 kt limit around noon. Not this late.' }
+    ];
+
+    var tripDefs = [
+      { label: 'Next trip' },
+      { label: 'Thanksgiving', when: 'Thanksgiving crossing · Wed Nov 25 · 8 days out', verdict: 'LOOKS GOOD', color: '#136C3A', sub: 'Early outlook. Could still change.',
+        stats: [['Seas', '2–4 ft'], ['Wind', 'E 10–15 kt'], ['Water', '78°F']], brief: 'No cold fronts in sight yet. The full GO answer and best departure time show up 2–3 days out. We\'ll remind you Sun Nov 22.',
+        rows: [['Route', 'West Palm → Green Turtle'], ['Dates', 'Out Nov 25 · Home Nov 29'], ['Following', 'Haile, Mom, Raul'], ['Limits', 'Standard · 4 ft · 15 kt'], ['Checklist', 'Documents to bring · 0 of 7']] },
+      { label: 'Winter', when: 'Winter trip · Sat Dec 26 · 39 days out', verdict: 'FORECAST OPENS DEC 12', color: '#4A5E6D', sub: 'Too far out for a real forecast.',
+        stats: [['Usual seas', '3–5 ft'], ['Usual air', '68–75°F'], ['Water', '~75°F']], brief: 'Late December gets more north fronts. This trip uses your stricter winter limits. We\'ll show an outlook about 10 days out.',
+        rows: [['Route', 'West Palm → Green Turtle'], ['Dates', 'Out Dec 26 · Home Jan 3'], ['Following', 'Haile, Mom'], ['Limits', 'Cautious · 3 ft · 12 kt'], ['Checklist', 'Documents to bring · 0 of 7']] },
+      { label: 'Summer', when: 'Summer trip · Sat Jun 19, 2027', verdict: 'FORECAST OPENS JUN 5', color: '#4A5E6D', sub: 'Saved and ready. Nothing to do yet.',
+        stats: [['Usual seas', '1–3 ft'], ['Usual air', '85–90°F'], ['Water', '~84°F']], brief: 'Summer is usually the calmest time to cross. Watch for afternoon storms and the start of hurricane season.',
+        rows: [['Route', 'West Palm → Green Turtle'], ['Dates', 'Out Jun 19 · Home Jul 4'], ['Following', 'Haile, Mom, Raul'], ['Limits', 'Standard · 4 ft · 15 kt'], ['Checklist', 'Documents to bring · 0 of 7']] }
+    ];
+    var trips = tripDefs.map(function (x, i) { var on = i === st.trip; return { label: x.label, border: on ? '#0F5F7A' : '#B9C8D3', bg: on ? '#0F5F7A' : '#FFFFFF', fg: on ? '#FFFFFF' : '#0E2233', pick: function () { self.setState({ trip: i }); } }; });
+    trips.push({ label: '+ New trip', border: '#8FA9BA', bg: 'transparent', fg: '#0F5F7A', pick: function () {} });
+    var t0 = tripDefs[st.trip];
+    var tr = st.trip === 0 ? { when: '', verdict: '', color: '', sub: '', brief: '', stats: [], rows: [] } : { when: t0.when, verdict: t0.verdict, color: t0.color, sub: t0.sub, brief: t0.brief,
+      stats: t0.stats.map(function (k) { return { l: k[0], v: k[1] }; }), rows: t0.rows.map(function (r) { return { l: r[0], v: r[1] }; }) };
+    var d = depData[st.dep];
+    var deps = depData.map(function (x, i) { return { t: x.t, short: x.short, color: x.color, border: i === st.dep ? '#0F5F7A' : '#DCE4EA', pick: function () { self.setState({ dep: i }); } }; });
+    var days = [['Tue', 'GO', GREEN, '#DDF1E4'], ['Wed', 'NO-GO', RED, '#FBE4E1'], ['Thu', 'Bumpy', AMBER, '#FCEFD9'], ['Fri', 'GO', GREEN, '#DDF1E4'], ['Sat', '★ Best', GREEN, '#C9EBD5']].map(function (x) { return { day: x[0], call: x[1], color: x[2], bg: x[3] }; });
+    var legs = [['Lake Worth Inlet', '7:00 AM', '2 ft', 'SE 9', '77°', '72°'], ['Gulf Stream', '8:15 AM', '3 ft', 'SE 11', '81°', '74°'], ['Memory Rock', '9:40 AM', '2–3 ft', 'SE 10', '80°', '76°'], ['Mangrove Cay', '11:20 AM', '1–2 ft', 'SE 9', '79°', '78°'], ['Green Turtle', '1:40 PM', '1 ft', 'SE 8', '79°', '79°']];
+    if (st.home) { legs = legs.slice().reverse().map(function (x, i) { var times = ['7:00 AM', '9:20 AM', '11:00 AM', '12:25 PM', '1:40 PM']; return [x[0], times[i], x[2], x[3], x[4], x[5]]; }); }
+    legs = legs.map(function (x) { return { place: x[0], time: x[1], seas: x[2], wind: x[3], water: x[4], air: x[5], color: x[2] === '3 ft' ? AMBER : GREEN }; });
+    var tideCard = function (place, note, highH, nowH, hi, lo) {
+      var W = 320, mid = 38, A = 24, x0 = 6, x1 = 18, per = 12.42;
+      var X = function (h) { return (h - x0) / (x1 - x0) * W; };
+      var Y = function (h) { return mid - A * Math.cos(2 * Math.PI * (h - highH) / per); };
+      var pts = [], h;
+      for (h = x0; h <= x1 + 0.001; h += 0.25) pts.push(X(h).toFixed(1) + ' ' + Y(h).toFixed(1));
+      var path = 'M ' + pts.join(' L ');
+      var lowH = highH + per / 2; if (lowH > x1) lowH -= per;
+      return { place: place, note: note, path: path, fill: path + ' L ' + W + ' 76 L 0 76 Z',
+        nx: X(nowH).toFixed(1), ny: Y(nowH).toFixed(1), hx: Math.min(Math.max(X(highH), 30), 290).toFixed(1), lx: Math.min(Math.max(X(lowH), 30), 290).toFixed(1),
+        hi: hi, lo: lo, aria: place + ': ' + note };
+    };
+    var tides = st.home
+      ? [tideCard('Leave: Green Turtle', 'rising · high 8:40 AM', 8.67, 7.0, '8:40', '2:53'), tideCard('Arrive: Lake Worth Inlet', 'falling · low 2:55 PM', 8.71, 13.67, '8:43', '2:55')]
+      : [tideCard('Leave: Lake Worth Inlet', 'rising · high 8:52 AM', 8.87, 7.0, '8:52', '3:05'), tideCard('Arrive: Green Turtle', 'falling · low 3:10 PM', 8.96, 13.67, '8:58', '3:10')];
+    var ready = [
+      { label: 'Go-day checklist', sub: '3 of 9 done', open: go('checklist') },
+      { label: 'Documents to bring', sub: '0 of 7 packed', open: go('customs') },
+      { label: 'GPX for the Garmin', sub: 'Download route file', open: go('gpx') },
+      { label: 'Float plan PDF', sub: 'Coast Guard format', open: go('floatplan') }
+    ];
+    var subs = {
+      setup: { title: 'Setup', intro: 'Done once. Talk or type, Claude fills it in, you OK it.', rows: [
+        row('Tell me about your trip', 'Talk or type in one box', 'Voice', info),
+        row('Boat', '[Make] · cruise 26 kt · 150 gal · 11 gph', 'Set', ok),
+        row('Limits', 'Seas 4 ft · wind 15 kt · no north wind in the Stream', 'Set', ok),
+        row('Route', 'WPB → Green Turtle · or Bimini · or tap your own', 'Set', ok),
+        row('Float plan contacts', 'Haile, Mom, Raul', '3 set', ok),
+        row('Share my setup', 'Send a link that pre-fills a friend’s copy', 'Share', info)
+      ] },
+      myboat: { title: 'My Boat', intro: 'Filled in once. Reused for setup and customs.', rows: [
+        row('Goof n’ Off', '[Make] [length] · twin outboards · hull ID', 'Profile', info),
+        row('Registration', 'Expires [date]', 'OK', ok),
+        row('Insurance (Bahamas coverage)', 'Expires [date]', '30 days', soon),
+        row('Cruising permit + user fee decal', 'Expires [date]', 'OK', ok),
+        row('Documents', 'Stored on this phone only', 'Later', later)
+      ] },
+      maint: { title: 'Maintenance', intro: 'Reminders by date or engine hours.', rows: [
+        row('Oil change', 'Every 100 hrs · due at [hrs]', 'Soon', soon),
+        row('Water pump impeller', 'Yearly', 'OK', ok),
+        row('Zincs', 'Check each trip', 'OK', ok),
+        row('Service history', 'All past work, in one list', 'Log', info)
+      ] },
+      customs: { title: 'Customs', intro: 'Bahamas entry and the trip home.', rows: [
+        row('Documents to bring', 'Passports, registration, insurance, permit, pet and firearm papers', '0 of 7', soon),
+        row('Bahamas entry: Click2Clear', 'Steps, fees, copy-ready boat fields', 'Steps', info),
+        row('US return: CBP ROAM', 'Step by step', 'Steps', info),
+        row('Passports', 'Expiry dates only, never numbers', 'OK', ok)
+      ] },
+      safety: { title: 'Safety', intro: 'Checks and alarms. Never replaces VHF or EPIRB.', rows: [
+        row('Safety gear checklist', 'Life jackets, flares, VHF, EPIRB · resets each trip', '6 of 8', soon),
+        row('EPIRB battery + flares', 'Expire [date]', 'OK', ok),
+        row('Emergency contacts', 'Who gets alerts', '3 set', ok),
+        row('Anchor alarm', 'Alerts if the boat drags at night', 'Soon', later),
+        row('SOS button', 'Position, VHF 16 script, texts contacts', 'Later', later)
+      ] },
+      logbook: { title: 'Logbook', intro: 'Every trip, saved.', rows: [
+        row('WPB → Green Turtle', 'Nov 15 · 5 h 40 m · 2 crew', 'Done', ok),
+        row('Guana → Marsh Harbour', '[date]', 'Done', ok)
+      ] },
+      settings: { title: 'Settings', intro: 'Sharing and tracking.', rows: [
+        row('Tracking interval', 'Every 1, 5, 10 or 30 min', '5 min', info),
+        row('Family link expires', '12 h, 24 h or on arrival', 'Arrival', ok),
+        row('Overdue alert', 'Check-in window after your ETA', '+80 min', info),
+        row('Keep screen on while sharing', 'Stops the iPad pausing tracking', 'On', ok)
+      ] },
+      checklist: { title: 'Go-day checklist', intro: 'Resets each trip. Ticks save on this phone.', rows: [
+        row('Weather call', 'Re-check at the dock', 'Done', ok),
+        row('Fuel topped off', '150 gal', 'Done', ok),
+        row('Float plan sent', 'Happens when you tap Start trip', 'To do', soon)
+      ] },
+      gpx: { title: 'GPX file', intro: 'For the Garmin. Check it against your charts.', rows: [
+        row('WPB → Green Turtle.gpx', '5 waypoints', 'Download', info)
+      ] },
+      floatplan: { title: 'Float plan', intro: 'Coast Guard format. Sent by text or email.', rows: [
+        row('Route, ETA, boat and crew', 'Filled in from your setup', 'Ready', ok),
+        row('Send to contacts', 'Haile, Mom, Raul', 'Send', info)
+      ] }
+    };
+    var tagC = { soon: ['#FCEFD9', '#8A4B00'], wait: ['#E3EEF5', '#0F4A60'], next: ['#DDF1E4', '#135C33'] };
+    var upcoming = [
+      [1, 'Thanksgiving crossing', 'Wed Nov 25 · West Palm → Green Turtle', 'Outlook', 'next'],
+      [2, 'Winter trip', 'Sat Dec 26 · stricter winter limits', 'Opens Dec 12', 'wait'],
+      [3, 'Summer trip', 'Sat Jun 19, 2027', 'Opens Jun 5', 'wait']
+    ].map(function (u) { return { name: u[1], detail: u[2], tag: u[3], tagBg: tagC[u[4]][0], tagFg: tagC[u[4]][1], border: '#DCE4EA', open: function () { self.setState({ screen: 'home', trip: u[0] }); } }; });
+    if (st.dup) upcoming.unshift({ name: st.dup + ' (copy)', detail: 'Pick dates · same route, limits, followers', tag: 'New', tagBg: '#FCEFD9', tagFg: '#8A4B00', border: '#0F5F7A', open: function () {} });
+    var past = [
+      ['Fall crossing', 'Sun Nov 15, 2026', 'West Palm → Green Turtle · 5 h 40 m · 162 gal · seas 2–3 ft'],
+      ['Summer trip', 'Sat Jun 20, 2026', 'West Palm → Green Turtle · 5 h 15 m · 150 gal · seas 1–2 ft'],
+      ['Bimini run', 'Sat Apr 11, 2026', 'Lauderdale → Bimini · 2 h 5 m · 60 gal · seas 2 ft']
+    ].map(function (q) { return { name: q[0], date: q[1], stats: q[2], dup: function () { self.setState({ dup: q[0] }); } }; });
+    var titles = { home: 'Should I go?', trip: 'Live', family: 'Family link', menu: 'Menu', mytrips: 'My Trips' };
+    var sub = subs[s];
+    var menuItems = [
+      { label: 'Setup', sub: 'Boat, limits, routes, contacts, share my setup', open: go('setup') },
+      { label: 'My Boat', sub: 'Profile, documents, expiry reminders', open: go('myboat') },
+      { label: 'Maintenance', sub: 'Service log and reminders', open: go('maint') },
+      { label: 'Customs', sub: 'Documents, Click2Clear, CBP ROAM', open: go('customs') },
+      { label: 'Safety', sub: 'Gear checklist, contacts, alarms', open: go('safety') },
+      { label: 'My Trips', sub: 'Upcoming and past trips, duplicate a trip', open: go('mytrips') },
+      { label: 'Settings', sub: 'Tracking, link expiry, overdue alert', open: go('settings') }
+    ];
+    var homeSubs = { checklist: 1, gpx: 1, floatplan: 1 };
+    var tabDefs = [['home', 'Plan'], ['trip', 'Live'], ['mytrips', 'My Trips'], ['family', 'Family'], ['menu', '☰ Menu']];
+    var activeTab = sub ? (homeSubs[s] ? 'home' : 'menu') : s;
+    var tabs = tabDefs.map(function (x) { var on = x[0] === activeTab; return { label: x[1], open: go(x[0]), color: on ? '#0F5F7A' : '#4A5E6D', weight: on ? '700' : '500', bar: on ? '#0F5F7A' : 'transparent' }; });
+    return {
+      screenTitle: sub ? sub.title : titles[s], showBack: !!sub,
+      goMenu: homeSubs[s] ? go('home') : go('menu'), goTrip: go('trip'),
+      isHome: s === 'home', isTrip: s === 'trip', isFamily: s === 'family', isMenu: s === 'menu', isTrips: s === 'mytrips',
+      upcoming: upcoming, past: past, newTrip: function () {}, dupNote: !!st.dup, dupText: st.dup ? 'Copied “' + st.dup + '” as a new trip: same route, boat, limits, followers and checklist. Pick your dates next.' : '', isSub: !!sub,
+      routeLabel: st.home ? 'Green Turtle → West Palm' : 'West Palm → Green Turtle',
+      flipLabel: st.home ? 'Trip out' : 'Trip home',
+      flipRoute: function () { self.setState({ home: !st.home }); },
+      d: { t: d.t + ' AM', verdict: d.verdict, color: d.color, sub: d.sub, seas: d.seas, wind: d.wind, arrive: d.arrive, water: d.water, air: d.air, brief: d.brief },
+      trips: trips, tr: tr, isLive: st.trip === 0, notLive: st.trip !== 0,
+      deps: deps, days: days, legs: legs, tides: tides, ready: ready,
+      subIntro: sub ? sub.intro : '', subRows: sub ? sub.rows : [],
+      menuItems: menuItems, tabs: tabs
+    };
+  }
+}
+</script>
+</body>
+</html>
