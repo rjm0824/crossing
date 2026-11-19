@@ -17,7 +17,7 @@ A boat-crossing planner (South Florida to the Bahamas first) being turned into a
 - **Garmin ActiveCaptain stays out of the app** (evaluation licence is internal-only; see HANDOFF). Routes come from presets, tapped points or GPX import.
 
 ## How we work
-- **Design before code.** For any feature bigger than a small fix: write or update a design doc in `docs/designs/`, run `/egm:egm-review` on it (fresh reviewers), resolve findings with RJ, then build.
+- **Design before code.** For any feature bigger than a small fix: write or update a design doc in `docs/designs/`, run `/egm:egm-review` on it (fresh reviewers), resolve findings with RJ, then build. **MVP exception (RJ, Nov 19, 2026):** only the tracker service and the Live screen with family page get their own design doc and full review; the other MVP steps are built from `docs/designs/mvp.md` with a lighter check.
 - EGM artifact directory: docs/designs
 - **Screens follow the mockups** in `docs/mockups/` (open `Main.dc.html` and `Onboarding.dc.html`). Use the frontend-design plugin for polish. Phone first (390 px wide), big tap targets, plain words.
 - **Test** at phone and iPad sizes before opening a PR, and say in the PR what you could not test (real iPhone, real GPS, real network).
@@ -29,7 +29,7 @@ A boat-crossing planner (South Florida to the Bahamas first) being turned into a
 - `docs/HANDOFF.md`: decisions, MVP scope, open items (start here).
 - `docs/feature-map.md`: every feature and its phase.
 - `docs/mockups/`: the approved clickable mockups and the boat placeholder drawing.
-- `docs/designs/`: design docs (EGM).
+- `docs/designs/`: design docs (EGM). `mvp.md` is the whole MVP plan; `tracker-service.md` is the first build.
 - `next/`: preview of the next version (from PR #1 onward).
 - `original/`: archived first version, view only.
 - `tracker/Code.gs`: the Apps Script tracker (RJ pastes and redeploys changes by hand).

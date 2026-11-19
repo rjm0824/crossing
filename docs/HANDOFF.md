@@ -2,6 +2,72 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
+## Update: Nov 19, 2026 (read this first)
+
+**Start here for the next build session.** The plan and all decisions are now
+in two design docs, both reviewed with Elephant-Goldfish:
+
+*   `docs/designs/mvp.md`: the whole MVP. Decisions, working choices, what
+    each step contains, risks, and the build order (2 design docs, 15 pull
+    requests).
+*   `docs/designs/tracker-service.md`: the tracker service, ready to build
+    from. Lists every file, message format and database statement, the build
+    phases, and RJ's Cloudflare steps.
+*   `docs/designs/*_review_report.md`: what the reviewers found and how it was
+    resolved.
+
+**Decided by RJ on Nov 19:**
+
+*   The MVP is all eight steps, built in stages and tested as we go. Target:
+    all in the preview by Nov 29. A slip is acceptable.
+*   The AI setup helper is its own step, after onboarding works without it.
+*   Sharing stops only when the boat arrives or the captain stops it. A silent
+    boat keeps its last position and overdue notice on the family page.
+*   A trip is deleted 7 days after it ends; a trip never ended, 30 days after
+    its last update.
+*   A second device (the helm iPad) can do the tracking for a trip.
+*   Two copies of the tracker service: preview now, live at promote.
+*   The service knows only trips. Saved, future and past trips live on the
+    captain's device.
+*   In-app messages, then real text messages, are the first things after the
+    MVP.
+*   Only the tracker service and the Live screen with family page get a full
+    design doc and review. Other MVP steps are built from `mvp.md` with a
+    lighter check.
+*   Home Screen test on RJ's iPhone: the Home Screen app kept data saved in
+    Safari, so "Add to Home Screen" is the last step of setup.
+
+**Where the work stands:**
+
+*   Done: MVP spec; tracker service design doc; RJ's free Cloudflare account
+    (signed in with Google).
+*   In progress (RJ): create the D1 database `crossing-preview` and give its
+    Database ID to the build session. The ID is not a secret.
+*   Next: build the tracker service (`tracker-service.md`, Build Phases 1 to
+    3), one pull request, then RJ's Cloudflare steps from that doc.
+*   After that: split the preview page into files; design doc and review for
+    the Live screen and family page; then the list in `mvp.md`, "Build Order".
+*   Approved but not built: a guard in `.claude/settings.json` that blocks
+    edits to the live `index.html` and `original/`; a `/pr-check` command
+    (phone and iPad screenshots of `/next/`, a scan for secrets, the "Planning
+    aid" line, a drafted pull request description).
+*   Still to test on RJ's iPhone: a calendar entry with an alert opened from a
+    web page (needed for the follower reminder).
+
+**Which model for what:** build on Opus 5.5 in a fresh session. Use Fable 5.2
+for the Live screen and family page design doc and review, and for a review of
+the tracker service code before it is merged.
+
+**Plugins in cloud sessions:** the three plugins in `.claude/settings.json` did
+not load by themselves in the Nov 19 cloud session. They loaded after running,
+from the repo folder: `claude plugin marketplace add
+google/elephant-goldfish-model`, then `claude plugin install egm@egm --scope
+project` and the same for `claude-code-setup@claude-plugins-official` and
+`frontend-design@claude-plugins-official`. The install rewrites
+`.claude/settings.json` (same content, different layout); restore it with `git
+checkout -- .claude/settings.json`. The install does not survive into a new
+session. A build does not need the plugins; a design review does.
+
 ## Where things stand
 - **Live today:** https://rjm0824.github.io/crossing/ (one page, `index.html`). Go/no-go vs RJ's limits, best departure time, route map with radar, tides, hour-by-hour seas and wind, Sea of Abaco inside conditions, fuel and arrival, GPX download, captain tracking to a Google Sheet via Apps Script, family link.
 - **Phase 0 (in review):** PR #1 (`claude/wizardly-newton-5jfxv0`) adds the preview at `/next/`: tides always draw, live tide "now" readout, stay-awake box while sharing, saved departure time, time-zone fixes. RJ's to-dos: test on iPhone and iPad in the 5 PM block, merge, paste and redeploy `tracker/Code.gs`, set the Crossing Tracker sheet to Eastern time (Open Loops rows 190-191).
