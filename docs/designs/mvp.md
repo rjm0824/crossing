@@ -396,7 +396,7 @@ protection. The service stores only a scrambled copy of each secret.
 | Start trip | Invite code | Stores boat name, first name, route, planned arrival, overdue time. Returns the trip key and family key. |
 | Add to trip | Trip key | Accepts a batch of positions and events (check-in, passed a waypoint, overdue time changed, trip ended, sharing resumed). Each carries the time it happened, so "trip ended" can be in the past. Duplicates are ignored. |
 | New family link | Trip key | Replaces the family key, so a forwarded link stops working. |
-| Read trip | Family key | Returns status, the trail since the time the page last asked, events, route, planned arrival, and whether the trip is overdue. After the family link closes it returns only "This trip has ended." |
+| Read trip | Family key | Returns status, everything the service has received since the page last asked (so positions sent late still arrive), events, route, planned arrival, and whether the trip is overdue. After the family link closes it returns only "This trip has ended." |
 | Delete trip | Trip key | Deletes the trip and its positions. |
 | AI helper | Invite code | Passes the typed answers to Claude Haiku and returns form values. Added in the AI step. |
 
@@ -409,11 +409,12 @@ protection. The service stores only a scrambled copy of each secret.
 *   **After a trip ends** the service stops returning positions at once. For
     2 hours, counted from when it learned of the end, it returns only how the
     trip ended, the place name and the time. Then the family link closes.
-*   **Auto-end:** a trip with no end and no new position for 24 hours is ended
-    by the daily clean-up job and marked "Sharing stopped, no updates." A late
-    batch for it is still accepted and an arrival in it changes the trip to arrived.
-*   **The daily clean-up job** deletes trips that ended more than 7 days ago.
-    It is the only thing that runs on its own. It is free.
+*   **Silence never ends a trip.** Sharing stops only when the boat arrives
+    or the captain stops it. A boat that goes quiet keeps its last position and
+    overdue notice on the family page (decided by RJ, Nov 19).
+*   **The daily clean-up job** deletes trips 7 days after they end, and trips
+    that never ended 30 days after their last update. It is the only thing
+    that runs on its own. It is free.
 *   **All text from devices** (boat name, first name, waypoint names) is
     length-limited by the service and shown as plain text only, never as page
     code.
@@ -710,7 +711,7 @@ trip.
 | Nobody has the family page open | Nobody is told the boat is overdue | "Remind me" calendar entry; overdue time in the first text | Depends on each follower tapping once. |
 | Tracker service down or over its daily limit | Devices queue; family page says tracking unavailable | Low request design; share text still sent at Start trip | No live tracking during the outage. |
 | Safari deletes saved data, or a new phone | Setup and trips gone | Add to Home Screen; "Back up my setup" link | A captain who never backed up starts over. Server copies of trips are gone after 7 days. |
-| Device holding the trip key is lost mid-trip | Trip cannot be ended by hand | Second device has the key; service auto-ends after 24 hours; deleted after 7 days | Follower may see "overdue" until auto-end. |
+| Device holding the trip key is lost mid-trip | Trip cannot be ended by hand | Second device has the key; the trip is deleted 30 days after its last update; RJ can delete it sooner in the dashboard | Followers see the last position and "overdue" until then. |
 | Family link is forwarded | Others can watch that trip | Link closes 2 hours after the trip ends; "New link" on the Family tab replaces it | Whoever has the link can watch until then. |
 | Invite code leaks | Strangers can start trips and call the AI helper | Daily caps; $5 monthly AI limit; RJ changes the code | Friends not yet set up need the new invite link. |
 | Harmful text in a name or a setup link | Could run as code on the page | Plain-text display only; length limits; every link value checked | Reviewed in each step's pull request. |
@@ -732,7 +733,7 @@ describes both trackers.
 
 | Step | Change to `privacy.html` in the same pull request |
 | --- | --- |
-| 2 | Preview trips are stored with Cloudflare; the live page still uses Google. Boat name, first name, route and planned arrival are stored for a trip. Kept 7 days after the trip ends. Positions at full precision, none within about 1 nm of the start. Captain can delete a trip from the app. A deletion request by email is handled by RJ in the Cloudflare dashboard using the trip's date and boat name, because there are no accounts. Replace "your boat details stay on your phone" and "kept until you ask" with the accurate versions. |
+| 2 | Preview trips are stored with Cloudflare; the live page still uses Google. Boat name, first name, route and planned arrival are stored for a trip. Kept 7 days after the trip ends. Positions at full precision, none within about 1 nm of the start. Captain can delete a trip from the app. A trip that never ended is kept 30 days after its last update. A deletion request by email needs the trip's family link, because there are no accounts. Replace "your boat details stay on your phone" and "kept until you ask" with the accurate versions. |
 | 3 | The boat photo stays on the device. |
 | 7 | Followers see no position after the trip ends; the arrival place name and time show for 2 hours. Battery level only where the phone provides it. Remove "signal strength". |
 | 8 | The backup link contains follower first names and trips. |

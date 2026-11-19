@@ -1,7 +1,7 @@
 # Tracker Service (MVP Step 2)
 
 *   **Author:** RJ (rjm0824)
-*   **Status:** Draft (revision 2, after review round 1)
+*   **Status:** Draft (revision 3, after review rounds 1 and 2)
 *   **Date:** 2026-11-19
 
 --------------------------------------------------------------------------------
@@ -222,9 +222,20 @@ the week can be answered, and so late items have a trip to land on.
 
 ### Requests and Answers
 
-All five requests are HTTP POST with a JSON body sent as plain text, the same
-way today's page talks to its tracker. This form does not make the browser
-send an extra "pre-check" request first, so every action is one request.
+All five requests are HTTP POST with a JSON body sent as plain text. This form
+does not make the browser send an extra "pre-check" request first, so every
+action is one request. The exact call from a page is:
+
+```js
+fetch(address + '/v1/read', { method: 'POST',
+  headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) })
+```
+
+Today's page adds `mode: 'no-cors'` to its sends, which hides the answer from
+the page. That must not be copied here: every answer has to be read. The Worker
+does not require any particular content type. A request from an address
+outside the allowed list is still handled; it just gets no permission header,
+so a browser on that address cannot read the answer.
 
 Times are whole milliseconds since 1970 (the form JavaScript uses).
 
@@ -233,8 +244,9 @@ Times are whole milliseconds since 1970 (the form JavaScript uses).
 ```json
 { "invite": "…", "boat": "Goof n' Off", "captain": "RJ",
   "route": { "name": "West Palm to Green Turtle",
-             "points": [ { "name": "Lake Worth Inlet", "lat": 26.77, "lon": -80.03 } ],
-             "dest": "Green Turtle" },
+             "points": [ { "name": "Lake Worth Inlet", "lat": 26.77, "lon": -80.03 },
+                         { "name": "Green Turtle", "lat": 26.76, "lon": -77.33 } ],
+             "dest": "Green Turtle", "cruiseKt": 26 },
   "plannedArrival": 1795790400000, "overdueAt": 1795795200000 }
 ```
 
@@ -259,6 +271,17 @@ Answer: `{ "tripKey": "…", "familyKey": "…", "startedAt": 1795770000000 }`
 *   `ended` carries `"arrived"` or `"stopped"` in `value`.
 *   `overdue` carries the new overdue time in `value`.
 
+| Kind | Required besides `id`, `t`, `kind` | Optional |
+| --- | --- | --- |
+| `pos` | `lat`, `lon` | `sog`, `bat` |
+| `checkin` | none | none |
+| `waypoint` | `label` | none |
+| `overdue` | `value`: a time between the trip's start and 14 days from now | none |
+| `ended` | `value`: `"arrived"` or `"stopped"` | none |
+| `resumed` | none | none |
+
+Fields not listed for a kind are ignored. `t` and `bat` are whole numbers.
+
 Answer: one result per item, in the same order, plus the trip's status.
 
 ```json
@@ -270,8 +293,14 @@ Answer: one result per item, in the same order, plus the trip's status.
 
 *   `stored`: new and saved. `had`: the service already has it. `refused`:
     will never be accepted; the device drops it from its queue.
-*   A batch holds at most 100 items. A longer one is refused whole with
-    `too_many`, and the device sends smaller ones.
+*   A batch holds 1 to 100 items. A longer one is refused whole with
+    `too_many`, and the device halves its batch size and tries again. A missing
+    or empty `items` list is a `bad_request`.
+*   An entry that is not an object, or has no usable `id`, gets
+    `{ "id": null, "r": "refused", "why": "invalid" }` at the same place in the
+    list.
+*   The same `id` twice in one batch: the first is handled, the second is
+    `had`.
 
 **3. Read: `POST /v1/read`**
 
@@ -298,8 +327,11 @@ Answer while the trip has not ended:
 *   `last` is the newest position by the device's time, or `null` if none has
     arrived. It is always included, so an overdue page has it even when `items`
     is empty.
-*   `items` holds up to 500 items after `after`, in sequence order. `more` is
-    true when there are further items; the page reads again at once.
+*   `items` holds up to 500 items after `after`, in sequence order, of every
+    kind. Each has `seq`, `t` and `kind`, plus whichever of `lat`, `lon`,
+    `sog`, `bat`, `label` and `value` it was stored with. An `overdue` item's
+    `value` is returned as a number. The device's `id` is not returned. `more`
+    is true when there are further items; the page reads again at once.
 *   `pollSeconds` tells the page how long to wait before the next read.
 
 Answer for 2 hours after the service learned the trip ended:
@@ -327,10 +359,9 @@ app's address read it.
 | --- | --- | --- |
 | Wrong or missing invite code; invite code not set on the service | 401 | `{ "error": "invite" }` |
 | Daily trip cap reached | 429 | `{ "error": "cap" }` |
-| Unknown, replaced or deleted trip key or family key | 404 | `{ "error": "not_found" }` |
+| Unknown, replaced, deleted or badly formed trip key or family key | 404 | `{ "error": "not_found" }` |
 | Body is not valid JSON, a required field is missing or out of range, or the body is over 64 KB | 400 | `{ "error": "bad_request" }` |
 | More than 100 items | 400 | `{ "error": "too_many" }` |
-| Trip already holds 5,000 items | 429 | `{ "error": "trip_full" }` |
 | Unknown address or a method other than POST | 404 | `{ "error": "not_found" }` |
 | Database failure | 500 | `{ "error": "server" }` |
 
@@ -345,17 +376,21 @@ unavailable" and keep their queue.
 
 *   Text is cut to its limit after removing control characters and invisible
     direction-changing characters: boat name 40 characters, first name 30,
-    route and point names 40, labels 60. A boat name or first name that is
-    empty after cleaning is a `bad_request`.
+    route and point names 40, labels 60. A boat name, first name, route
+    name, destination name or point name that is empty after cleaning is a
+    `bad_request`. Length is counted in characters as a person would count
+    them (code points).
 *   A route has 2 to 30 points. Latitude is between -90 and 90, longitude
-    between -180 and 180.
+    between -180 and 180. `cruiseKt` is optional, 1 to 70; the family page
+    uses it to decide when to say "Slow".
 *   `plannedArrival` and `overdueAt` must be later than now and within 14
     days. `overdueAt` must not be earlier than `plannedArrival`.
 *   An item `id` is 1 to 40 letters, digits, hyphens or underscores.
 *   Speed is 0 to 100. Battery is 0 to 100.
 *   An item is refused with `"future"` if its time is more than 10 minutes
-    ahead of the service's clock, with `"early"` if it is before the trip
-    started, and with `"invalid"` if a field fails the checks above. Other
+    ahead of the service's clock, with `"early"` if it is more than 10
+    minutes before the trip started, with `"full"` if it is a position,
+    check-in or waypoint and the trip already holds 5,000 items, and with `"invalid"` if a field fails the checks above. Other
     items in the same batch are still handled.
 
 **Storing**
@@ -367,8 +402,10 @@ unavailable" and keep their queue.
     every follower.
 *   The trip's "last position" is replaced only by a position with a later
     device time.
-*   A trip holds at most 5,000 items (a day at one position a minute is
-    1,440).
+*   A trip holds about 5,000 items (a day at one position a minute is
+    1,440). Once the count is at 5,000, further positions, check-ins and
+    waypoints are refused with `"full"`. `ended`, `resumed` and `overdue` are
+    always accepted, so a full trip can still be ended.
 
 **Status**
 
@@ -382,21 +419,35 @@ unavailable" and keep their queue.
     remembers the device time of the latest one applied to each of two things:
     the overdue time, and ended-or-resumed. An event older than the one already
     applied is stored but changes nothing.
+*   An event with the same device time as the one already applied changes
+    nothing. Events in one batch are applied by device time, then by their
+    order in the batch.
+*   State events are applied from every valid item in a request, whether it
+    was newly stored or already held. Because of the rule above this is
+    harmless to repeat, and it means a retry repairs a trip whose earlier
+    update was lost.
 *   `ended` sets the status to its value and the end time to the event's time.
     The 2-hour window starts when the service first learns the trip has ended.
-    A second `ended` does not restart it.
+    A further `ended` while the trip is already ended does not restart it.
 *   `resumed` with a later device time than the `ended` puts the trip back to
-    `underway` and clears the end. The service sets no time limit on this; the
-    device's Resume button has its own.
+    `underway` and clears both the end time and the time the service learned of
+    it. A later `ended` then starts a fresh 2-hour window. The service sets no
+    time limit on resuming; the device's Resume button has its own.
 *   Positions and check-ins for an ended trip are stored and do not change its
     status.
 
 **Caps and clean-up**
 
-*   At most 50 trips started per UTC day, changeable in the settings. The count
+*   At most 50 trips started per UTC day. Changing this, or `pollSeconds`, is
+    a one-line pull request to the settings file, because the next publish
+    would overwrite a value edited in the dashboard.
+*   Start checks in this order: the body is valid; the invite code matches;
+    the counter is raised and compared with the cap; the trip is stored. A
+    wrong invite code therefore never uses up the cap. The count
     is raised and checked in one database step, so two starts at the same
     moment cannot both slip through.
-*   The invite code must be at least 12 characters. The service compares
+*   The invite code must be at least 12 characters. A shorter one set on the
+    service is treated as not set, and every start gets `invite`. The service compares
     scrambled copies of the code, which avoids leaking it through timing.
 *   The daily clean-up (a Cloudflare timer at 08:00 UTC, about 3 or 4 AM
     Eastern) deletes: trips whose end the service learned more than 7 days
@@ -415,7 +466,7 @@ share them.
 | Requests per day | 100,000 | About 25,000 | About 63,000 |
 | Database rows read per day | 5,000,000 | About 200,000 | About 500,000 |
 | Database rows written per day | 100,000 | About 15,000 | About 36,000 |
-| Database calls per request | 50; a batched call counts as one | 3 | 3 |
+| Database calls per request | 50; a batched call counts as one | 3 at most | 3 at most |
 | Values per database statement | 100 | 12 | 12 |
 | Database size | 500 MB | Under 5 MB | Under 10 MB |
 | Processing time per request | 10 ms | To measure (Q2) | To measure (Q2) |
@@ -515,7 +566,8 @@ approve in the pull request (the page's attorney review still applies):
 
 *   Short version, replacing "your boat details stay on your phone": "Your boat
     details stay on your device, except the boat name, your first name and your
-    route, which are stored with a trip while you share it."
+    route, which are stored with a trip while you share it and for up to 7 days
+    after it ends."
 *   Service providers, replacing the Google sentence: "Trip positions are
     stored by Google (the current version) or Cloudflare (the preview version
     being tested)."
@@ -523,13 +575,16 @@ approve in the pull request (the page's attorney review still applies):
     your planned arrival and overdue time, your positions at the precision your
     device reports, speed, battery level where your device provides it, and
     your check-ins."
-*   How long, replacing "until you ask us to delete them": "In the preview
+*   How long, added after the existing sentence, which gains the opening words
+    "In the current version,": "In the preview
     version a trip is deleted 7 days after it ends. A trip that is never ended
     is deleted 30 days after its last update. You can delete a trip yourself
     from the app at any time. Deleted trips remain in our provider's backups
     for up to 7 more days."
 *   Deletion by email: "We have no accounts, so to delete a trip by email, send
-    us its family link."
+    us its family link." (RJ scrambles the key from the link with a one-line
+    command in the README and deletes the matching trip in the dashboard's
+    database console.)
 *   The date at the top.
 
 Not added yet, because the screens that do them are not built: the start gate
@@ -576,12 +631,20 @@ only thing that runs on its own, once a day, at no cost.
 
 ### Target Files to Create/Modify
 
+#### 0. `docs/designs/mvp.md` (Modify)
+
+*   **Type / Scope**: The overall plan.
+*   **Proposed Changes**: Already updated in the same commit as this revision
+    so the two documents agree: no automatic ending of a silent trip; reads by
+    sequence number; 30-day deletion for trips never ended; deletion by email
+    uses the family link.
+
 #### 1. `tracker-service/package.json` (Create)
 
 *   **Type / Scope**: Settings for Node and Cloudflare's tool.
 *   **Proposed Changes**: `"private": true`, `"type": "module"`, and one
     development dependency, `wrangler`, pinned to the exact current version at
-    build time. Scripts: `"test": "node --test test/rules.test.js
+    build time. `package-lock.json` is committed beside it. Scripts: `"test": "node --test test/rules.test.js
     test/keys.test.js"`.
 
 #### 2. `tracker-service/wrangler.jsonc` (Create)
@@ -648,14 +711,8 @@ only thing that runs on its own, once a day, at no cost.
         calls the rules, runs the database statements, and returns JSON with
         `Access-Control-Allow-Origin` set to the caller's origin when it is in
         `ALLOWED_ORIGINS` (a comma-separated list).
-    *   Start: one statement inserts or raises today's counter and returns the
-        new count; if over the cap, answer `cap` (the raised count is left as
-        is). Then insert the trip.
-    *   Add: look up the trip; refuse if `item_count` is at 5,000; check each
-        item; in one batched call run "insert or ignore" for each accepted
-        item, then read back which `item_id`s now exist with a sequence number
-        above the trip's previous highest to tell `stored` from `had`; apply
-        `applyItems`; update the trip row.
+    *   Start: as written under "Settled Details" below.
+    *   Add: as written under "Settled Details" below.
     *   Read: look up the trip by family key hash; select items with `seq`
         greater than `after`, ordered by `seq`, limit 501 (the extra one sets
         `more`); shape the answer.
@@ -723,6 +780,100 @@ only thing that runs on its own, once a day, at no cost.
 *   **Proposed Changes**: What the folder is; RJ's steps below; how to change
     the invite code; how to see the request count; how to delete one trip by
     hand; how to undo everything.
+
+### Settled Details
+
+These remove choices a builder would otherwise have to make.
+
+**Field names.** The rules functions take and return a `trip` object whose
+fields are the database column names.
+
+**Start, in order.** Validate the body. Compare the invite code. Then run:
+
+```sql
+INSERT INTO counters(day, n) VALUES(?, 1)
+ON CONFLICT(day) DO UPDATE SET n = n + 1 RETURNING n;
+```
+
+`day` is the UTC date as `YYYY-MM-DD`. If `n` is over the cap, answer `cap`.
+Otherwise insert the trip. A trip insert that fails leaves the count raised;
+that is accepted.
+
+**Add, in three database calls.**
+
+1.  Select the trip by `trip_key_hash`.
+2.  One batched call with one statement per valid item: `INSERT OR IGNORE INTO
+    items (…) VALUES (…)`. Each statement's result reports how many rows it
+    changed: 1 means `stored`, 0 means `had`. (If the build finds that count is
+    not reported per statement, use `INSERT OR IGNORE … RETURNING seq`, which
+    returns a row only when stored.)
+3.  One update of the trip row that cannot lose a concurrent change, because
+    each part guards itself:
+
+```sql
+UPDATE trips SET
+  item_count    = item_count + ?1,
+  last_activity = ?2,
+  last_json     = CASE WHEN ?3 > last_t THEN ?4 ELSE last_json END,
+  last_t        = MAX(last_t, ?3),
+  overdue_at    = CASE WHEN ?5 > overdue_set_t THEN ?6 ELSE overdue_at END,
+  overdue_set_t = MAX(overdue_set_t, ?5),
+  status         = CASE WHEN ?7 > state_t THEN ?8  ELSE status END,
+  ended_at       = CASE WHEN ?7 > state_t THEN ?9  ELSE ended_at END,
+  end_learned_at = CASE WHEN ?7 > state_t THEN ?10 ELSE end_learned_at END,
+  state_t        = MAX(state_t, ?7)
+WHERE id = ?11;
+```
+
+`?1` is the number of items newly stored. `?3` to `?10` come from
+`applyItems`, which is given every valid item in the request and returns 0 for
+a time when there is nothing of that sort to apply. For `ended`, `?10` is the
+existing `end_learned_at` if the trip is already ended, otherwise now. For
+`resumed`, `?9` and `?10` are null. `last_activity` is set on every Add that
+reaches this step.
+
+**Clean-up, one batched call.**
+
+```sql
+DELETE FROM items WHERE trip_id IN (SELECT id FROM trips
+  WHERE (status <> 'underway' AND end_learned_at < ?1)
+     OR (status =  'underway' AND last_activity  < ?2));
+DELETE FROM trips
+  WHERE (status <> 'underway' AND end_learned_at < ?1)
+     OR (status =  'underway' AND last_activity  < ?2);
+DELETE FROM counters WHERE day < ?3;
+```
+
+`?1` is now minus 7 days, `?2` is now minus 30 days, `?3` is the UTC date 7
+days ago as `YYYY-MM-DD`.
+
+**Running locally.** A `.dev.vars` file (never committed) sets `INVITE_CODE`,
+`ALLOWED_ORIGINS` to `https://rjm0824.github.io,http://localhost:8788`,
+`DAILY_TRIP_CAP` to `3` and `DEBUG_META` to `1`. With `DEBUG_META` on, every
+answer also carries `"debug": { "rowsRead": n, "rowsWritten": n }` from the
+database's own report; it is off in the published copy. `local-check.mjs` takes
+the service address and invite code from the environment variables
+`TRACKER_URL` and `INVITE_CODE`. To test clean-up it backdates rows with `npx
+wrangler d1 execute DB --local --command "UPDATE trips SET …"` and then calls
+the local timer address that `--test-scheduled` provides. The test page is
+served locally with `python3 -m http.server 8788` from the repo root.
+
+**Test times.** The test page and `local-check.mjs` base item times on the
+`startedAt` the service returned, not on the device clock. The "late" position
+is dated 5 minutes before `startedAt`, inside the allowed 10.
+
+**Processing time.** Measured after publishing, from the Worker's processing
+time figures in the Cloudflare dashboard, by running the local check's
+100-item batch against the preview copy. If 100 does not fit in 10 ms, the cap
+is lowered to 50 by pull request; devices already handle `too_many` by halving.
+
+**Versions.** Node 20 or later. `package-lock.json` is created by `npm
+install` and is committed, so Cloudflare's publish uses the same tool
+versions. The `wrangler` version and the compatibility date are recorded in
+the pull request description.
+
+**Test page tidy-up.** If a check fails part-way, the page still deletes its
+test trip at the end.
 
 ### Build Phases
 

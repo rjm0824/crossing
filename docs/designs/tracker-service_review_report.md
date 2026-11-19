@@ -120,3 +120,37 @@ turn request logging off so internet addresses are not kept.
 The database choice; no live-push feature; overdue worked out at read time; the
 device deciding arrival; plain JavaScript with no build step; scrambled keys;
 nothing touching the live page or the Apps Script tracker.
+
+--------------------------------------------------------------------------------
+
+# Round 2: re-check of revision 2
+
+*   **Date:** 2026-11-19
+*   **Reviewer:** Implementation readiness (fresh)
+*   **Result:** Not ready as revision 2 stood: 1 blocker, 13 major, 9 nits.
+    Round 1 blockers B1, B4 and B6 closed; B2, B3 and B5 partly closed.
+*   **Action:** Revision 3 applies the fixes below. Per the review method's
+    limit of one re-check per stage, revision 3 has not been reviewed again;
+    what is left is checked during the build by the automated tests and the
+    local check script.
+
+| # | Finding | Fixed in revision 3 by |
+| --- | --- | --- |
+| BL1 | The "add" steps left choices open, and one reading could lose a "trip ended" for good after a failed update. | Exact database statements; state events re-applied from every valid item, so a retry repairs the trip; a guarded update that cannot lose a concurrent change. |
+| M1 | Resume, the 2-hour window and clean-up interacted in an undefined way. | Resume clears both end times; clean-up conditions written out; ties defined. |
+| M2 | Clean-up statements not written; could not be tested locally. | Statements written; local test backdates rows. |
+| M3 | An item timed slightly before the start was refused forever. | 10-minute allowance; test times based on the service's start time. |
+| M4 | A full trip could not be ended. | The cap refuses only positions, check-ins and waypoints, per item. |
+| M5 | "Same way as today's page" was wrong: today's page cannot read answers. | Exact call written; the old option named as not to be copied. |
+| M6 | Read answer for check-ins and other events undefined. | Defined. |
+| M7 | Required fields per kind, bad IDs, empty batches undefined. | Table and rules added. |
+| M8, M9 | Local testing could not work as written; two measurements had no method. | Local settings, debug figures and the measuring method written. |
+| M10 | Order of checks at Start not stated. | Stated; the counter statement written. |
+| M11 | Cruise speed missing for the family page's "Slow". | Optional `cruiseKt` added. |
+| M12 | Lock file and Node version not listed. | Listed. |
+| M13 | Conflicts with `mvp.md`. | `mvp.md` updated in the same commit. |
+| M14 | Privacy wording not exact. | Tightened; final wording is approved by RJ in the pull request. |
+
+Left for the build to confirm (marked "verify" by the reviewer): that the
+database reports rows changed per statement in a batch, and the local timer
+address.
