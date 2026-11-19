@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>PREVIEW · Tracker service test</title>
+<link rel="icon" href="../favicon.png">
+<style>
+:root{--bg:#0b1d2c;--panel:#112a3e;--line:#1f4260;--ink:#e8f1f7;--soft:#9fb7c9;--go:#2fbf71;--maybe:#f2b33d;--no:#e5484d;--accent:#5cc8ff}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{padding:0 env(safe-area-inset-right) 40px env(safe-area-inset-left)}
+.preview{background:var(--maybe);color:#231700;font-weight:800;font-size:13px;letter-spacing:.6px;text-align:center;padding:calc(5px + env(safe-area-inset-top)) 10px 5px}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:8px 0 4px}
+.lead{color:var(--soft);margin:0 0 14px;font-size:15px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+label{display:block;font-weight:600;margin:0 0 6px}
+label + .hint{color:var(--soft);font-size:13px;margin:-2px 0 8px}
+input{width:100%;font-size:17px;padding:13px 12px;border-radius:10px;border:1px solid var(--line);background:#0e2333;color:var(--ink)}
+input:focus{outline:3px solid var(--accent);outline-offset:1px}
+.field{margin-bottom:16px}
+button{width:100%;min-height:52px;font-size:18px;font-weight:700;border-radius:12px;border:1px solid var(--accent);background:var(--accent);color:#04121c;cursor:pointer}
+button:disabled{opacity:.55;cursor:default}
+#summary{font-weight:700;font-size:17px;margin:0 0 8px;min-height:1.4em}
+#summary.pass{color:var(--go)}#summary.fail{color:var(--no)}
+ol{list-style:none;margin:0;padding:0}
+li{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
+li:last-child{border-bottom:0}
+.tag{flex:0 0 auto;min-width:52px;text-align:center;font-weight:800;font-size:12px;letter-spacing:.5px;border-radius:999px;padding:3px 8px;margin-top:1px}
+.tag.pass{background:var(--go);color:#06131c}.tag.fail{background:var(--no);color:#fff}.tag.run{background:#38556b;color:#dfe9f0}
+.detail{display:block;color:var(--soft);font-size:13px;margin-top:2px;word-break:break-word}
+.foot{color:var(--soft);font-size:13px;text-align:center;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="preview">PREVIEW · test copy, not the live page</div>
+<main>
+  <h1>Tracker service test</h1>
+  <p class="lead">Starts a made-up test trip on the tracker service, checks every answer, then deletes the trip. Nothing on this page is saved: close it and both boxes are gone.</p>
+
+  <form class="card" id="form" autocomplete="off">
+    <div class="field">
+      <label for="addr">Service address</label>
+      <div class="hint">From Cloudflare. It ends in workers.dev.</div>
+      <input id="addr" type="url" inputmode="url" placeholder="https://crossing-tracker-preview….workers.dev" autocapitalize="off" spellcheck="false" required>
+    </div>
+    <div class="field">
+      <label for="invite">Invite code</label>
+      <div class="hint">From your password manager.</div>
+      <input id="invite" type="password" autocapitalize="off" spellcheck="false" required>
+    </div>
+    <button id="run" type="submit">Run all checks</button>
+  </form>
+
+  <section class="card" aria-live="polite">
+    <p id="summary">Not run yet.</p>
+    <ol id="list"></ol>
+  </section>
+
+  <p class="foot">Planning aid, not for navigation. The captain makes the call.</p>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var form = document.getElementById('form');
+  var runBtn = document.getElementById('run');
+  var list = document.getElementById('list');
+  var summary = document.getElementById('summary');
+  var base = '';
+  var failures = 0;
+
+  function normalise(addr) {
+    addr = addr.trim().replace(/\/+$/, '');
+    if (!/^https?:\/\//i.test(addr)) addr = 'https://' + addr;
+    return addr;
+  }
+
+  function call(path, body) {
+    return fetch(base + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(body)
+    }).then(function (res) {
+      return res.json().then(function (json) { return { status: res.status, json: json }; },
+        function () { return { status: res.status, json: null }; });
+    });
+  }
+
+  // Adds a line. All text goes in with textContent, never as HTML.
+  function line(text) {
+    var li = document.createElement('li');
+    var tag = document.createElement('span');
+    tag.className = 'tag run';
+    tag.textContent = '…';
+    var words = document.createElement('span');
+    words.textContent = text;
+    var detail = document.createElement('span');
+    detail.className = 'detail';
+    words.appendChild(detail);
+    li.appendChild(tag);
+    li.appendChild(words);
+    list.appendChild(li);
+    return function (ok, note) {
+      tag.className = 'tag ' + (ok ? 'pass' : 'fail');
+      tag.textContent = ok ? 'PASS' : 'FAIL';
+      if (note) detail.textContent = note;
+      if (!ok) failures++;
+      return ok;
+    };
+  }
+
+  function short(r) {
+    if (!r) return '';
+    var j = r.json && typeof r.json === 'object' ? JSON.stringify(r.json) : String(r.json);
+    if (j.length > 160) j = j.slice(0, 160) + '…';
+    return 'Service answered ' + r.status + ': ' + j;
+  }
+
+  function step(text, fn) {
+    var done = line(text);
+    return Promise.resolve().then(fn).then(function (res) {
+      var ok = res === true || (res && res.ok);
+      return done(ok, ok ? (res.note || '') : (res && res.note) || 'Unexpected answer');
+    }, function (err) {
+      done(false, 'Could not reach the service (' + (err && err.message ? err.message : 'network error') + '). Check the address.');
+      return false;
+    });
+  }
+
+  async function runAll(invite) {
+    var trip = null;
+    var seen = 0;
+    var familyKey = null;
+    var HOUR = 3600 * 1000;
+
+    try {
+      var started = await step('Start a test trip', async function () {
+        var now = Date.now();
+        var r = await call('/v1/start', {
+          invite: invite, boat: 'Test boat', captain: 'Test',
+          route: { name: 'Tracker test', dest: 'Green Turtle', cruiseKt: 26,
+            points: [{ name: 'Lake Worth Inlet', lat: 26.77, lon: -80.03 }, { name: 'Green Turtle', lat: 26.76, lon: -77.33 }] },
+          plannedArrival: now + 6 * HOUR, overdueAt: now + 8 * HOUR
+        });
+        if (r.status === 401) return { ok: false, note: 'Invite code not accepted. Check it matches the INVITE_CODE secret in Cloudflare (at least 12 characters).' };
+        if (r.status === 429) return { ok: false, note: 'Today\'s trip limit is reached. Try again after 7 or 8 PM Eastern.' };
+        if (r.status !== 200 || !r.json || !r.json.tripKey) return { ok: false, note: short(r) };
+        trip = r.json;
+        familyKey = trip.familyKey;
+        return true;
+      });
+      if (!started) return;
+      var t0 = trip.startedAt;
+      var pos1 = { id: 'p1', t: t0 + 1000, kind: 'pos', lat: 26.70, lon: -79.95, sog: 24.5, bat: 76 };
+      var check1 = { id: 'c1', t: t0 + 2000, kind: 'checkin' };
+
+      await step('Add a made-up position off Palm Beach', async function () {
+        var r = await call('/v1/add', { tripKey: trip.tripKey, items: [pos1] });
+        return r.json && r.json.results && r.json.results[0].r === 'stored' ? true : { ok: false, note: short(r) };
+      });
+
+      await step('Add an "All good" check-in', async function () {
+        var r = await call('/v1/add', { tripKey: trip.tripKey, items: [check1] });
+        return r.json && r.json.results && r.json.results[0].r === 'stored' ? true : { ok: false, note: short(r) };
+      });
+
+      await step('Send the same batch twice: second time it is already held', async function () {
+        var r = await call('/v1/add', { tripKey: trip.tripKey, items: [pos1, check1] });
+        var ok = r.json && r.json.results && r.json.results.every(function (x) { return x.r === 'had'; });
+        return ok ? { ok: true, note: 'Nothing stored twice.' } : { ok: false, note: short(r) };
+      });
+
+      await step('Family page read shows the position', async function () {
+        var r = await call('/v1/read', { familyKey: familyKey });
+        var j = r.json || {};
+        var ok = j.status === 'underway' && j.last && j.last.lat === 26.70 && j.items && j.items.length === 2;
+        if (ok) seen = j.items[j.items.length - 1].seq;
+        return ok ? { ok: true, note: 'Boat shown at 26.70, -79.95.' } : { ok: false, note: short(r) };
+      });
+
+      await step('A late-dated position still reaches the family page', async function () {
+        var late = { id: 'late1', t: t0 - 5 * 60 * 1000, kind: 'pos', lat: 26.76, lon: -80.02 };
+        var a = await call('/v1/add', { tripKey: trip.tripKey, items: [late] });
+        if (!(a.json && a.json.results && a.json.results[0].r === 'stored')) return { ok: false, note: short(a) };
+        var r = await call('/v1/read', { familyKey: familyKey, after: seen });
+        var j = r.json || {};
+        var ok = j.items && j.items.length === 1 && j.items[0].t === late.t;
+        if (ok) seen = j.items[0].seq;
+        return ok ? true : { ok: false, note: short(r) };
+      });
+
+      await step('Overdue time passed: family page says overdue', async function () {
+        // The earliest overdue time the service allows is the trip's start, which has passed.
+        var a = await call('/v1/add', { tripKey: trip.tripKey, items: [{ id: 'od1', t: t0 + 3000, kind: 'overdue', value: t0 }] });
+        if (!(a.json && a.json.results && a.json.results[0].r === 'stored')) return { ok: false, note: short(a) };
+        var r = await call('/v1/read', { familyKey: familyKey, after: seen });
+        var j = r.json || {};
+        return j.overdue === true && j.last ? { ok: true, note: 'Overdue, last position still shown.' } : { ok: false, note: short(r) };
+      });
+
+      await step('End the trip as arrived: no positions shown after', async function () {
+        var a = await call('/v1/add', { tripKey: trip.tripKey, items: [{ id: 'end1', t: t0 + 4000, kind: 'ended', value: 'arrived' }] });
+        if (!(a.json && a.json.status === 'arrived')) return { ok: false, note: short(a) };
+        var r = await call('/v1/read', { familyKey: familyKey });
+        var j = r.json || {};
+        var ok = j.status === 'arrived' && j.dest === 'Green Turtle' && !('items' in j) && !('last' in j) && !('route' in j);
+        return ok ? { ok: true, note: 'Shows "arrived at Green Turtle" only.' } : { ok: false, note: short(r) };
+      });
+
+      await step('Replace the family link: the old link stops working', async function () {
+        var n = await call('/v1/new-link', { tripKey: trip.tripKey });
+        if (!(n.json && n.json.familyKey)) return { ok: false, note: short(n) };
+        var old = await call('/v1/read', { familyKey: familyKey });
+        var fresh = await call('/v1/read', { familyKey: n.json.familyKey });
+        familyKey = n.json.familyKey;
+        var ok = old.status === 404 && old.json && old.json.error === 'not_found' && fresh.status === 200;
+        return ok ? true : { ok: false, note: 'Old link: ' + short(old) + ' New link: ' + short(fresh) };
+      });
+    } finally {
+      // Always tidy up, even if a check failed part-way.
+      if (trip) {
+        await step('Delete the test trip', async function () {
+          var r = await call('/v1/delete', { tripKey: trip.tripKey });
+          if (!(r.json && r.json.deleted === true)) return { ok: false, note: short(r) };
+          var after = await call('/v1/read', { familyKey: familyKey });
+          return after.status === 404 ? { ok: true, note: 'Gone from the service.' } : { ok: false, note: short(after) };
+        });
+      }
+    }
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var invite = document.getElementById('invite').value;
+    base = normalise(document.getElementById('addr').value);
+    failures = 0;
+    list.textContent = '';
+    summary.className = '';
+    summary.textContent = 'Running…';
+    runBtn.disabled = true;
+    try {
+      await runAll(invite);
+    } finally {
+      runBtn.disabled = false;
+      var total = list.children.length;
+      summary.className = failures ? 'fail' : 'pass';
+      summary.textContent = failures
+        ? failures + ' of ' + total + ' checks failed.'
+        : 'All ' + total + ' checks passed.';
+    }
+  });
+})();
+</script>
+</body>
+</html>

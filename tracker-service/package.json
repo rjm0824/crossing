@@ -1,0 +1,11 @@
+{
+  "name": "crossing-tracker-service",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/rules.test.js test/keys.test.js"
+  },
+  "devDependencies": {
+    "wrangler": "4.165.0"
+  }
+}

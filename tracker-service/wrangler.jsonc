@@ -1,0 +1,23 @@
+// Cloudflare settings for the tracker service (preview copy).
+// The invite code is a secret set in the Cloudflare dashboard. It is never in this file.
+{
+  "name": "crossing-tracker-preview",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-19",
+  "workers_dev": true,
+  "observability": { "enabled": false },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "crossing-preview",
+      "database_id": "204bdfdf-249b-465a-8f3f-de97716b8c10",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "ALLOWED_ORIGINS": "https://rjm0824.github.io",
+    "DAILY_TRIP_CAP": "50",
+    "POLL_SECONDS": "30"
+  },
+  "triggers": { "crons": ["0 8 * * *"] }
+}
