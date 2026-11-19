@@ -22,10 +22,10 @@
 <body>
 <main>
 <h1>Privacy Statement</h1>
-<p class="muted">Crossing App (working name), made by Ember Creative Agency · Last updated November 17, 2026</p>
+<p class="muted">Crossing App (working name), made by Ember Creative Agency · Last updated November 19, 2026</p>
 
 <div class="card">
-<p><strong>The short version:</strong> we only use your location while you're on a trip, and only to show your boat to the people you choose. We don't sell your information, we don't show ads, and your boat details stay on your phone.</p>
+<p><strong>The short version:</strong> we only use your location while you're on a trip, and only to show your boat to the people you choose. We don't sell your information and we don't show ads. Your boat details stay on your device, except the boat name, your first name and your route, which are stored with a trip while you share it and for up to 7 days after it ends.</p>
 </div>
 
 <h2>What the app is</h2>
@@ -34,6 +34,7 @@
 <h2>What we collect, and why</h2>
 <ul>
 <li><strong>Your location, only while a trip is running.</strong> When you tap Start trip, your phone sends its position every few minutes so the people you've shared the trip with can see where you are. They see your position, speed, time underway, arrival estimate and any check-ins you send, and, where the app supports it, your phone's battery level and signal strength (so they know why updates might pause). Sharing stops when you arrive, when the trip's link expires, or when you tap Stop sharing.</li>
+<li><strong>What is stored for a preview trip.</strong> In the preview version being tested, we store: boat name, your first name, the route, your planned arrival and overdue time, your positions at the precision your device reports, speed, battery level where your device provides it, and your check-ins.</li>
 <li><strong>The contacts you choose.</strong> If you add float plan contacts, their names and phone numbers are used only to send them your float plan and trip updates when you start a trip. We don't upload your address book.</li>
 <li><strong>Your boat and settings.</strong> Boat name, speed, fuel, limits and routes are saved on your device. If you use "Share my setup," those settings go into the link you send, and only whoever opens that link sees them.</li>
 <li><strong>Voice or typed setup answers.</strong> If you use the talk-or-type setup helper, what you say or type is sent to an AI service (Anthropic's Claude) to fill in your setup fields. It isn't used to advertise to you or sold.</li>
@@ -42,19 +43,19 @@
 <h2>Who we share it with</h2>
 <ul>
 <li><strong>The people you share a trip with.</strong> They see the trip details above for that trip only. The trip link doesn't need a login, so anyone who has the link can open it until it expires. Share it only with people you trust.</li>
-<li><strong>Service providers that make the app work:</strong> weather and tide data (for example Open-Meteo and NOAA), map and radar images (for example Esri, OpenSeaMap and RainViewer), Google (trip positions are stored in a private Google Sheet tied to your trip), and Anthropic (setup helper). They receive only what's needed to do their job, such as the area of your route, plus the technical details every website receives (like your device's IP address).</li>
+<li><strong>Service providers that make the app work:</strong> weather and tide data (for example Open-Meteo and NOAA), map and radar images (for example Esri, OpenSeaMap and RainViewer), Google and Cloudflare (trip storage), and Anthropic (setup helper). Trip positions are stored by Google (the current version) or Cloudflare (the preview version being tested). They receive only what's needed to do their job, such as the area of your route, plus the technical details every website receives (like your device's IP address).</li>
 <li>We don't use advertising or analytics trackers.</li>
 <li>We don't sell or rent your information, and we don't use it for advertising.</li>
 </ul>
 
 <h2>How long we keep it</h2>
-<p>Trip positions are kept so you can see your trip history, until you ask us to delete them. Settings stay on your device until you delete the app or clear them.</p>
+<p>In the current version, trip positions are kept so you can see your trip history, until you ask us to delete them. In the preview version a trip is deleted 7 days after it ends. A trip that is never ended is deleted 30 days after its last update. You can delete a trip yourself from the app at any time. Deleted trips remain in our provider's backups for up to 7 more days. Settings stay on your device until you delete the app or clear them.</p>
 
 <h2>Your choices</h2>
 <ul>
 <li>You can use the planning features without sharing your location at all.</li>
 <li>You can stop sharing at any time during a trip.</li>
-<li>You can ask us to delete your trip data by emailing us.</li>
+<li>You can ask us to delete your trip data by emailing us. We have no accounts, so to delete a trip by email, send us its family link.</li>
 </ul>
 
 <h2>Children</h2>
