@@ -41,12 +41,17 @@ in two design docs, both reviewed with Elephant-Goldfish:
 
 *   Done: MVP spec; tracker service design doc; RJ's free Cloudflare account
     (signed in with Google).
-*   In progress (RJ): create the D1 database `crossing-preview` and give its
-    Database ID to the build session. The ID is not a secret.
-*   Next: build the tracker service (`tracker-service.md`, Build Phases 1 to
-    3), one pull request, then RJ's Cloudflare steps from that doc.
-*   After that: split the preview page into files; design doc and review for
-    the Live screen and family page; then the list in `mvp.md`, "Build Order".
+*   Done Nov 19 (MVP step 2): the tracker service, PR #4. Preview copy is
+    published at `https://crossing-tracker-preview.rj-2a3.workers.dev`
+    (Worker `crossing-tracker-preview`, D1 database `crossing-preview`, invite
+    code set as a Cloudflare secret and kept in Keeper). All 10 checks on
+    `next/tracker-test.html` passed on RJ's iPhone. Every merge to `main`
+    republishes it. How it is set up: `tracker-service/README.md`.
+*   Still to check (RJ, 1 to 2 minutes each): CPU time per request in the
+    Worker's Metrics is under 10 ms (open question Q1); the daily clean-up ran
+    at 08:00 UTC the next morning.
+*   Next: split the preview page into files; design doc and review for the
+    Live screen and family page; then the list in `mvp.md`, "Build Order".
 *   Approved but not built: a guard in `.claude/settings.json` that blocks
     edits to the live `index.html` and `original/`; a `/pr-check` command
     (phone and iPad screenshots of `/next/`, a scan for secrets, the "Planning

@@ -910,6 +910,13 @@ Each phase leaves the repo in a working state.
 6.  Open `https://rjm0824.github.io/crossing/next/tracker-test.html`, paste the
     address and the invite code, and tap "Run all checks".
 
+**As done on Nov 19, 2026:** Cloudflare's setup form had no Root directory
+box, so the folder change went into the deploy command instead: `cd
+tracker-service && npm ci && npx wrangler d1 migrations apply DB --remote &&
+npx wrangler deploy`, with Root directory left empty. The secret was added as
+Production only, with "Secret" ticked. All 10 test-page checks passed on RJ's
+iPhone against `https://crossing-tracker-preview.rj-2a3.workers.dev`.
+
 **If step 3's publish fails on the database change:** open the database's
 Console in the dashboard, paste the contents of `0001_init.sql`, run it, set
 the deploy command to `npx wrangler deploy`, and retry. Claude walks RJ through
