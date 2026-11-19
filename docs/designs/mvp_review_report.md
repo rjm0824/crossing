@@ -213,3 +213,59 @@ RJ can object to any of these; otherwise they are applied as written.
 Fixed setup questions with the AI only filling forms; photo kept on the phone;
 Worker plus database over Supabase for the MVP; no build step; keeping Apps
 Script until promote.
+
+--------------------------------------------------------------------------------
+
+# Round 2: Stage 8 zoom-out on revision 2
+
+*   **Date:** 2026-11-19
+*   **Reviewer:** Zoom-out (fresh, via the installed EGM plugin)
+*   **Result:** Not ready to approve. 1 blocker, 9 major, 12 nits. No fixes
+    applied yet.
+*   **Round 1 blockers:** the privacy contradiction is closed. The false
+    overdue alarm is mostly closed, with three holes left (R1 to R3).
+
+## Blocker
+
+### S1. The dated build order is not credible **(RJ)**
+
+*   The tracker service and the Live screen are each meant to get a design doc
+    and review first, but the table builds them on Nov 20 and 21.
+*   Several days hold far more than one pull request that can be tested in 45
+    minutes: Nov 21 (file split, Live screen, send queue, iPad tracking), Nov
+    23 (nine onboarding screens, route builder, photo), Nov 24 (Plan screen
+    plus seven add-ons).
+*   Nov 20 has nothing RJ can test, because the service has no screen yet.
+*   The bottom bar, Family tab, Menu, Settings, Safety and My Boat belong to no
+    day.
+*   "It does not rewrite existing code" is overstated. Only the distance and
+    keep-awake functions carry over as they are. The verdict, position sending,
+    arrival and route-file functions have RJ's boat, route and limits written
+    into them and must be reworked.
+*   One spare day in ten, with Thanksgiving and two weekends inside.
+*   **Reviewer's recommendation:** Nov 29 is the target for Stage 1 only
+    (tracker, Live screen, family page, Start trip, on RJ's boat and route).
+    Stages 2 and 3 get an order, not dates.
+
+## Major
+
+| # | Item | Proposed fix |
+| --- | --- | --- |
+| R1 | Queued updates only send while the page is open in front. A captain who docks and pockets the phone stays "overdue" even after signal returns. | Say so everywhere. Add an arrival prompt: "Open the app when you have signal so family sees you arrived." Put it in the Start trip text. |
+| R2 | A half-mile arrival distance will miss ordinary arrivals; the boat ends at a dock, not at the route's last point. Today's page uses 4 nm. | Wider distance set per route, or "near the destination and stopped for some minutes". A near-destination overdue notice worded differently from a mid-crossing one. |
+| R3 | A late batch marks the trip arrived in the past, but the family link closes 2 hours after the trip ends, so followers may never see "Arrived". | Count the 2 hours from when the service learns of the end, or keep "Arrived at [time]" on the closed page with no position. |
+| R4 | Working out arrival on both the device and the service is redundant now that "trip ended" is queued. | The device decides; the service accepts a back-dated end. Drop the service-side rule from the MVP. |
+| R5 | The spec says the invite code is "never in the page" but friends' devices hold it. | Describe it as a shared, low-value code held on friends' devices. Only the AI key never leaves the server. |
+| R6 | Two privacy protections are dropped without being named: positions rounded to about 1.2 nm, and nothing sent until the boat is outside the inlet so the home dock never shows. Showing the last position for 2 hours after arrival also changes the "stops on arrival" hard rule. **(RJ)** | Keep a "don't share until N nm from the start" rule, and decide the 2 hours as an explicit rule change. |
+| R7 | The self-backup link has no size limit; trip tracks will not fit in a link. | Limit it to setup, followers and upcoming trips. |
+| R8 | iPad tracking needs the route and cruise speed, which the iPad does not have; a scannable code needs an added library. | Send a link through the share screen (AirDrop or text to self) carrying the trip key and those values. |
+| R9 | The calendar reminder for followers is not marked "to verify". | Test it in the same iPhone session as the Home Screen test. |
+
+## Nits
+
+"New link" and "Resume sharing" need matching service requests; reconcile
+"publishes on merge" with "live copy at promote"; one daily cap is enough;
+reuse the four boat outlines already in the onboarding mockup; list the
+existing `privacy.html` lines to remove; say how a tapped route marks Gulf
+Stream points for the north-wind rule; carry the "Apple Find My as a backup"
+tip into setup.
