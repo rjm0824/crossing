@@ -32,7 +32,9 @@ device sent and cannot call for help.
     Secret, Production only. The code is in Keeper.
 *   **Test:** open
     `https://rjm0824.github.io/crossing/next/tracker-test.html`, paste the
-    address and the invite code, tap **Run all checks**. All 10 should pass.
+    address and the invite code, tap **Run all checks**. All 11 should pass.
+    The 100-position line is the processing-time check: afterwards, Worker →
+    Metrics → **Median CPU time** should be under 10 ms (the free-plan limit).
 
 **Optional: rebuild only when this folder changes.** Today Cloudflare
 republishes after every merge to `main`, which is harmless and free. To narrow

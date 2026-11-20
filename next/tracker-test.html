@@ -192,6 +192,27 @@ li:last-child{border-bottom:0}
         return ok ? true : { ok: false, note: short(r) };
       });
 
+      await step('Send a 100-position batch: all stored', async function () {
+        // The biggest batch a phone may send after a long gap with no signal.
+        // Its processing time shows in Cloudflare, Metrics, Median CPU time.
+        var big = [];
+        for (var i = 0; i < 100; i++) {
+          big.push({ id: 'b' + i, t: t0 + 10000 + i * 1000, kind: 'pos',
+            lat: 26.70 - i * 0.001, lon: -79.95 + i * 0.01, sog: 24, bat: 75 });
+        }
+        var started = performance.now();
+        var r = await call('/v1/add', { tripKey: trip.tripKey, items: big });
+        var ms = Math.round(performance.now() - started);
+        var res = r.json && r.json.results;
+        if (r.status === 400 && r.json && r.json.error === 'too_many') {
+          return { ok: false, note: 'The service refused 100 at once (too_many).' };
+        }
+        var stored = res ? res.filter(function (x) { return x.r === 'stored'; }).length : 0;
+        return stored === 100
+          ? { ok: true, note: '100 of 100 stored. Round trip ' + ms + ' ms (includes your signal; CPU time is in Cloudflare Metrics).' }
+          : { ok: false, note: stored + ' of 100 stored. ' + short(r) };
+      });
+
       await step('Overdue time passed: family page says overdue', async function () {
         // The earliest overdue time the service allows is the trip's start, which has passed.
         var a = await call('/v1/add', { tripKey: trip.tripKey, items: [{ id: 'od1', t: t0 + 3000, kind: 'overdue', value: t0 }] });
