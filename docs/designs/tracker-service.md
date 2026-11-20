@@ -91,9 +91,10 @@ record with its own two secrets.
 
 ## Open Questions
 
-*   **Q1. Processing time.** The free plan allows 10 ms of processing per
-    request. A 100-item batch must be measured against it in the build. If it
-    does not fit, the batch cap is lowered.
+*   **Q1. Processing time. Closed Nov 20, 2026.** The free plan allows 10 ms
+    of processing per request. Measured on the published preview copy on Nov
+    20, 2026, including a 100-position batch: CPU time P50 2.37 ms, P99
+    5.69 ms. That fits, so the batch cap stays at 100.
 
 ## Critical User Journeys (CUJs)
 
@@ -465,7 +466,7 @@ share them.
 | Database calls per request | 50; a batched call counts as one | 3 at most | 3 at most |
 | Values per database statement | 100 | 12 | 12 |
 | Database size | 500 MB | Under 5 MB | Under 10 MB |
-| Processing time per request | 10 ms | To measure (Q1) | To measure (Q1) |
+| Processing time per request | 10 ms | P50 2.37 ms, P99 5.69 ms (measured Nov 20, Q1) | Same per request |
 | Daily timers per account | 5 | 1 | 1 |
 
 Assumptions: each boat has 3 followers reading every 30 seconds for 6 hours
@@ -862,6 +863,8 @@ is dated 5 minutes before `startedAt`, inside the allowed 10.
 time figures in the Cloudflare dashboard, by running the local check's
 100-item batch against the preview copy. If 100 does not fit in 10 ms, the cap
 is lowered to 50 by pull request; devices already handle `too_many` by halving.
+Result (Nov 20, 2026, Q1 closed): P50 2.37 ms, P99 5.69 ms including a
+100-position batch, so the cap stays at 100.
 
 **Versions.** Node 20 or later. `package-lock.json` is created by `npm
 install` and is committed, so Cloudflare's publish uses the same tool
