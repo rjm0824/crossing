@@ -47,11 +47,18 @@ in two design docs, both reviewed with Elephant-Goldfish:
     code set as a Cloudflare secret and kept in Keeper). All 10 checks on
     `next/tracker-test.html` passed on RJ's iPhone. Every merge to `main`
     republishes it. How it is set up: `tracker-service/README.md`.
-*   Still to check (RJ, 1 to 2 minutes each): CPU time per request in the
-    Worker's Metrics is under 10 ms (open question Q1); the daily clean-up ran
-    at 08:00 UTC the next morning.
-*   Next: split the preview page into files; design doc and review for the
-    Live screen and family page; then the list in `mvp.md`, "Build Order".
+*   Closed Nov 20 (open question Q1 in `tracker-service.md`): CPU time
+    measured on the published preview copy, including a 100-position batch,
+    was P50 2.37 ms and P99 5.69 ms against the free plan's 10 ms limit. The
+    batch cap stays at 100.
+*   Still to check (RJ, 1 to 2 minutes): the daily clean-up ran at 08:00 UTC
+    the next morning.
+*   Nov 20 (MVP build order row 2): the preview page `next/index.html` is
+    split into `next/css/app.css` and `next/js/` files, no change in
+    behaviour. File addresses carry a version tag (`?v=20261120`); bump it in
+    `next/index.html` whenever a file changes so phones fetch the new copy.
+*   Next: design doc and review for the Live screen and family page; then the
+    list in `mvp.md`, "Build Order".
 *   Approved but not built: a guard in `.claude/settings.json` that blocks
     edits to the live `index.html` and `original/`; a `/pr-check` command
     (phone and iPad screenshots of `/next/`, a scan for secrets, the "Planning
