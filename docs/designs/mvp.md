@@ -93,7 +93,8 @@ link, and holds the two secrets the app needs (an invite code and the AI key).
     showing any position at once. It shows "Arrived at [place] at [time]" for 2
     hours, then "This trip has ended."
 *   **The home dock is not shown:** no position is sent until the boat is about
-    1 nm from where the trip started.
+    500 yards from where the trip started (RJ, Nov 25; see
+    `live-family.md`).
 *   **Trips:** a captain can save trips ahead of time, see past trips, and copy
     a past trip as a new one.
 *   **No signal:** positions, check-ins and the "trip ended" message recorded
@@ -169,7 +170,7 @@ objected and can change any of them):**
 | W11 | Battery level is shown only where the phone provides it. "Signal" is replaced by "No update for X min". | iPhone Safari does not give web pages battery or signal. |
 | W12 | Trips beyond the forecast show "Forecast opens [date]" with no typical-conditions numbers. | The app has no historical data. |
 | W13 | Service updates publish when a pull request that changes the service folder is merged. RJ connects his Cloudflare account to the repo once. | No Cloudflare key in the repo or in chat. |
-| W15 | No position is sent until the boat is about 1 nm from the trip's start. The captain can turn this off per trip. | Today's page sends nothing until the boat is outside the inlet, so the home dock never shows. This keeps that protection for any route. |
+| W15 | No position is sent until the boat is about 500 yards from the trip's start (changed from 1 nm by RJ on Nov 25). The built-in routes also keep today's line (outside the inlet; past Green Turtle on the trip home). The captain can turn this off per trip. | Today's page sends nothing until the boat is outside the inlet, so the home dock never shows. This keeps that protection for any route. |
 | W16 | Loading the app with no signal is added after the eight steps and before promote. | It matters on the water (a restarted iPad cannot reopen the page offshore), but a saved copy can show an old version during daily testing. |
 
 ## Open Questions
@@ -188,7 +189,8 @@ objected and can change any of them):**
     Nov 29 or 30. Stage 1 (Start trip, Live screen, family page) goes into the
     preview before then, and that crossing is tracked with the preview; it is
     the real trip promote needs. If Stage 1 is not ready by Sat Nov 28, RJ
-    fixes the old Apps Script tracker that day and uses the live page.
+    fixes the old Apps Script tracker that day and uses the live page. The plan for it is
+    `live-family.md`.
 
 ## Critical User Journeys (CUJs)
 
@@ -566,7 +568,10 @@ trip.
 *   **Check-in:** "Send 'All good' to family" adds a check-in with the time.
 *   **Waypoints:** passing a named point is detected from the continuous GPS
     readings, not only the uploaded ones.
-*   **Arrival:** the trip ends when the boat is inside the route's arrival
+*   **Arrival (changed Nov 25, see `live-family.md` D11):** for now the trip
+    ends within 500 yards of the route's last point, so followers see the
+    boat come in. The earlier rule, kept here for the Routes step to
+    revisit: the trip ends when the boat is inside the route's arrival
     distance of the destination, or is within 4 nm of it and has been stopped
     for 10 minutes (the boat usually ends at a dock, not at the route's last
     point). Presets set their own arrival distance; a tapped route defaults to
@@ -574,8 +579,8 @@ trip.
     "Resume sharing" undoes it.
 *   **After arrival** the screen says "Open this page when you have signal so
     your followers see you arrived" until the queue is empty.
-*   **Start gate:** no position is sent until the boat is about 1 nm from the
-    start (W15). The family page shows "Trip started. Position appears once
+*   **Start gate:** no position is sent until the boat is about 500 yards
+    from the start (W15). The family page shows "Trip started. Position appears once
     underway."
 *   **Track from another device:** offers a link carrying the trip key, the
     route and the cruise speed. If two devices send positions, the service
@@ -804,9 +809,9 @@ later stages get dates once Stage 1 shows the real pace.
 | 1 | Nov 20 | Design doc and review: tracker service | Read the summary and decide the findings. Create a free Cloudflare account (about 15 minutes, guided). |
 | 2 | Nov 21 | Pull request: split the preview page into files, no change in behaviour | Check the preview looks and works as before. |
 | 3 | Nov 21 | Pull request: tracker service, preview copy, with a small test page that starts and reads a trip | Connect the repo to Cloudflare; add the invite code as a setting; open the test page. |
-| 4 | Nov 22 | Design doc and review: Live screen and family page | Read the summary and decide the findings. Run the calendar test (Q2). |
-| 5 | Nov 23 | Pull request: Start trip, Live screen, send queue, start gate | Test in a car. |
-| 6 | Nov 24 | Pull request: family page, reminder, "Track from another device" | Open the family link on a second phone; track from the iPad. |
+| 4 | Nov 25 (done) | Design doc and review: Live screen and family page (`live-family.md`) | Read the summary and decide the findings. Run the calendar test (Q1). |
+| 5 | Nov 27 | Pull request: Start trip, Live screen, send queue, start gate, plain family page (end to end) | Practice mode on the iPad and phone. |
+| 6 | Nov 28 | Pull request: family text, reminder, delete trip, family page polish. "Track from another device" and the other extras are Sprint 2 in `live-family.md`. | A short run on the water. |
 
 After Stage 1, RJ can start a trip, share a family link that closes, and track
 from the helm iPad.

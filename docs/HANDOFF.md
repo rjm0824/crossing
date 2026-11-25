@@ -2,7 +2,35 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
-## Update: Nov 19, 2026 (read this first)
+## Update: Nov 25, 2026 (read this first, then the Nov 19 update)
+
+**Next build session: pull request 1 of `docs/designs/live-family.md`, on Opus
+5.5.** Read its One-Page Summary first.
+
+*   RJ crosses home from Abaco to Palm Beach on about Nov 29 or 30 and tracks
+    it with the preview and the new tracker service. That is the real trip
+    promote needs. The old Apps Script tracker stopped accepting positions on
+    Nov 25; why is not known.
+*   Fri Nov 27: pull request 1, end to end (Start trip, Live page, send
+    queue, start gate, plain family page, practice mode), ready for RJ by
+    3:00 PM. Sat Nov 28: pull request 2 (family text, "Remind me", delete
+    trip, polish), ready by noon. Sprint 2 (the rest) only if ahead.
+*   Decided by RJ on Nov 25: start gate is 500 yards plus today's line for
+    the direction; the trip ends within 500 yards of the route's last point;
+    Start trip is two steps; this crossing is started on the helm iPad; no
+    phone numbers on the overdue notice until checked; Guana Cay stays as the
+    route's first point; the app should know a captain's home port, kept in
+    the profile on the device only (`live-family.md` D15: Saturday if time
+    allows, first to drop, else Sprint 2).
+*   Calendar test (`mvp.md` Q1) is closed: use a calendar file made on the
+    phone.
+*   Review: `docs/designs/live-family_review_report.md`. Round 1 findings
+    are applied in revision 2 of the doc; revision 2 has not been reviewed
+    again.
+*   The Plan page (`next/index.html`) gains one button only. Its old
+    tracking code stays until Sprint 2.
+
+## Update: Nov 19, 2026
 
 **Start here for the next build session.** The plan and all decisions are now
 in two design docs, both reviewed with Elephant-Goldfish:
@@ -69,6 +97,8 @@ in two design docs, both reviewed with Elephant-Goldfish:
     design doc and review on Fable 5.2 (Nov 25 to 26); pull request for Start
     trip, Live screen, send queue and start gate (Fri Nov 27); pull request
     for the family page, reminder and "Track from another device" (Sat Nov 28).
+    **Changed later on Nov 25:** see the Nov 25 update at the top and
+    `live-family.md` for the split now in force.
 *   **For the Live screen and family page design doc (RJ, Nov 25):**
     *   A recenter icon on the map, next to + and −. During a trip it
         centres on the boat; before a trip it shows the whole route. Same
