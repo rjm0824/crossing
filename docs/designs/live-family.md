@@ -128,27 +128,30 @@ It is a planning aid, never a navigation tool. The captain decides.
 
 ## Decisions for RJ
 
-Each has a recommendation. The draft is written as if the recommendation is
-accepted.
+RJ decided D1, D2, D3, D5 and D6 on Nov 25. D4, D7 and D8 are recommendations
+he has not objected to.
 
-*   **D1. Trip home privacy and the start gate.** Recommendation: keep both
-    rules. A position is recorded only when the boat is (a) more than 1 nm
-    from where the trip started (W15) **and** (b) past today's line for that
+*   **D1. Trip home privacy and the start gate (decided; distance set by
+    RJ).** Keep both rules. A position is recorded only when the boat is (a)
+    more than 500 yards (about a quarter of a nautical mile) from where the
+    trip started **and** (b) past today's line for that
     direction: west of 77.36°W on the trip home (past Green Turtle), east of
     80.02°W on the trip over (outside the inlet). Both rules are checked on
-    every reading, so if the boat turns back, it is hidden again. The 1 nm
-    rule alone would put the first dot 1 nm from the Abaco house, which is
-    weaker than today. A switch on the Ready screen, "Hide my start", is on by
+    every reading, so if the boat turns back, it is hidden again. This changes W15 in
+    `mvp.md` from about 1 nm to 500 yards: RJ's view is that privacy matters
+    but the distance need not be a mile. The distance rule alone would put the
+    first dot 500 yards from the Abaco house, which is why the line stays. A switch on the Ready screen, "Hide my start", is on by
     default; turning it off shares from the dock and is meant for test runs
     only.
-*   **D2. Start trip is two steps.** The Plan page's "Start trip & share with
+*   **D2. Start trip is two steps (approved).** The Plan page's "Start trip & share with
     family" button opens the Live page's Ready screen (route, planned arrival,
     overdue time, interval). "Start trip" there talks to the service. "Send
     link to family" is a separate tap after the trip exists. Reason: iPhone
     only opens the share screen directly from a tap, not after waiting for the
     service (to verify on RJ's iPhone in pull request 2). `mvp.md` CUJ 6 had
     one tap.
-*   **D3. Distance left is measured along the named points on both screens.**
+*   **D3. Distance left is measured along the named points on both screens
+    (approved).**
     The service accepts at most 30 route points, each with a name. The
     preview's detailed line has 66 unnamed points. So the trip is started with
     the 9 named points, and both the Live screen and the family page measure
@@ -161,11 +164,11 @@ accepted.
     one position a minute is under 100 KB, the simple store saves at once, and
     it is much less code to get right by Friday. Past-trip tracks for My Trips
     (row 14) can move to the database then.
-*   **D5. For this crossing, start the trip on the helm iPad.** Then "Track
+*   **D5. For this crossing, start the trip on the helm iPad (approved).** Then "Track
     from another device" is not needed on the day, and it is the first thing
     to drop if Saturday runs short.
-*   **D6. No phone numbers on the overdue notice yet.** It says "call the
-    Coast Guard". Recommendation: add numbers only after RJ or his attorney
+*   **D6. No phone numbers on the overdue notice yet (approved).** It says
+    "call the Coast Guard". Numbers are added only after RJ or his attorney
     supplies and checks them.
 *   **D7. The reminder holds the family link.** A follower's calendar entry
     needs the link to be useful. With "Add to Google Calendar" the entry, and
@@ -347,7 +350,7 @@ recorded only when all of these are true:
 
 1.  The trip is underway (started, not ended).
 2.  "Hide my start" is off, **or both**:
-    *   the reading is more than 1 nm from the trip's start point (the first
+    *   the reading is more than 500 yards from the trip's start point (the first
         reading after Start trip, kept on the device only), and
     *   trip home: longitude is west of 77.36°W; trip over: longitude is east
         of 80.02°W. These are the two lines today's page uses.
@@ -652,11 +655,11 @@ with signal." `privacy.html` already promises this for preview trips.
 
 ## Alternatives Considered
 
-### Alternative A: The 1 nm Start Gate Alone
+### Alternative A: The Distance-from-Start Gate Alone
 
 *   **Pros**: One rule for every route, as W15 says.
-*   **Cons**: On the trip home the first dot would sit 1 nm from the Abaco
-    house, and the trail points back at it. Today's page shows nothing until
+*   **Cons**: On the trip home the first dot would sit 500 yards from the
+    Abaco house, and the trail points back at it. Today's page shows nothing until
     past Green Turtle, about 15 nm on.
 *   **Reason for Rejection**: Recommendation: reject. It is weaker than what
     RJ has today.
@@ -736,7 +739,7 @@ with signal." `privacy.html` already promises this for preview trips.
 **Pull request 1:**
 
 *   "In the preview version, your position is not recorded or sent until you
-    are more than about 1 nautical mile from where you started and past the
+    are more than about 500 yards from where you started and past the
     start of the open-water part of your route. Sharing stops shortly before
     your destination."
 *   "Your invite code, the current trip and updates waiting to be sent are
@@ -875,7 +878,7 @@ of the 100,000 free daily requests.
 *   **Type / Scope**: Statement and docs.
 *   **Proposed Changes**: Privacy wording for pull request 1. HANDOFF: where
     the work stands. `mvp.md`: close Q1 with the Nov 25 result; note D1 to D4
-    against W15, CUJ 6, Step 6 and "What Lives Where"; new dates for rows 4
+    against W15 (now 500 yards), CUJ 6, Step 6 and "What Lives Where"; new dates for rows 4
     to 6.
 
 #### Pull Request 2 (Sat Nov 28)
@@ -930,6 +933,20 @@ of the 100,000 free daily requests.
 *   **Map library:** Leaflet 1.9.4 from the same address as today, with its
     published integrity value added on the Live and family pages.
 *   **No new libraries. No build step.**
+
+### Build Reminders
+
+Things the build sessions and RJ must not lose track of:
+
+*   **Phone numbers on the overdue notice (D6).** The notice ships without
+    any. Before promote, RJ or his attorney supplies and checks the numbers
+    to show (for example the US Coast Guard and the Bahamas rescue service),
+    and they are added to the family page and the family text.
+*   **Start the crossing on the helm iPad (D5),** with "Hide my start" on.
+*   **`mvp.md` W15** changes from about 1 nm to 500 yards in pull request 1,
+    with `privacy.html`.
+*   **The overdue wording and the family text** are drafts until RJ's
+    attorney has seen them.
 
 ### Build Phases
 
@@ -996,11 +1013,11 @@ the old tracker and use the live page.
         point it is 0; a position beside a long segment measures to the
         segment, not the nearest corner.
     *   Gate, trip home: Guana Cay hidden; Whale Cay Passage hidden; a
-        position at 77.34°W hidden; a position at 77.40°W more than 1 nm from
-        the start shown; a position at 77.40°W within 1 nm of the start
-        hidden; the same positions with "Hide my start" off shown.
+        position at 77.34°W hidden; a position at 77.40°W more than 500 yards
+        from the start shown; a position at 77.40°W within 500 yards of the
+        start hidden; 450 yards hidden and 550 yards shown; the same positions with "Hide my start" off shown.
     *   Gate, trip over: a position west of 80.02°W hidden; east of it and
-        more than 1 nm from the start shown.
+        more than 500 yards from the start shown.
     *   A boat that passes the line and turns back is hidden again.
     *   Arrival: 1.9 nm from the inlet true; 2.5 nm false; one reading inside
         does not end the trip, two do.
