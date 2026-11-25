@@ -175,17 +175,22 @@ objected and can change any of them):**
 
 ## Open Questions
 
-*   **Q1. Closed Nov 25, 2026 for iPhone.** A calendar file made on the phone
-    opens "Add to Calendar" with the alert set, and the alert went off on
-    time. A file packed into the link does nothing. A Google Calendar link
-    works with the follower's own default alert. Android is not tested.
-    Original question: does a calendar entry with an alert open correctly
-    from a web page on iPhone and Android? The follower reminder and the trip reminder depend
-    on it. To test on RJ's iPhone before the family page is built. If it does
-    not work, the fallback is the overdue time written in the Start trip text.
-*   **Q2. Answered Nov 25, 2026.** RJ's crossing home on about Nov 29 or 30
-    is the real trip, tracked with the preview. `live-family.md` is scoped to
-    it.
+*   **Q1. Answered Nov 25, 2026** (RJ's iPhone, Safari). A web page can add
+    a calendar entry with an alert. A calendar file the page makes on the
+    phone opens iPhone's "Add to Calendar" screen with the time and the alert
+    already set ("At time of event"), and the alert went off on time. A
+    calendar file stored on the website works the same way. A calendar file
+    packed into the link itself does nothing in iPhone Safari. A Google
+    Calendar link opens the Google Calendar app with the entry filled in, but
+    the alert is the follower's own Google default. **Decision:** the follower
+    reminder and the trip reminder use the file made on the phone, with "Add
+    to Google Calendar" as a second button. Android not tested.
+*   **Q2. Answered Nov 25, 2026: yes.** RJ crosses home from Abaco on about
+    Nov 29 or 30. Stage 1 (Start trip, Live screen, family page) goes into the
+    preview before then, and that crossing is tracked with the preview; it is
+    the real trip promote needs. If Stage 1 is not ready by Sat Nov 28, RJ
+    fixes the old Apps Script tracker that day and uses the live page. The plan for it is
+    `live-family.md`.
 
 ## Critical User Journeys (CUJs)
 

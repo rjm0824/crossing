@@ -644,7 +644,9 @@ off on time. A file packed into the link did nothing. A Google Calendar link
 works but uses the follower's own default alert (Sprint 2).
 
 *   **"Remind me at 2:10 PM".** The page builds a calendar file on the phone
-    (Test 2 in `next/calendar-test.html`) and opens it. Title: "Check on
+    and opens it (Test 2 of the calendar test page, which was removed from
+    the preview after the test; its code is in the repo history at commit
+    `3678d9d`, file `next/calendar-test.html`). Title: "Check on
     RJ's trip". Start: the overdue time. Length: 15 minutes. Alert: at the
     start. Notes: "Open the link to see where the boat is. The overdue time
     may have changed." Link: the family link.
@@ -714,6 +716,8 @@ code is removed.
 ### Fallback
 
 Why the old tracker stopped accepting positions on Nov 25 is not known (Q2).
+What is known: two test points, sent with the key pasted from the password
+manager, never reached the Crossing Tracker sheet.
 
 *   **The fallback needs no code:** the text RJ sends before leaving, with
     planned arrival and overdue time, plus Apple Find My on his phone. This
@@ -968,7 +972,12 @@ front for 7 hours make about 4,200 of the 100,000 free daily requests.
 
 *   **Type / Scope**: The reminder.
 *   **Proposed Changes**: `calendarFile(trip, link)` returns the file text
-    (`fold` and `esc` copied from `next/calendar-test.html`);
+    (`fold`, `esc`, `utc` and the file's lines copied from
+    `next/calendar-test.html` at commit `3678d9d`: a `VCALENDAR` holding one
+    `VEVENT` with `UID`, `DTSTAMP`, `DTSTART`, `DTEND`, `SUMMARY`,
+    `DESCRIPTION`, `URL` and a `VALARM` with `ACTION:DISPLAY` and
+    `TRIGGER:-PT0M`; opened with `location.href` set to a `text/calendar`
+    blob address);
     `openCalendarFile(text)`.
 
 ##### 12. `next/js/live.js`, `next/live.html`, `next/js/family.js`, `next/family.html` (Modify)
@@ -989,9 +998,9 @@ front for 7 hours make about 4,200 of the 100,000 free daily requests.
     port the ending is unchanged; with one 3 nm past the last point the trip
     does not end at the last point and ends 400 yards from the home port.
 
-##### 13. `next/calendar-test.html`, `next/calendar-test.ics` (Delete); `privacy.html`, `docs/HANDOFF.md`, `next/trip-test.html` (Modify)
+##### 13. `privacy.html`, `docs/HANDOFF.md`, `next/trip-test.html` (Modify)
 
-*   **Type / Scope**: Tidy-up, statement, tests.
+*   **Type / Scope**: Statement, handoff note, tests.
 *   **Proposed Changes**: Saturday's privacy line. Checks for
     `calendarFile`. `next/tracker-test.html` stays until promote.
 
@@ -1043,7 +1052,7 @@ Saturday. Nothing else in pull request 1 is optional.
 5.  Fixes from Friday's test.
 6.  Family text and "Send link to family"; "Delete this trip".
 7.  `calendar.js` and "Remind me".
-8.  Slow and Stopped rows, time-zone names, `privacy.html`, tidy-up.
+8.  Slow and Stopped rows, time-zone names, `privacy.html`.
 9.  Home port, only if steps 5 to 8 are done and checked by 10:00 AM. It is
     built so that with no home port set, nothing changes from Friday's
     behaviour. If it is not solid by noon it is left out of the pull
@@ -1166,7 +1175,8 @@ the first two taught:
     finding was resolved.
 *   `docs/mockups/Main.dc.html`: the Live and Family screens.
 *   `next/js/tracking.js`: today's gate lines and keep-awake code.
-*   `next/calendar-test.html`: the reminder methods RJ tested on Nov 25.
+*   `next/calendar-test.html` at commit `3678d9d` (since removed): the
+    reminder methods RJ tested on Nov 25.
 
 ### Future Improvements
 
