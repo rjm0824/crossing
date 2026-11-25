@@ -286,7 +286,9 @@ Everything else has a proposed fix that can be applied without a decision.
 3.  **B3:** RJ chose a different fix. The trip ends within 500 yards of the
     route's last point, so followers see the boat come into the inlet, and
     "arrived at Palm Beach Inlet" is then true. The app does not know where
-    the dock is; nothing is shared after the end.
+    the dock is; nothing is shared after the end. RJ then asked for the app
+    to know a captain's home port, in the profile (doc D15). It is designed
+    as the first Sprint 2 item and kept on the device only.
 4.  **M5:** Guana Cay stays as the first point. It is a large island and
     followers want to see the boat reach or leave it.
 5.  **B2:** the cause is not known. The fallback is the no-code one (RJ's

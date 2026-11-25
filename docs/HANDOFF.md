@@ -19,7 +19,8 @@ Everything a new build session needs, pulled from the planning chats. Decisions 
     the direction; the trip ends within 500 yards of the route's last point;
     Start trip is two steps; this crossing is started on the helm iPad; no
     phone numbers on the overdue notice until checked; Guana Cay stays as the
-    route's first point.
+    route's first point; the app should know a captain's home port, kept in
+    the profile on the device only (`live-family.md` D15, Sprint 2).
 *   Calendar test (`mvp.md` Q1) is closed: use a calendar file made on the
     phone.
 *   Review: `docs/designs/live-family_review_report.md`. Round 1 findings
