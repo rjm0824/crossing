@@ -57,14 +57,32 @@ in two design docs, both reviewed with Elephant-Goldfish:
     split into `next/css/app.css` and `next/js/` files, no change in
     behaviour. File addresses carry a version tag (`?v=20261120`); bump it in
     `next/index.html` whenever a file changes so phones fetch the new copy.
+*   Nov 25: the split preview page passed RJ's iPhone check (PR #8).
+*   Nov 25: calendar question answered on RJ's iPhone (test page from PR #9,
+    removed afterwards); see `mvp.md`, Q1.
+*   Nov 25: the old Apps Script tracker is not accepting positions. Two test
+    points, sent with the key pasted from the password manager, never reached
+    the Crossing Tracker sheet. Not fixed. RJ crosses home about Nov 29 to 30.
+    Plan: track that crossing with the preview's new Live screen and family
+    link. If they aren't ready by Sat Nov 28, fix the old tracker that day.
+*   **Schedule to that crossing (RJ, Nov 25):** Live screen and family page
+    design doc and review on Fable 5.2 (Nov 25 to 26); pull request for Start
+    trip, Live screen, send queue and start gate (Fri Nov 27); pull request
+    for the family page, reminder and "Track from another device" (Sat Nov 28).
+*   **For the Live screen and family page design doc (RJ, Nov 25):**
+    *   A recenter icon on the map, next to + and −. During a trip it
+        centres on the boat; before a trip it shows the whole route. Same
+        icon on the Plan screen map.
+    *   Every button shows it was pressed, then the real result: "Sending…",
+        then "✓ Received" or "Couldn't send, will retry".
+    *   Never say "sent" or "set" until it has happened. ("Send test point"
+        and the calendar test page both did.)
 *   Next: design doc and review for the Live screen and family page; then the
     list in `mvp.md`, "Build Order".
 *   Approved but not built: a guard in `.claude/settings.json` that blocks
     edits to the live `index.html` and `original/`; a `/pr-check` command
     (phone and iPad screenshots of `/next/`, a scan for secrets, the "Planning
     aid" line, a drafted pull request description).
-*   Still to test on RJ's iPhone: a calendar entry with an alert opened from a
-    web page (needed for the follower reminder).
 
 **Which model for what:** build on Opus 5.5 in a fresh session. Use Fable 5.2
 for the Live screen and family page design doc and review, and for a review of

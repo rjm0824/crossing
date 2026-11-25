@@ -174,12 +174,21 @@ objected and can change any of them):**
 
 ## Open Questions
 
-*   **Q1. Does a calendar entry with an alert open correctly from a web page**
-    on iPhone and Android? The follower reminder and the trip reminder depend
-    on it. To test on RJ's iPhone before the family page is built. If it does
-    not work, the fallback is the overdue time written in the Start trip text.
-*   **Q2. Will a real trip on the water happen before Nov 29?** Promote needs
-    one. If RJ has one coming, Stage 1 must be merged before it.
+*   **Q1. Answered Nov 25, 2026** (RJ's iPhone, Safari). A web page can add
+    a calendar entry with an alert. A calendar file the page makes on the
+    phone opens iPhone's "Add to Calendar" screen with the time and the alert
+    already set ("At time of event"), and the alert went off on time. A
+    calendar file stored on the website works the same way. A calendar file
+    packed into the link itself does nothing in iPhone Safari. A Google
+    Calendar link opens the Google Calendar app with the entry filled in, but
+    the alert is the follower's own Google default. **Decision:** the follower
+    reminder and the trip reminder use the file made on the phone, with "Add
+    to Google Calendar" as a second button. Android not tested.
+*   **Q2. Answered Nov 25, 2026: yes.** RJ crosses home from Abaco on about
+    Nov 29 or 30. Stage 1 (Start trip, Live screen, family page) goes into the
+    preview before then, and that crossing is tracked with the preview; it is
+    the real trip promote needs. If Stage 1 is not ready by Sat Nov 28, RJ
+    fixes the old Apps Script tracker that day and uses the live page.
 
 ## Critical User Journeys (CUJs)
 
