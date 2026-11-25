@@ -1,0 +1,21 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Crossing preview//Calendar test//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:crossing-calendar-test-1@rjm0824.github.io
+DTSTAMP:20261125T120000Z
+DTSTART:20261129T140000Z
+DTEND:20261129T141500Z
+SUMMARY:Check on RJ's trip (TEST 1)
+DESCRIPTION:Test reminder from the Crossing app preview.
+  Delete it any time.
+URL:https://rjm0824.github.io/crossing/next/calendar-test.html
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Check on RJ's trip (TEST 1)
+TRIGGER:-PT0M
+END:VALARM
+END:VEVENT
+END:VCALENDAR
