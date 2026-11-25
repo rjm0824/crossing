@@ -36,7 +36,7 @@ service. That crossing is the real trip that promote needs.
 *   Family page polish, and fixes from Friday's test.
 
 **Sprint 2: the full build, only if ahead of schedule** (otherwise after the
-crossing). "Add to Google Calendar", "Track from another device", points
+crossing). The home port setting first, then "Add to Google Calendar", "Track from another device", points
 passed, the interval choice, "Resume sharing", radar on the Live map, the
 recenter icon on the Plan map, and removing the old tracking code from the
 Plan page.
@@ -165,6 +165,7 @@ setups.
 | "Remind me at [overdue time]" (calendar file made on the phone) | Sat |
 | "Delete this trip" | Sat |
 | Family page: "Moving slowly" and "Stopped" wording, time-zone labels | Sat |
+| Home port: end the trip within 500 yards of it (D15) | Sprint 2, first |
 | "Add to Google Calendar" | Sprint 2 |
 | "Track from another device" | Sprint 2 |
 | Points passed, with estimates for those ahead | Sprint 2 |
@@ -218,6 +219,16 @@ of their own before building.
 *   **D13.** The interval is fixed at 5 minutes until Sprint 2.
 *   **D14.** A mistaken "Stop sharing now" is fixed by starting a new trip
     and sending the new link, until "Resume sharing" exists.
+
+*   **D15. The app can know a captain's home port (RJ, Nov 25).** It is part
+    of the captain's profile. It is saved on the captain's device only: never
+    sent to the service, never in a link, never in the repo. When a route
+    ends near the home port, the trip keeps being shared past the route's
+    last point and ends within 500 yards of the home port, so followers see
+    the boat nearly home. **Recommendation, not yet confirmed by RJ:** the
+    crossing build ends at the inlet point (D11); the home port is the first
+    item of Sprint 2 as a simple setting, and moves into the profile when
+    onboarding is built (row 8). See "Home Port".
 
 D8 (remove the old tracking code in pull request 1) was withdrawn after
 review; that work moved to Sprint 2.
@@ -645,6 +656,31 @@ Your followers' link will stop working straight away." Pressed: "Deleting…".
 Result: "Deleted" or "Couldn't delete. Try again with signal."
 `privacy.html` already promises this.
 
+### Home Port (Sprint 2, First Item; D15)
+
+*   **Setting it.** On the Ready screen, "Home port: not set" opens a map.
+    The captain taps where the boat is kept and taps "Save as home port".
+    It can be changed or removed there. With onboarding (row 8) this moves
+    into the profile.
+*   **Where it lives.** On the captain's device only, as `cx:next:homeport`.
+    It is not in the Start request and not in any link.
+*   **What it changes.** If the route's last point is within 15 nm of the
+    home port, the trip does not end at the last point. It ends when two good
+    readings are within 500 yards of the home port. With no home port, or a
+    route that ends elsewhere, D11 applies.
+*   **What followers see past the last point:** "RJ has passed Palm Beach
+    Inlet and is heading in." with "Last update 2 min ago". No distance and
+    no arrival estimate, because the service does not know where the home
+    port is. The overdue notice still applies. At the end: "RJ arrived at
+    12:58 PM. Position sharing has stopped."
+*   **What it means for privacy.** Followers see the boat to within about
+    500 yards of the home port, and those positions are stored by the
+    service for 7 days after the trip. `privacy.html` says so in the same
+    pull request.
+*   **Left for the Routes step (row 9):** whether a trip that *starts* at the
+    home port should then use only the 500-yard rule, without the "outside
+    the inlet" line.
+
 ### The Plan Page (Friday)
 
 One change: a "Start trip & share with family" button in the "Boat position"
@@ -692,6 +728,15 @@ Why the old tracker stopped accepting positions on Nov 25 is not known (Q2).
     Abaco house.
 *   **Reason for Rejection**: RJ kept both rules (D1). The distance rule is
     also the only protection if the direction is ever wrong.
+
+### Alternative G: Put the Home Port in the Repo or on the Service
+
+*   **Pros**: Works on any device without setting it; the family page could
+    show distance to it.
+*   **Cons**: The repo is public, and the service would hold the place the
+    boat is kept.
+*   **Reason for Rejection**: Recommendation: reject. It stays on the
+    captain's device.
 
 ### Alternative B: End the Trip 2 nm Out, as Today
 
@@ -1068,6 +1113,7 @@ Built in this order after both pull requests are merged and tested, each as
 its own small pull request, after a short check of this section against what
 the first two taught:
 
+0.  **Home port** (see "Home Port"). First, because RJ asked for it.
 1.  **Remove the old tracking code from the Plan page** (`tracking.js`, the
     captain key box, `TRACK_URL`, the departure time from the old tracker).
     Known knock-ons: the line that reveals `#captain` lives in
@@ -1098,8 +1144,8 @@ the first two taught:
 
 ### Future Improvements
 
-*   A "share from" line for any route (row 9), and the dock as a place the
-    app knows.
+*   A "share from" line for any route (row 9).
+*   The home port in the captain's profile (row 8).
 *   The service accepts unnamed shape points, so the family map draws the
     detailed line.
 *   "New family link"; battery level; wind on the family page.
