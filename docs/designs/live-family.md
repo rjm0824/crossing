@@ -34,9 +34,13 @@ service. That crossing is the real trip that promote needs.
 *   "Remind me at [overdue time]" on the family page.
 *   "Delete this trip".
 *   Family page polish, and fixes from Friday's test.
+*   Home port: the trip ends within 500 yards of where the boat is kept.
+    This is the first thing dropped if Saturday runs short; the trip then
+    ends at the inlet, as Friday's build does.
 
 **Sprint 2: the full build, only if ahead of schedule** (otherwise after the
-crossing). The home port setting first, then "Add to Google Calendar", "Track from another device", points
+crossing). The home port setting first if Saturday dropped it, then "Add to
+Google Calendar", "Track from another device", points
 passed, the interval choice, "Resume sharing", radar on the Live map, the
 recenter icon on the Plan map, and removing the old tracking code from the
 Plan page.
@@ -165,7 +169,7 @@ setups.
 | "Remind me at [overdue time]" (calendar file made on the phone) | Sat |
 | "Delete this trip" | Sat |
 | Family page: "Moving slowly" and "Stopped" wording, time-zone labels | Sat |
-| Home port: end the trip within 500 yards of it (D15) | Sprint 2, first |
+| Home port: end the trip within 500 yards of it (D15) | Sat, first to drop; then Sprint 2, first |
 | "Add to Google Calendar" | Sprint 2 |
 | "Track from another device" | Sprint 2 |
 | Points passed, with estimates for those ahead | Sprint 2 |
@@ -225,10 +229,11 @@ of their own before building.
     sent to the service, never in a link, never in the repo. When a route
     ends near the home port, the trip keeps being shared past the route's
     last point and ends within 500 yards of the home port, so followers see
-    the boat nearly home. **Recommendation, not yet confirmed by RJ:** the
-    crossing build ends at the inlet point (D11); the home port is the first
-    item of Sprint 2 as a simple setting, and moves into the profile when
-    onboarding is built (row 8). See "Home Port".
+    the boat nearly home. **Decided by RJ:** aim to build it in
+    Saturday's pull request as a simple setting. If Saturday has to be
+    simplified to have a working version before he leaves, it is the first
+    thing dropped and the trip ends at the inlet point (D11). It moves into
+    the profile when onboarding is built (row 8). See "Home Port".
 
 D8 (remove the old tracking code in pull request 1) was withdrawn after
 review; that work moved to Sprint 2.
@@ -656,7 +661,7 @@ Your followers' link will stop working straight away." Pressed: "Deleting…".
 Result: "Deleted" or "Couldn't delete. Try again with signal."
 `privacy.html` already promises this.
 
-### Home Port (Sprint 2, First Item; D15)
+### Home Port (Saturday If Time Allows, Else Sprint 2; D15)
 
 *   **Setting it.** On the Ready screen, "Home port: not set" opens a map.
     The captain taps where the boat is kept and taps "Save as home port".
@@ -972,6 +977,18 @@ front for 7 hours make about 4,200 of the 100,000 free daily requests.
 *   **Proposed Changes**: "Send link to family"; "Delete this trip"; "Remind
     me"; the Slow and Stopped rows; time-zone names; fixes from Friday.
 
+##### 12a. Home port (Modify `live.js`, `live.html`, `family.js`, `trip-math.js`, `privacy.html`; only if time allows)
+
+*   **Type / Scope**: The setting and the changed ending.
+*   **Proposed Changes**: As under "Home Port". `store` name
+    `cx:next:homeport` holding `{ lat, lon }`. `TripMath.endRule(rules,
+    homePort)` returns the route-end rule, or the home-port rule when the
+    last point is within 15 nm of it. `familyState` gains the state
+    `heading-in` for a boat past the last point. Practice mode runs on from
+    the last point to the home port when one is set. Tests: with no home
+    port the ending is unchanged; with one 3 nm past the last point the trip
+    does not end at the last point and ends 400 yards from the home port.
+
 ##### 13. `next/calendar-test.html`, `next/calendar-test.ics` (Delete); `privacy.html`, `docs/HANDOFF.md`, `next/trip-test.html` (Modify)
 
 *   **Type / Scope**: Tidy-up, statement, tests.
@@ -1027,6 +1044,10 @@ Saturday. Nothing else in pull request 1 is optional.
 6.  Family text and "Send link to family"; "Delete this trip".
 7.  `calendar.js` and "Remind me".
 8.  Slow and Stopped rows, time-zone names, `privacy.html`, tidy-up.
+9.  Home port, only if steps 5 to 8 are done and checked by 10:00 AM. It is
+    built so that with no home port set, nothing changes from Friday's
+    behaviour. If it is not solid by noon it is left out of the pull
+    request.
 
 ### Build Reminders
 
@@ -1064,6 +1085,10 @@ in daylight, away from the house):**
 7.  Run the boat for 10 to 15 minutes. Check the dot moves on the phone, tap
     "All good", tap "Remind me" on the phone, then "Stop sharing now".
 8.  Tap "Delete this trip".
+9.  If home port is in the pull request: on the Ready screen set a home port
+    on the map (for this test, any spot near where you are), start a
+    practice run, and check the family page reads "has passed … and is
+    heading in" before "arrived". Before the crossing, set the real one.
 
 **Crossing day:** see Build Reminders. Open the preview with `?trip=home`,
 start the trip, send the text, and leave the page in front.
@@ -1113,7 +1138,8 @@ Built in this order after both pull requests are merged and tested, each as
 its own small pull request, after a short check of this section against what
 the first two taught:
 
-0.  **Home port** (see "Home Port"). First, because RJ asked for it.
+0.  **Home port** (see "Home Port"), if Saturday's pull request left it
+    out.
 1.  **Remove the old tracking code from the Plan page** (`tracking.js`, the
     captain key box, `TRACK_URL`, the departure time from the old tracker).
     Known knock-ons: the line that reveals `#captain` lives in
