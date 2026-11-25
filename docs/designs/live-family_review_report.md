@@ -9,7 +9,9 @@
     usage, four reviewers were left out (inventive catalyst, structural,
     style, and the second zoom-out pass, which only audits edits made between
     stages).
-*   **Result:** Not ready to build from. No fixes applied yet.
+*   **Result:** Not ready to build from as first drafted. Resolved in
+    revision 2 of the doc on Nov 25; see "Resolution" at the end. Revision 2
+    has not been reviewed again.
 
 | Reviewer | Blocker | Major | Nit |
 | --- | --- | --- | --- |
@@ -271,3 +273,42 @@ Read answer fields; the calendar file method; the delete promise in
     made.
 
 Everything else has a proposed fix that can be applied without a decision.
+
+## Resolution (Nov 25, 2026, revision 2 of the doc)
+
+**RJ's decisions:**
+
+1.  **B1:** approved. Friday is end to end with a plain family page.
+2.  **M1, M2:** build the crossing version first, then a second sprint with
+    the full build if ahead of schedule. The extras are listed as Sprint 2,
+    not dropped. The Plan page gains one button; the old code is removed in
+    Sprint 2.
+3.  **B3:** RJ chose a different fix. The trip ends within 500 yards of the
+    route's last point, so followers see the boat come into the inlet, and
+    "arrived at Palm Beach Inlet" is then true. The app does not know where
+    the dock is; nothing is shared after the end.
+4.  **M5:** Guana Cay stays as the first point. It is a large island and
+    followers want to see the boat reach or leave it.
+5.  **B2:** the cause is not known. The fallback is the no-code one (RJ's
+    text plus Find My); a look at the old tracker happens only if Friday's
+    test fails. The call is made after Friday's test, or after Saturday's.
+
+**Applied without a decision:** B4 (service-clock stamping; events never
+dropped; `not_found` keeps recording; "not accepted" count), B5 (practice
+mode's times and speeds), B6 (the preview address and a `localhost`-only
+override), B7 (a new small map file; `map.js` untouched), M3 (ready-by times
+and a daylight test), M4 (one-page summary), M6 (start point never in a
+link), M7 (direction guard; no arrival before the gate opens), M8 (500-yard
+rule kept), M9 and M17 (moved with their features to Sprint 2), M10 (Delete
+is required on Saturday; the test starts away from the house), M11 (stated),
+M12 (20 minutes, fixed), M13 (overdue shown without a read), M14 (ordered by
+time; boat from `last`), M15 (three retries, whole numbers, own message),
+M16 (200 m accuracy rule), M18 (keep-awake pieces listed; banner written
+into the pages), M19 (shapes, one retry rule, request table, glossary).
+
+**Nits:** applied, except the Leaflet integrity value (left to the build)
+and the calendar replace question (moot: the reminder is offered again with
+the new time).
+
+**Not done:** a second review round on revision 2. The arrival rule (D11) is
+new since the review and no reviewer has seen it.
