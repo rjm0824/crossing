@@ -190,6 +190,7 @@ var Queue = (typeof window === 'undefined') ? null : (function () {
         notFound = false; lastError = null;
         if (out.received.length) {
           lastReceivedMs = Date.now();
+          store.set('lastrx', lastReceivedMs);   // kept across a reload (RJ's test, Nov 25)
           logMark(out.received, 'received', lastReceivedMs);
           stuck = stuck.filter(function (id) { return out.received.indexOf(id) === -1; });
         }
@@ -220,6 +221,12 @@ var Queue = (typeof window === 'undefined') ? null : (function () {
     });
   }
 
+  // After a reload (Safari does this to pages in the background), remember
+  // when the tracker last confirmed something, so the status line still says
+  // "All sent. Tracker last received …" rather than "Nothing to send yet."
+  var savedRx = store.get('lastrx');
+  if (typeof savedRx === 'number') lastReceivedMs = savedRx;
+
   setInterval(function () { if (readQueue().length) sendNow(); }, TICK_MS);
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') sendNow(); });
   window.addEventListener('online', sendNow);
@@ -229,7 +236,7 @@ var Queue = (typeof window === 'undefined') ? null : (function () {
     onStatus: function (fn) { listeners.push(fn); fn(status()); },
     start: function (key) { tripKey = key; notFound = false; sendNow(); },
     clear: function () {
-      store.remove('queue'); store.remove('log');
+      store.remove('queue'); store.remove('log'); store.remove('lastrx');
       stuck = []; notAccepted = 0; eventError = null; notFound = false; lastReceivedMs = null; lastError = null;
       emit();
     }
