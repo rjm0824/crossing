@@ -25,12 +25,14 @@ time zone with the zone's name; the message uses the captain's zone).
     that account. Before the crossing: set the iPad's Messages to send from
     RJ's own number or address (Settings › Messages › Send & Receive), or
     copy the family link on the iPad and send it from the iPhone.
-*   **For RJ to decide:** iPhones often reload a family page that sits in the
-    background, and a reloaded page no longer knows the route, so a follower
-    who watched the trip can still get the arrived card without the map.
-    Recommendation: bring D17 forward from Sprint 2 to before the crossing
-    (the tracker returns the route's named points with the arrived answer).
-    It changes the tracker service, so it needs RJ's OK.
+*   **Decided by RJ, Nov 25 (late):** (1) D17 brought forward from Sprint 2:
+    the tracker's arrived answer now carries the route's named points and the
+    start time (never a position), so every follower sees the arrived map and
+    crossing time, even after a reload or a late first open. Pull request:
+    "arrived map for every follower". (2) Home port (D15) built before the
+    crossing, as its own pull request after that one, against the
+    recommendation to wait; tested on Saturday's water run. (3) RJ sets the
+    helm iPad's Messages to send from his own number.
 *   Open question Q1 in `live-family.md` is closed: the share screen opens
     from the button on the iPad.
 *   Next: home port (D15), its own small pull request, if RJ wants it before

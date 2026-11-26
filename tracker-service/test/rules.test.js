@@ -275,12 +275,23 @@ describe('shapeRead', () => {
     assert.equal(r.last.lat, 26.71);
     assert.deepEqual(r.items, []);
   });
-  test('within 2 hours of learning of the end: no positions or route', () => {
+  test('within 2 hours of learning of the end: no positions; arrived adds the named points and start time', () => {
+    const points = [{ name: 'Guana Cay', lat: 26.695, lon: -77.13 }, { name: 'Green Turtle', lat: 26.77, lon: -77.33 }];
     const tr = trip({ status: 'arrived', ended_at: NOW - 3 * HOUR, end_learned_at: NOW - 119 * MINUTE,
-      last_json: '{"t":1,"lat":1,"lon":1}' });
+      started_at: NOW - 9 * HOUR, last_json: '{"t":1,"lat":1,"lon":1}',
+      route_json: JSON.stringify({ name: 'R', points, dest: 'Green Turtle' }) });
     const r = shapeRead(tr, [], NOW, 30);
     assert.deepEqual(r, { status: 'arrived', boat: "Goof n' Off", captain: 'RJ', dest: 'Green Turtle',
-      endedAt: NOW - 3 * HOUR, now: NOW, pollSeconds: 300 });
+      endedAt: NOW - 3 * HOUR, now: NOW, pollSeconds: 300, points, startedAt: NOW - 9 * HOUR });
+    assert.equal(r.last, undefined, 'no last position');
+    assert.equal(r.items, undefined, 'no items');
+  });
+  test('sharing stopped by hand: no positions, no route, no start time', () => {
+    const tr = trip({ status: 'stopped', ended_at: NOW - HOUR, end_learned_at: NOW - HOUR,
+      last_json: '{"t":1,"lat":1,"lon":1}',
+      route_json: JSON.stringify({ name: 'R', points: [{ name: 'A', lat: 1, lon: 1 }], dest: 'Green Turtle' }) });
+    assert.deepEqual(shapeRead(tr, [], NOW, 30), { status: 'stopped', boat: "Goof n' Off", captain: 'RJ',
+      dest: 'Green Turtle', endedAt: NOW - HOUR, now: NOW, pollSeconds: 300 });
   });
   test('after 2 hours it is closed', () => {
     const tr = trip({ status: 'stopped', ended_at: NOW - 3 * HOUR, end_learned_at: NOW - 2 * HOUR });

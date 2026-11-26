@@ -233,11 +233,20 @@ export function shapeRead(trip, items, now, pollSeconds) {
     if (trip.end_learned_at !== null && trip.end_learned_at !== undefined
         && now - trip.end_learned_at < ENDED_WINDOW) {
       const route = JSON.parse(trip.route_json);
-      return {
+      const out = {
         status: trip.status, boat: trip.boat, captain: trip.captain,
         dest: route.dest, endedAt: trip.ended_at,
         now, pollSeconds: ENDED_POLL_SECONDS,
       };
+      // Arrived only (RJ, D17, Nov 25): the route's named points, so the
+      // family page can park the boat on the destination point, and the start
+      // time for the crossing time. Never a position. A trip stopped by hand
+      // gets neither.
+      if (trip.status === 'arrived') {
+        out.points = route.points || [];
+        out.startedAt = trip.started_at;
+      }
+      return out;
     }
     return { status: 'closed' };
   }

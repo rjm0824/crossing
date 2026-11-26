@@ -339,7 +339,11 @@ Answer for 2 hours after the service learned the trip ended:
   "now": 1795788600000, "pollSeconds": 300 }
 ```
 
-`status` is `"arrived"` or `"stopped"`. No positions, no route.
+`status` is `"arrived"` or `"stopped"`. No positions. **Arrived only (RJ,
+Nov 25, `live-family.md` D17):** the answer also carries `points` (the route's
+named points, as sent at Start) and `startedAt`, so the family page can show
+the map with the boat parked on the destination point and the crossing time,
+even when it is opened after arrival. A trip stopped by hand gets neither.
 
 Answer after that: `{ "status": "closed" }`. The page stops reading.
 

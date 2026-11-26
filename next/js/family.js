@@ -168,12 +168,17 @@
     // Arrived (D16): celebrate, and keep the map with the boat parked on the
     // destination's named point if this page saw the route during the trip.
     var arr = s.state === 'arrived';
+    // The route for the arrived map: what this page saw during the trip, or,
+    // after a reload or a late first open, the named points the tracker now
+    // sends with its arrived answer (D17). Never a position.
+    var arrRoute = seenRoute || (ended && ended.points && ended.points.length
+      ? { points: ended.points, startedAt: ended.startedAt } : null);
     $('arrived').hidden = !arr;
     $('statusCard').hidden = arr;
     if (arr) {
       $('arrHead').textContent = cap + ' has arrived!';
       $('arrWhere').textContent = dest + ' \u00B7 ' + tz(ended.endedAt);
-      set('arrCross', seenRoute && seenRoute.startedAt ? 'Crossing time about ' + dur(ended.endedAt - seenRoute.startedAt) : '');
+      set('arrCross', arrRoute && arrRoute.startedAt ? 'Crossing time about ' + dur(ended.endedAt - arrRoute.startedAt) : '');
     }
 
     $('line1').textContent = l1;
@@ -196,11 +201,12 @@
         }
         map.setBoat(held.last, prev ? tripHeading(prev, held.last) : 270, greyed);
       }
-    } else if (arr && map && seenRoute) {
+    } else if (arr && arrRoute) {
       $('map').hidden = false;
+      if (!map) map = makeTripMap($('map'), { points: arrRoute.points });   // opened after arrival
       map.invalidate();
       if (!parked) {
-        var pts = seenRoute.points, n = pts.length, end = pts[n - 1];
+        var pts = arrRoute.points, n = pts.length, end = pts[n - 1];
         map.clearBoat();                           // removes the real trail and boat
         map.setBoat(end, n > 1 ? tripHeading(pts[n - 2], end) : 270, false);
         arrTip = L.tooltip({ permanent: true, direction: 'top', offset: [0, -16], className: 'arr-tip' })
