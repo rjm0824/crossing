@@ -52,8 +52,8 @@ function renderLegs(o){
   const t=$('legs');
   if(!o){t.innerHTML='';return;}
   t.innerHTML='<tr><th>Point</th><th>Pass</th><th>Seas</th><th>Wind</th><th>Rain</th></tr>'+o.rows.map(r=>{const v=r.v;
-    const windCls=(isNorthish(v.dir)&&(r.wp.ocean||r.wp.id==='inlet'))?cls(v.wind,10,14.9):cls(v.wind,15,20);
-    return `<tr><td>${r.wp.name}<br><small style="color:var(--soft)">${Math.round(cum[WP.indexOf(r.wp)])} nm</small></td><td>${fmtT(r.t)}</td><td class="${cls(v.wave,3,4)}">${v.wave==null?'–':v.wave.toFixed(1)+' ft'}<br><small>${v.per==null?'':v.per.toFixed(0)+'s '+dirName(v.wdir)}</small></td><td class="${windCls}">${v.wind==null?'–':Math.round(v.wind)+' kt '+dirName(v.dir)}<br><small>${v.gust==null?'':'gusts '+Math.round(v.gust)}</small></td><td>${v.rain==null?'–':v.rain+'%'}</td></tr>`;}).join('');
+    const windCls=(MY.noNorth&&isNorthish(v.dir)&&(r.wp.ocean||r.wp.id==='inlet'))?cls(v.wind,MY.windKt-5,MY.windKt-0.1):MY.windRule?cls(v.wind,MY.windKt-3,MY.windKt):cls(v.wind,15,20);
+    return `<tr><td>${r.wp.name}<br><small style="color:var(--soft)">${Math.round(cum[WP.indexOf(r.wp)])} nm</small></td><td>${fmtT(r.t)}</td><td class="${cls(v.wave,MY.seasFt-1,MY.seasFt)}">${v.wave==null?'–':v.wave.toFixed(1)+' ft'}<br><small>${v.per==null?'':v.per.toFixed(0)+'s '+dirName(v.wdir)}</small></td><td class="${windCls}">${v.wind==null?'–':Math.round(v.wind)+' kt '+dirName(v.dir)}<br><small>${v.gust==null?'':'gusts '+Math.round(v.gust)}</small></td><td>${v.rain==null?'–':v.rain+'%'}</td></tr>`;}).join('');
 }
 function chop(w){if(w==null)return '–';if(w<10)return 'under 1 ft';if(w<15)return '1–2 ft';if(w<20)return '2–3 ft';return '3+ ft, sloppy';}
 function renderInside(o){
@@ -69,8 +69,9 @@ function renderInside(o){
 async function renderTFF(o){
   LASTSEL=o;
   const arr=o?o.rows[o.rows.length-1].t:null;
-  const dist=TOTAL_NM, hrs=dist/CRUISE_KT;
-  const fuelLo=Math.round(BURN_LOW*dist/ROUTE_NM_REF), fuelHi=Math.round(BURN_HIGH*dist/ROUTE_NM_REF);
+  const dist=TOTAL_NM, hrs=dist/MY.cruiseKt;
+  const fu=MY.fuel(dist), fuelLo=fu.lo, fuelHi=fu.hi, tank=MY.tankGal;
+  const fuelLeft=tank-fuelHi<0?'more than your tank':`${tank-fuelHi}–${tank-fuelLo} left`;
   const di=FC.daily.time.indexOf(DAY);
   const sunrise=di>=0?new Date(etMs(FC.daily.sunrise[di])):null;
   let tideTxt='–',tideNote='';
@@ -87,9 +88,9 @@ async function renderTFF(o){
   const gt=tideAt(FC.route[GTI],DAY);
   $('tff').innerHTML=`
     <div><span>Distance (${ORIG} → ${DEST})</span><b>${Math.round(dist)} nm</b></div>
-    <div><span>Run time at ${CRUISE_KT} kt</span><b>${Math.floor(hrs)}h ${Math.round((hrs%1)*60)}m</b></div>
+    <div><span>Run time at ${MY.cruiseKt} kt</span><b>${Math.floor(hrs)}h ${Math.round((hrs%1)*60)}m</b></div>
     <div><span>Arrive ${DEST}</span><b>${arr?fmtT(arr):'–'}</b></div>
-    <div><span>Fuel (215 gal tank)</span><b>${fuelLo}–${fuelHi} gal · ${FUEL_TANK-fuelHi}–${FUEL_TANK-fuelLo} left</b></div>
+    <div><span>Fuel (${tank} gal tank${fu.estimate?', estimated burn':''})</span><b>${fuelLo}–${fuelHi} gal · ${fuelLeft}</b></div>
     <div><span>Sunrise / first light</span><b>${sunrise?fmtT(sunrise)+' / ~'+fmtT(new Date(sunrise.getTime()-25*60e3)):'–'}</b></div>
     <div><span>Palm Beach tides</span><b style="font-size:14px">${tideTxt}</b></div>
     <div style="grid-column:1/-1"><span>Green Turtle tide (model, rough)</span><b style="font-size:14px">${gt}</b></div>`;

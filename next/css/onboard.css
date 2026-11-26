@@ -137,3 +137,9 @@ button,input{font:inherit}
 .tips{font-size:15px;gap:6px}
 a.ob-next{display:flex;align-items:center;justify-content:center;text-decoration:none}
 .ob-second{display:flex;align-items:center;justify-content:center;min-height:48px;border:1px solid #B9C8D3;border-radius:14px;background:#fff;color:var(--ob-ink);font-size:16px;font-weight:600;text-decoration:none}
+
+/* First verdict */
+.vlabel{font-size:13px;color:var(--ob-soft)}
+.vrow{display:flex;align-items:center;gap:14px;font-size:15px}
+.vword{font-size:30px;font-weight:800;line-height:1;flex:0 0 auto}
+.vword.go{color:var(--ob-go)}.vword.maybe{color:#8A4B00}.vword.no{color:#B42318}

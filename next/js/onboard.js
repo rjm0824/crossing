@@ -374,7 +374,7 @@
       stepper('Max seas', 'seasFt', 'ft', 1, 8),
       stepper('Max wind', 'windKt', 'kt', 5, 30),
       sw,
-      h('p', { class: 'ob-help', text: 'Standard matches how the Plan page judges a crossing today.' })
+      h('p', { class: 'ob-help', text: 'Seas over your max, or wind over your max anywhere on the route, makes it NO-GO. Standard uses the same seas and north-wind numbers as the Plan page today.' })
     ], h('button', { type: 'button', class: 'ob-next', id: 'obNext', text: 'Save my limits', onclick: function () {
       S.save({ limits: { preset: L.preset, seasFt: L.seasFt, windKt: L.windKt, noNorthInStream: L.noNorthInStream } });
       go('followers');
@@ -459,16 +459,48 @@
     } }));
   }
 
-  // ---------- Done ----------
-  // Step 4 of row 8 adds the first verdict to this screen.
+  // ---------- Done: the first verdict ----------
+  // Tomorrow's best departure on today's route, judged with the saved limits,
+  // using the Plan page's own forecast code (forecast.js, mysetup.js).
+  function firstVerdict(box) {
+    var WORDS = ['GO', 'CROSSABLE', 'NO-GO'], CLS = ['go', 'maybe', 'no'];
+    function show(kids) { box.replaceChildren.apply(box, kids); }
+    if (typeof loadForecast !== 'function') return;
+    Object.assign(MY, readMySetup());
+    var day = etDate(new Date(Date.now() + 86400e3));
+    var label = h('span', { class: 'vlabel', text: 'Tomorrow \u00b7 ' + ORIG + ' \u2192 ' + DEST });
+    show([label, h('p', { class: 'ob-help', text: 'Checking tomorrow\u2019s forecast\u2026' })]);
+    loadForecast().then(function () {
+      var best = null;
+      for (var hr = 5.5; hr <= 11; hr += 0.5) {
+        var o = scoreRun(etTime(day, hr));
+        if (o.level >= 0 && (!best || o.level < best.level || (o.level === best.level && o.worstWave < best.worstWave))) best = o;
+      }
+      if (!best) { show([label, h('p', { class: 'ob-help', text: 'The forecast doesn\u2019t reach tomorrow yet. Open your plan to see the days it covers.' })]); return; }
+      var arr = best.rows[best.rows.length - 1].t;
+      show([label,
+        h('div', { class: 'vrow' }, [
+          h('span', { class: 'vword ' + CLS[best.level], id: 'obWord', text: WORDS[best.level] }),
+          h('span', {}, ['Best departure ', h('b', { text: fmtT(best.dep) }), '. Worst seas ' + best.worstWave.toFixed(1) + ' ft. ' + DEST + ' about ' + fmtT(arr) + '.'])
+        ]),
+        best.flags.length ? h('p', { class: 'ob-help', text: best.flags[0] }) : null,
+        h('p', { class: 'ob-help', text: 'Judged with your limits: seas ' + MY.seasFt + ' ft, wind ' + MY.windKt + ' kt, at ' + MY.cruiseKt + ' kt. Forecasts can be wrong; the captain decides.' })
+      ].filter(Boolean));
+    }).catch(function () {
+      show([label, h('p', { class: 'ob-help', text: 'Couldn\u2019t reach the forecast. Open your plan when you have signal.' })]);
+    });
+  }
+
   function done() {
     var names = (S.load() || {}).followers || [];
     names = names.map(function (x) { return x.name; }).filter(Boolean);
     var follow = names.length ? names.slice(0, -1).join(', ') + (names.length > 1 ? ' and ' : '') + names[names.length - 1] + (names.length > 1 ? ' get' : ' gets') + ' a link to watch you cross when you start a trip.' : 'Add the people who worry about you in ☰ Menu → Setup.';
+    var verdictBox = h('div', { class: 'ob-card', id: 'obVerdict' });
+    firstVerdict(verdictBox);
     return h('div', { class: 'ob' }, [previewBanner(), h('main', { class: 'ob-body' }, [h('div', { class: 'ob-in donebox' }, [
       h('span', { class: 'kicker', text: 'You’re set' }),
-      h('h1', { text: 'Your setup is saved.' }),
-      h('div', { class: 'ob-card', id: 'obVerdict' }),
+      h('h1', { text: 'Here\u2019s your first answer.' }),
+      verdictBox,
       h('div', { class: 'ob-card tips' }, [h('b', { text: 'Tips' }),
         h('span', { text: '• ' + follow }),
         h('span', { text: '• Add it to your Home Screen: Share → Add to Home Screen' }),
