@@ -2,38 +2,78 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
-## Update: Nov 26, 2026 (read this first, then the Nov 25 update)
+## Update: Nov 25, 2026, evening (read this first, then the earlier Nov 25 update)
 
-**Pull request 1 of `docs/designs/live-family.md` is built** on branch
-`claude/magical-gauss-di1223`, for RJ to test by 3:00 PM Fri Nov 27. Next
-session: pull request 2 (Saturday), after RJ's Friday test.
+**Pull request 1 of `docs/designs/live-family.md` is merged (#12) and passed
+RJ's test on the real helm iPad and iPhone on Nov 25, two days early.** Next
+session: pull request 2 (see "Pull request 2" below). Go or fallback: by the
+design doc's rule the crossing can use the preview; Saturday's on-the-water
+test and the no-code fallback stay as the backstop.
 
 *   **New in the preview:** `next/live.html` (Ready, Live and Ended screens,
     practice mode with `?practice=1` and `&overdue=1`), `next/family.html`
     (the family page, opened from `family.html#k=` + family key),
-    `next/trip-test.html` (all calculation and queue checks, PASS or FAIL),
-    and a "Start trip & share with family" button on the Plan page. The
-    Plan page's old tracking code is still there (removed in Sprint 2).
-*   **New code:** `next/js/trip-math.js` (calculations), `queue.js` (send
-    queue), `tracker-api.js` (the only code that talks to the tracker),
-    `tripmap.js` (map with recenter), `live.js`, `family.js`. Checks:
+    `next/trip-test.html` (53 calculation and queue checks), and a "Start
+    trip & share with family" button on the Plan page. The Plan page's old
+    tracking code is still there (removed in Sprint 2).
+*   **Code:** `next/js/trip-math.js` (calculations), `queue.js` (send queue),
+    `tracker-api.js` (the only code that talks to the tracker), `tripmap.js`
+    (map with recenter), `live.js`, `family.js`. Checks:
     `node --test next/test/trip.test.js` (the same file runs in
     `trip-test.html`).
+*   **Passed on RJ's iPad and iPhone (Nov 25, 8:24 to 9:20 PM):** all 53
+    checks; Start trip with the invite code; "Screen will stay awake"; chart
+    images load; the wait before Green Turtle, then sharing; the family link
+    on the iPhone; a full practice crossing ending by itself at Palm Beach
+    Inlet on both screens; Airplane Mode ("Couldn't send. Saved, will retry.",
+    then everything delivered, twice); the overdue notice on both screens with
+    the position read aloud; "Stopped" and "On hold"; "I'm fine, add 1 hour"
+    (twice) clearing the notice on the iPhone; "Sharing was paused for about
+    13 min … It's back on now"; Stop sharing with its confirm step.
+*   **Learned on the devices:** an iPad pauses the Live page when it is not in
+    front (expected; the note says so). Tapping the page brings back
+    keep-awake after switching apps. Two Live tabs open at once both run the
+    trip: on crossing day keep one tab only.
 *   **Choices made while building** (none changes a decision): the Live and
     family pages use the mockup's light look, while the Plan page stays dark;
     Saturday's "Moving slowly" and "stopped" wording on the family page came
     early; in practice mode the arrival estimate is in real time while the
     boat runs 60 times fast, so it looks far off; the family page says "the
     boat's last known position".
-*   **Tested in this workspace:** full practice crossings against a local copy
-    of the tracker, at phone and iPad width, with the connection cut and
-    restored, a reload mid-trip, overdue and "add 1 hour", stop sharing, and
-    every family page state. **Not tested:** a real iPhone or iPad, real GPS,
-    keep-awake over hours, chart images (blocked here), Starlink drop-outs.
+*   **Not yet tested:** real GPS on the water (Saturday), keep-awake over
+    hours, Starlink drop-outs.
 *   **Local testing** as in `live-family.md` "Settled Details": a made-up
     invite code goes in `tracker-service/.dev.vars` (ignored by git) with
     `ALLOWED_ORIGINS="http://localhost:8788"`; run
-    `npx wrangler d1 migrations apply DB --local` once.
+    `npx wrangler d1 migrations apply DB --local` once. Leaflet's address on
+    cdnjs may be blocked in the build workspace: install `leaflet@1.9.4` into
+    the scratchpad and route the page's Leaflet requests to it.
+
+**Decided by RJ on Nov 25 (evening), for pull request 2** (also in
+`live-family.md`, D16 and D17):
+
+*   **D16. The arrived page celebrates and keeps a map.** Wording: "✓ RJ has
+    arrived!", then "Palm Beach Inlet · 8:35 PM", "Crossing time about 3 h
+    25 m", "Position sharing has stopped. This page closes 2 hours after
+    arrival." The map stays, with the route and the boat parked on the
+    destination's named point (option A). It never shows a real position after
+    arrival, so `privacy.html` needs no change. "Sharing stopped" stays plain.
+*   **D17. Followers who first open the link after arrival** get the
+    celebration without the map, because the tracker sends the route only
+    while underway. The small tracker change that lets them see the map too
+    is Sprint 2.
+
+**Pull request 2 (ready for RJ by noon Sat Nov 28), in this order:**
+
+1.  **Bug found in RJ's test:** the family page does not reload when a newer
+    family link is opened while an older one is open in Safari (only the part
+    after `#` changes, so Safari keeps the old page). Fix: reload on
+    `hashchange` in `family.js`.
+2.  D16: the arrived page.
+3.  From `live-family.md`: "Send link to family" with the ready-written text;
+    "Remind me at [overdue time]"; "Delete this trip"; time-zone names on the
+    family page; `privacy.html` (the reminder line).
+4.  Home port (D15), only if 1 to 3 are done and checked by 10:00 AM.
 
 ## Update: Nov 25, 2026
 
