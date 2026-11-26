@@ -12,7 +12,13 @@ https://claude.ai/artifact/2BNtygYUVDFkJmzBJnWBm1
 GPS, of the start gate ("past Green Turtle"), Starlink drop-outs,
 keep-awake over hours, and the home-port ending ("heading in", "RJ is
 home!"). Each line below is one thing to note: **the time, plus a word or
-two.** Use the log page if it's ready; otherwise use Notes on the iPhone.
+two.** Use **Menu → Crossing log on the iPhone** (one tap notes the time;
+never on the helm iPad, which keeps the Live screen in front). If it
+doesn't work, use Notes. At the end, tap **Copy all** and paste it into
+Notes or send it to yourself.
+
+**Saturday's water test:** try the log on the iPhone while the iPad runs the
+trip, to check both work side by side.
 
 ## At the dock, before you leave (Guana Cay)
 
@@ -68,7 +74,7 @@ the time, then carry on.
 
 ## Debrief, Dec 1 (Sonnet 5.5)
 
-Bring the notes, screenshots and battery numbers. Questions:
+Bring the copied crossing log, screenshots and family's notes. Questions:
 
 - Did sharing start in the right place? Did it end at the dock?
 - Each gap: how long, where, and did everything catch up afterwards?
