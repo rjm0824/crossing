@@ -1,7 +1,7 @@
 # Route points for the Bimini presets (MVP row 9): to check against charts
 
 **Status: DRAFT, not chart-checked.** Claude drafted these points from
-general knowledge on Nov 27, not from charts. Nothing in the app uses them
+general knowledge on Nov 26, not from charts. Nothing in the app uses them
 until RJ has checked them against his charts or plotter and corrected them
 here. The app stays a planning aid: these points pick where the forecast is
 read and how far the run is, never a course to steer.
