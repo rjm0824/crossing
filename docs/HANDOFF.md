@@ -2,7 +2,74 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
-## Update: Nov 26, 2026, evening (read this first): MVP row 8 next
+## Update: Nov 26, 2026, afternoon (later): test kit merged; row 9 drafted (read this first)
+
+**Date note:** the work in the two updates below was done on Thu Nov 26.
+Some commit messages and draft-branch notes say Nov 27 by mistake (the plan
+had row 8 on Fri Nov 27). Saturday's water test is Sat Nov 28; the
+crossing is Nov 29 to 30.
+
+**Calendar reminders (RJ's):** Sat Nov 28, 9:00 AM water test with the
+crossing log on the iPhone; Sat Nov 28, 6:00 PM text Haile and Mom.
+Open Loops rows 226 to 230 hold the follow-ups.
+
+| PR | State | What |
+| --- | --- | --- |
+| #29 | Draft, after the crossing | Onboarding (row 8), see below |
+| #30 | **Merged Nov 26** | Crossing test kit: `docs/crossing-test-plan.md` and the crossing log (`next/log.html`, Menu → Crossing log, iPhone only; `cx:next:crosslog`, no location) |
+| #31 | Draft, after the crossing, **merge after #29** | Routes (row 9) |
+
+**Row 9 (#31), built on #29's branch:** `next/js/routes.js` (one route shape;
+Abaco built read-only from `settings.js`, 152.7 nm), Setup step 5 of 7 "Your
+route", "Tap my own points on the map" (fixed crosshair like the home port
+picker; 2 to 12 points, names, Stream ticks; saved as `myRoute` in
+`cx:next:setup`), and `next/js/active-route.js` so the Plan page plans the
+chosen route. For Abaco the Plan page is unchanged (compared card by card
+with `main`). On other routes, Abaco-only cards hide and Start trip is
+replaced by a note: the frozen Live screen only knows Abaco until Dec 1.
+
+**Waiting on RJ:** check the Bimini points in `docs/route-points.md` (on the
+#31 branch until it merges) against charts (drafted from general knowledge, `ready: false` until approved).
+**After the crossing (Opus 5.5):** merge #29 then #31; switch on the Bimini
+presets once approved; nearest tide station; make `live.js` follow the
+chosen route along with the other Dec 1 Live screen work.
+
+## Update: Nov 26, 2026, afternoon: MVP row 8 built (draft PR, held until after the crossing)
+
+**RJ's decisions at the start of the session:** (1) one saved setup,
+`cx:next:setup`, that My Boat moved into (it copies `cx:next:boat` once and
+leaves the old key); (2) onboarding at `next/setup.html`, reached from a
+**Setup** row in the Menu only; show it on first open after the crossing.
+(3) Wind over the captain's max from any direction except north in the
+Stream gives **CROSSABLE**, "Crossable, not comfortable", not NO-GO.
+(4) **Boat photo instead of the outline** (RJ: the outline looked
+cartoonish). "Add a photo of your boat" is built in row 8 (`next/js/photo.js`:
+shrunk to 1200 px, saved in IndexedDB on the device, never uploaded). The
+line-drawing outline is dropped and moves to a later phase; row 10 now only
+needs the boat card on the Plan screen to show the photo.
+
+**Built (draft PR "DO NOT MERGE until after the crossing: onboarding (MVP
+row 8)"):** welcome, safety tick box (placeholder wording for RJ's attorney;
+no Terms of use page yet), the 7 questions with chips (typed answers kept as
+written), your boat (editable, optional photo), limits, followers (first
+name, optional phone), tracking (location asked once, keep-screen-on shares
+`cx:next:prefs.keepAwake`), and "You're set" with tomorrow's first answer.
+`next/js/mysetup.js` gives the Plan page's verdict, hour table, run time and
+fuel the saved setup, falling back to today's numbers; with no setup the
+verdict matches `main` (compared on 26,000 random departures). The shape of
+`cx:next:setup` is documented at the top of `next/js/setup.js`.
+`privacy.html` updated (followers, setup answers, the "contacts" line).
+
+**Left for after the crossing (Dec 1, Opus 5.5):** turn on "show Setup on
+first open" (one line in the Plan page's boot); make `live.js` use the
+saved cruise speed (it still estimates at 26 kt) and fill the Start trip
+text with the followers' phone numbers; the "connect Settings" work below.
+Not in row 8: routes (row 9; the Bimini chips are left out and step count is
+6 until then), the photo on the Plan screen's boat card (row 10), "A friend sent me their setup" (row 15),
+Talk and AI (row 16). Some chips are still RJ's own ("Goof n' Off",
+"Haile + Mom") and should be made general before friends use it.
+
+## Update: Nov 26, 2026, evening: MVP row 8 next
 
 **Merged tonight:** #25 (old Apps Script tracker removed from the preview
 Plan page), #26 (MVP row 7, the app frame) and #27 (privacy page date set to
