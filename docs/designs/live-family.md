@@ -1162,30 +1162,66 @@ start the trip, send the text, and leave the page in front.
     Starlink drop-outs; keep-awake over hours; the share screen; the calendar
     screen.
 
-### Sprint 2 (Only If Ahead of Schedule)
+### Sprint 2 (After the Crossing)
 
-Built in this order after both pull requests are merged and tested, each as
-its own small pull request, after a short check of this section against what
-the first two taught:
+**Checked on Nov 26 against what pull requests 1 and 2 and RJ's device tests
+taught** (RJ asked for this check; nothing here is built yet). Each item is
+its own small pull request. Nothing that touches `live.js`, `family.js` or
+the tracker is merged before the crossing, except fixes from Saturday's
+water test.
 
-0.  **Home port** (see "Home Port"), if Saturday's pull request left it
-    out.
+**Done early:** home port (D15, #17 and #18) and the arrived map for every
+follower (D17, #16).
+
+**Order:**
+
 1.  **Remove the old tracking code from the Plan page** (`tracking.js`, the
-    captain key box, `TRACK_URL`, the departure time from the old tracker).
-    Known knock-ons: the line that reveals `#captain` lives in
-    `setupCaptain`; `boot.js` writes to `trackNote`; `saveDep` calls
-    `sendPlan`; starting to share used to set the "LEFT" departure time.
-2.  **Points passed** on the Live screen and family page (`waypoint`
-    events), with estimates for those ahead.
-3.  **"Resume sharing"** for 10 minutes after an end. Nothing is recorded
-    inside the arrival zone after a resume.
-4.  **Recenter icon on the Plan map; radar on the Live map.**
-5.  **Interval choice.** The quiet rule then becomes "20 minutes, or 2.5
+    captain key box, `TRACK_URL`, the departure time from the old tracker,
+    and the "old tracker stopped working" line). Known knock-ons: the line
+    that reveals `#captain` lives in `setupCaptain`; `boot.js` writes to
+    `trackNote`; `saveDep` calls `sendPlan`; starting to share used to set
+    the "LEFT" departure time; the go-day checklist's "Start sharing
+    position" step should point at the new button. Also merge the copy of
+    `nm` in `trip-math.js` with `helpers.js`.
+2.  **Keep-awake after a reload (new, from testing).** After any reload the
+    iPad needs one tap before the screen can be kept awake, and the amber
+    note was easy to miss. Make the note a large "Tap here to keep the
+    screen awake" button while it is amber.
+3.  **Points passed** on the Live screen and family page (`waypoint`
+    events), with estimates for those ahead. **Knock-on found in the check:**
+    the home port already sends a `waypoint` labelled "Passed " + the last
+    point's name, and `family.js` treats *any* label starting "Passed " as
+    "heading in". Before points passed are sent, the family page must match
+    only the route's last point ("Passed Palm Beach Inlet"), with a check
+    for it.
+4.  **"Resume sharing"** for 10 minutes after an end. Nothing is recorded
+    inside the arrival zone (or the 500 yards round a home port) after a
+    resume.
+5.  **Recenter icon on the Plan map; radar on the Live map.**
+6.  **Interval choice.** The quiet rule then becomes "20 minutes, or 2.5
     times the usual gap, never more than 75 minutes".
-6.  **"Add to Google Calendar".**
-7.  **"Track from another device."** The link carries the trip key, family
-    key and direction, never the start point. The first device then acts on
-    the `status` in each Add answer.
+7.  **"Add to Google Calendar".**
+8.  **"Track from another device."** The link carries the trip key, family
+    key and direction, never the start point or the home port. The first
+    device then acts on the `status` in each Add answer.
+
+**Lessons from testing, for this and later work:**
+
+*   **Taps on a Leaflet map do not register reliably on RJ's iPad.** Picking
+    a spot uses a fixed crosshair and a Save button (#18); use the same
+    pattern for any future map picking (routes, row 9).
+*   **iPhones reload background pages,** so a page must rebuild what it
+    shows from the service, not from memory (#15, #16).
+*   **Practice runs pause when the Live page is not in front** (Messages,
+    another tab). This is the same rule as a real trip; the note says so.
+*   **The helm iPad sends texts from its own iMessage account** (it shows as
+    "Mom" on RJ's phone). Onboarding (row 8) should say which device sends
+    the family link.
+*   **A browser test with a mouse is not an iPad test.** Run new touch
+    controls on an emulated iPad with touch (Playwright device profile)
+    before a pull request.
+*   **Overdue phone numbers (D6)** are drafted in `docs/overdue-numbers.md`
+    for RJ or his attorney to check; nothing is shown in the app until then.
 
 --------------------------------------------------------------------------------
 
