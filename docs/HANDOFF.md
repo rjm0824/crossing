@@ -2,7 +2,82 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
-## Update: Nov 25, 2026, late evening (read this first)
+## Update: Nov 26, 2026, 12:20 AM (read this first)
+
+**Everything planned for the crossing home is built, merged and passed on
+RJ's real helm iPad and iPhone.** Only Saturday's test on the water is left.
+
+**Merged on Nov 25 to 26 (all in `/next/` plus `privacy.html` and docs):**
+
+| PR | What |
+| --- | --- |
+| #12 | Pull request 1: Start trip, Live page, send queue, start gate, family page, practice mode |
+| #13 | Notes: PR 1 test results, D16 and D17 |
+| #14 | Pull request 2: arrived page, Send link to family (message version A), Remind me, Delete this trip, local time zones |
+| #15 | Status line survives a reload; PR 2 test notes |
+| #16 | D17: the tracker's arrived answer carries the named points and start time, so every follower sees the arrived map (tracker republished on Cloudflare) |
+| #17 | Home port (D15): ends within 500 yards of the dock; "heading in"; "✓ RJ is home!" with "✓ Made it in" |
+| #18 | Home port picker on iPad: a fixed crosshair, Save always on (a tap alone did not register on RJ's iPad) |
+
+**Passed on RJ's devices:** all 65 checks; practice crossings to the inlet
+and to a test home port; Airplane Mode; overdue and "add 1 hour"; Stop
+sharing; Delete; the share screen and the calendar reminder; "RJ has
+arrived!" and "RJ is home!" with the map, including a first open after
+arrival; the status line after a reload; the crosshair picker.
+
+**Not yet tested:** real GPS on the water (the gate, "heading in" and the
+end at the real dock); keep-awake over hours; Starlink drop-outs.
+
+### Before the crossing (RJ, about 5 minutes, any time)
+
+1.  **Set the real home port** on the helm iPad: open
+    `…/next/live.html?trip=home`, **Set home port**, drag the crosshair onto
+    the dock, **Save as home port**. It stays on the iPad only.
+2.  **Messages on the iPad:** Settings › Messages › Send & Receive › "Start
+    new conversations from" your own number, so the family text does not
+    arrive from "Mom". Or send the link from the iPhone.
+3.  **Delete old practice trips** if any are still on the Ended screen
+    (otherwise the tracker removes them after 7 days).
+
+### Saturday Nov 28: the water test (about 30 minutes, daylight, away from the house)
+
+On the iPad open `…/next/live.html?trip=home` **without** `practice=1`.
+The trip-home rules apply, so for a test near Palm Beach turn **Hide my
+start off** (the Green Turtle line would otherwise keep everything hidden).
+
+1.  Start a real trip (Hide my start off). Tap **Send link to family** and
+    send it to yourself.
+2.  Run the boat 10 to 15 minutes. Check the dot moves on the iPhone; tap
+    "All good"; tap "Remind me" on the iPhone (then delete the reminder).
+3.  Run in to the home port, or tap **Stop sharing now**.
+4.  **Delete this trip.**
+
+If the dock is set and you come in through the inlet, the iPhone should
+show "heading in" and then "✓ RJ is home!". If anything is off, the
+fallback needs no code: RJ's text with planned arrival and overdue time,
+plus Apple Find My.
+
+### Crossing day (about Nov 29 to 30)
+
+*   Helm iPad charged and on power; **Auto-Lock: Never**; close other tabs
+    and apps; **one** Live tab only.
+*   Open `…/next/live.html?trip=home` (not practice). **Hide my start: on.**
+    Home port set. Start trip at the dock.
+*   **Send link to family.** Keep the Live page in front. If the amber
+    "screen may lock" note shows, tap the page once.
+*   The trip ends by itself near home. Tidy up with **Delete this trip**
+    once family have seen "RJ is home!" (or let it expire after 7 days).
+
+### After the crossing (not started)
+
+*   Sprint 2 in `live-family.md` (remove the old tracking code from the
+    Plan page, points passed, Resume sharing, radar on the Live map, the
+    interval choice, Add to Google Calendar, Track from another device).
+*   Then the rest of `mvp.md`'s build order (onboarding, settings, routes),
+    and promote (`/next/` to the live page), with phone numbers on the
+    overdue notice checked first (D6).
+
+## Update: Nov 25, 2026, late evening (read after the Nov 26 update)
 
 **Pull request 2 is merged (#14) and passed RJ's test on the helm iPad and
 iPhone (10:18 to 10:32 PM):** 59 checks; Delete this trip; times with "EST";
