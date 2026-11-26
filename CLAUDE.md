@@ -25,6 +25,11 @@ A boat-crossing planner (South Florida to the Bahamas first) being turned into a
 - **Model use:** Fable 5.2 for design and reviews only (it drains the weekly limit fast); Opus 5.5 for building; Sonnet 5.5 for small fixes.
 - **One thread for now.** Don't split into parallel Claude Code Project threads until the MVP spec and tracker service exist.
 
+## Tools in this repo (Nov 26)
+- **Guard:** a hook (`.claude/hooks/protect-live.sh`) blocks edits to the live `index.html` and `original/`. That is intended; work in `next/`.
+- **`/pr-check`:** run before every pull request (checks, screenshots, drafted description; it never opens the pull request).
+- **Automatic checks:** GitHub Actions runs every check on each pull request; the Checks box must be green before RJ merges.
+
 ## Where things live
 - `docs/HANDOFF.md`: decisions, MVP scope, open items (start here).
 - `docs/feature-map.md`: every feature and its phase.
