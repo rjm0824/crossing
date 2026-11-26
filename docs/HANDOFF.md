@@ -2,6 +2,26 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
+## Update: Nov 26, 2026, evening (wrap-up): bottom bar merged and passed on RJ's iPhone
+
+**Merged today:** #33 (☰ menu sheet on the Live page) and #34 (the same
+bottom bar as the rest of the app, replacing the ☰). RJ tested both on his
+iPhone after merging (all steps passed; "it's perfect"). The details are in
+the next section. A small docs PR adds a bottom-bar check to Saturday's
+water test in `docs/crossing-test-plan.md`.
+
+**Testing a pull request on the phone:** GitHub Pages publishes only `main`,
+and the tracker accepts only `rjm0824.github.io`, so a preview change can
+only be tried on RJ's phone **after** merging. Say so in every PR's test
+steps; the undo is Revert.
+
+**Nothing else is open from this session.** #29 and #31 stay held for Dec 1
+(no conflicts with #33 or #34).
+
+**Next:** Saturday's water test (Sat Nov 28, 9 AM), including the bottom-bar
+check; then the crossing (Nov 29 to 30, no building); Dec 1 debrief (Sonnet
+5.5), then merge #29 and #31 and connect Settings (Opus 5.5).
+
 ## Update: Nov 26, 2026, evening: bottom bar on the Live screen (the one freeze exception)
 
 RJ asked for a way back to the app's menus from `next/live.html` (Start
