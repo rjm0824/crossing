@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Crossing">
+<meta name="theme-color" content="#0b1d2c"><link rel="apple-touch-icon" href="/crossing/apple-touch-icon.png?v=1"><link rel="icon" type="image/png" href="/crossing/favicon.png?v=1">
+<title>Family · Crossing</title>
+<link rel="stylesheet" href="css/app.css?v=20261127">
+<link rel="stylesheet" href="css/frame.css?v=20261202">
+</head>
+<body data-tab="family">
+<div class="preview" id="previewBar">PREVIEW · test copy, not the live page</div>
+<div class="ftop"><h1>Family</h1></div>
+<div class="fintro">What your followers see, and the link to send them.</div>
+<div class="nfn"><b>Planning aid, not for navigation.</b> The captain decides.</div>
+<main>
+
+<section class="card" id="famNone" hidden>
+  <p class="fbig" id="famNoneText"></p>
+  <a class="btn primary fwide" href="index.html#captain" data-keep-trip>Go to Start trip</a>
+</section>
+
+<section class="card" id="famTrip" hidden>
+  <div class="fstate" id="famState"></div>
+  <p class="fbig" id="famRoute"></p>
+  <p class="note" id="famWhen"></p>
+  <h2 style="margin-top:14px">Family link</h2>
+  <div class="flink" id="famLink"></div>
+  <button class="btn primary fwide" id="famShare" type="button">Share again</button>
+  <div class="frow">
+    <button class="btn fwide" id="famCopy" type="button">Copy link</button>
+    <a class="btn fwide" id="famOpen" href="#" target="_blank" rel="noopener">Open family page</a>
+  </div>
+  <div class="result" id="famResult" aria-live="polite"></div>
+  <p class="note">Share again sends the same message as Send link to family on the Live screen. Anyone with the link can watch until it closes, 2 hours after the trip ends.</p>
+</section>
+
+<section class="card">
+  <h2>What followers see</h2>
+  <ul class="fsee">
+    <li>The boat on a map, once you are clear of the start (outside the Palm Beach Inlet, or past Green Turtle on the trip home)</li>
+    <li>When you expect to arrive, and how long since the last update</li>
+    <li>Your "All good" check-ins and the waypoints you pass</li>
+    <li>An overdue notice if you are not in by your overdue time</li>
+    <li>That you have arrived, then the link closes 2 hours later</li>
+  </ul>
+  <p class="note">No app or login for them. The family page cannot call for help. It tells them: if you are worried, call the Coast Guard.</p>
+</section>
+
+</main>
+<script src="js/settings.js?v=20261130"></script>
+<script src="js/helpers.js?v=20261120"></script>
+<script src="js/familytab.js?v=20261202"></script>
+<script src="js/frame.js?v=20261202"></script>
+</body>
+</html>

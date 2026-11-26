@@ -14,10 +14,11 @@
   try { var tr = JSON.parse(localStorage.getItem('cx:next:trip') || 'null'); underway = !!(tr && tr.status === 'underway'); } catch (e) {}
 
   // Tabs appear here only once their screen exists (no dead buttons).
-  // Family joins in its step; My Trips in MVP row 14.
+  // My Trips joins in MVP row 14.
   var tabs = [
     { id: 'plan', label: 'Plan', ic: '⚓', href: 'index.html' + q + '#captain' },
     { id: 'live', label: 'Live', ic: '◉', href: 'live.html' + q, dot: underway },
+    { id: 'family', label: 'Family', ic: '♥', href: 'family-tab.html' + q },
     { id: 'menu', label: 'Menu', ic: '☰', href: 'menu.html' + q }
   ];
 
@@ -41,6 +42,9 @@
   if (!isPlan) {
     var bar = document.getElementById('previewBar');
     if (bar && location.pathname.indexOf('/next/') !== -1) { bar.style.display = 'block'; document.title = 'PREVIEW · ' + document.title; }
-    document.querySelectorAll('a[data-keep-trip]').forEach(function (a) { a.href = a.getAttribute('href') + q; });
+    document.querySelectorAll('a[data-keep-trip]').forEach(function (a) {
+      var h = a.getAttribute('href'), i = h.indexOf('#');   // the trip goes before any #captain
+      a.href = i < 0 ? h + q : h.slice(0, i) + q + h.slice(i);
+    });
   }
 })();
