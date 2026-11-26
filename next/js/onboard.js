@@ -640,8 +640,9 @@
     function show(kids) { box.replaceChildren.apply(box, kids); }
     if (typeof loadForecast !== 'function') return;
     Object.assign(MY, readMySetup());
+    Object.assign(RT, buildRoute());
     var day = etDate(new Date(Date.now() + 86400e3));
-    var label = h('span', { class: 'vlabel', text: 'Tomorrow \u00b7 ' + ORIG + ' \u2192 ' + DEST });
+    var label = h('span', { class: 'vlabel', text: 'Tomorrow \u00b7 ' + RT.orig + ' \u2192 ' + RT.dest });
     show([label, h('p', { class: 'ob-help', text: 'Checking tomorrow\u2019s forecast\u2026' })]);
     loadForecast().then(function () {
       var best = null;
@@ -654,7 +655,7 @@
       show([label,
         h('div', { class: 'vrow' }, [
           h('span', { class: 'vbadge ' + CLS[best.level], id: 'obWord', text: WORDS[best.level] }),
-          h('span', { class: 'vwhy' }, [h('b', { class: 'vsay', text: SAY[best.level] }), 'Best departure ', h('b', { text: fmtT(best.dep) }), '. Worst seas ' + best.worstWave.toFixed(1) + ' ft. ' + DEST + ' about ' + fmtT(arr) + '.'])
+          h('span', { class: 'vwhy' }, [h('b', { class: 'vsay', text: SAY[best.level] }), 'Best departure ', h('b', { text: fmtT(best.dep) }), '. Worst seas ' + best.worstWave.toFixed(1) + ' ft. ' + RT.dest + ' about ' + fmtT(arr) + '.'])
         ]),
         best.flags.length ? h('p', { class: 'ob-help', text: best.flags[0] }) : null,
         h('p', { class: 'ob-help', text: 'Judged with your limits: seas ' + MY.seasFt + ' ft, wind ' + MY.windKt + ' kt, at ' + MY.cruiseKt + ' kt. Forecasts can be wrong; the captain decides.' })

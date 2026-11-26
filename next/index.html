@@ -26,7 +26,7 @@
   <div class="call" id="call"><div class="badge na">…</div><div class="why">Pulling the forecast…</div></div>
   <ul class="flags" id="flags"></ul>
   <div class="deps" id="deps"></div>
-  <div class="note"><span id="depHow">Tap a time to see it; your pick is saved on this device. ★ marks the best departure.</span> <span id="depFrom">Departure options from the Palm Beach Inlet.</span> The call scores seas and wind at each point along the route at the hour you'd pass it (cruise ~26 kt / 30 mph). Your limits: under 3 ft = go; 3–4 ft = crossable, not comfortable; over 4 ft = no; no north wind against the Gulf Stream. <b>A draft, not a decision:</b> check NWS and your charts, then make the call.</div>
+  <div class="note"><span id="depHow">Tap a time to see it; your pick is saved on this device. ★ marks the best departure.</span> <span id="depFrom">Departure options from the Palm Beach Inlet.</span> <span id="callHow">The call scores seas and wind at each point along the route at the hour you'd pass it (cruise ~26 kt / 30 mph). Your limits: under 3 ft = go; 3–4 ft = crossable, not comfortable; over 4 ft = no; no north wind against the Gulf Stream.</span> <b>A draft, not a decision:</b> check NWS and your charts, then make the call.</div>
 </section>
 
 <section class="card">
@@ -76,7 +76,7 @@
   <div class="note">Seas = significant wave height (ft) and period (s). Wind in knots with direction it blows from. Model data (Open-Meteo / NOAA GFS-Wave, ECMWF); it smooths things out, so expect bigger sets.</div>
 </section>
 
-<section class="card">
+<section class="card" id="insideCard">
   <h2>Inside the Sea of Abaco</h2>
   <div class="kv" id="inside"></div>
   <div class="note">Inside chop is estimated from the wind (the cays block ocean swell). Whale Cay passage goes outside: watch for a rage when there's big northeast swell, and wait it out or take the inside route on a good tide.</div>
@@ -102,7 +102,7 @@
   <div style="margin-top:10px" class="links">
     <button class="btn primary" id="gpxBtn">Download route (GPX for the Garmin)</button>
   </div>
-  <div class="note">GPX: save it, then send it to the GPSMAP 1242xsv through the Garmin ActiveCaptain app (or a microSD card). The route is your own Aug 14 Garmin track (inlet to Green Turtle, simplified). Still check it against your BlueChart charts before you run it.</div>
+  <div class="note" id="gpxNote">GPX: save it, then send it to the GPSMAP 1242xsv through the Garmin ActiveCaptain app (or a microSD card). The route is your own Aug 14 Garmin track (inlet to Green Turtle, simplified). Still check it against your BlueChart charts before you run it.</div>
 </section>
 
 </main>
@@ -112,11 +112,12 @@
 <script src="js/routes.js?v=20261127d"></script>
 <script src="js/helpers.js?v=20261120"></script>
 <script src="js/mysetup.js?v=20261127d"></script>
-<script src="js/forecast.js?v=20261127b"></script>
-<script src="js/plan.js?v=20261127b"></script>
+<script src="js/active-route.js?v=20261127b"></script>
+<script src="js/forecast.js?v=20261127c"></script>
+<script src="js/plan.js?v=20261127c"></script>
 <script src="js/tides.js?v=20261120"></script>
-<script src="js/map.js?v=20261130"></script>
-<script src="js/boot.js?v=20261130"></script>
+<script src="js/map.js?v=20261127a"></script>
+<script src="js/boot.js?v=20261127a"></script>
 <script src="js/frame.js?v=20261202"></script>
 </body>
 </html>

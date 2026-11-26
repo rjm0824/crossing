@@ -7,6 +7,15 @@ window.addEventListener('hashchange',()=>location.reload());
   if(location.pathname.includes('/next/')){$('previewBar').style.display='block';document.title='PREVIEW · '+document.title;}
   renderDays();initMap();
   if(IS_CAPTAIN)$('captain').style.display='block';
+  // Saved setup and route (rows 8 and 9). With no setup and the Abaco route, the page reads as before.
+  if(MY.saved)$('callHow').textContent=`The call scores seas and wind at each point along the route at the hour you'd pass it (cruise ${MY.cruiseKt} kt, from your setup). Your limits: seas over ${MY.seasFt} ft = no, within a foot of it = crossable, not comfortable; wind over ${MY.windKt} kt = crossable, not comfortable`+(MY.noNorth?`; north wind of ${MY.windKt} kt or more against the Gulf Stream = no.`:'.');
+  if(!RT.abaco){
+    $('insideCard').style.display='none';
+    $('gpxNote').textContent='GPX: save it, then send it to your plotter (for a Garmin, through the ActiveCaptain app or a microSD card). This route is the points you set, joined by straight lines. Check it against your charts before you run it.';
+    // The Live screen is frozen until after the crossing and only knows the Abaco route.
+    $('liveBtn').style.display='none';
+    $('trackNote').textContent='Live tracking follows West Palm \u2192 Abaco until after the crossing (Dec 1). To start a trip now, pick that route in Menu \u2192 Setup.';
+  }
   // Start trip & share with family: opens the Live page, keeping the direction.
   try{const tr=JSON.parse(localStorage.getItem('cx:next:trip')||'null');$('liveBtn').href='live.html'+(HOME?'?trip=home':'');
     if(tr&&tr.status==='underway')$('liveBtn').textContent='Back to your trip';}catch(e){}
@@ -20,6 +29,7 @@ window.addEventListener('hashchange',()=>location.reload());
 // Go-day checklist (captain mode only; ticks in localStorage on this device)
 (function(){
   if(!location.hash.startsWith('#captain'))return;
+  if(!RT.abaco)return;   // this checklist is the Abaco trip's; other routes get theirs later
   const ITEMS=HOME?[
     ['Final weather call','Check the call card above; go only on a green or a yellow you accept.'],
     ['Starlink to Roam + Ocean Mode','In the Starlink app on the boat; it takes effect right away.'],
@@ -65,8 +75,9 @@ window.addEventListener('hashchange',()=>location.reload());
 (function(){
   const h=location.hash||'';
   const other=HOME?location.pathname+h:location.pathname+'?trip=home'+h;
-  $('dirBar').innerHTML=(HOME?'<b>Trip home:</b> Guana → Palm Beach':'<b>Trip over:</b> Palm Beach → Green Turtle')+' · <a href="'+other+'" style="color:var(--accent)">'+(HOME?'switch to trip over':'switch to trip home')+'</a>';
-  if(HOME){
+  $('dirBar').innerHTML=(!RT.abaco?(HOME?'<b>Trip home:</b> ':'<b>Trip over:</b> ')+esc(RT.orig)+' → '+esc(RT.dest):HOME?'<b>Trip home:</b> Guana → Palm Beach':'<b>Trip over:</b> Palm Beach → Green Turtle')+' · <a href="'+other+'" style="color:var(--accent)">'+(HOME?'switch to trip over':'switch to trip home')+'</a>';
+  if(!RT.abaco){$('depFrom').textContent='Departure options from '+RT.orig+'.';if(HOME)document.title='Trip home · '+document.title;}
+  else if(HOME){
     $('depFrom').textContent='Departure options from Guana Cay (via Whale Cay and Green Turtle).';
     $('trackNote').textContent='Start the trip on the helm iPad, then send the family link. Family follow the boat on their own page. Nothing is shared until you are past Green Turtle, and sharing stops when you arrive.';
     document.title='Trip home · Goof n\' Off';
