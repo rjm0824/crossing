@@ -810,8 +810,8 @@ later stages get dates once Stage 1 shows the real pace.
 | 2 | Nov 21 | Pull request: split the preview page into files, no change in behaviour | Check the preview looks and works as before. |
 | 3 | Nov 21 | Pull request: tracker service, preview copy, with a small test page that starts and reads a trip | Connect the repo to Cloudflare; add the invite code as a setting; open the test page. |
 | 4 | Nov 25 (done) | Design doc and review: Live screen and family page (`live-family.md`) | Read the summary and decide the findings. Run the calendar test (Q1). |
-| 5 | Nov 27 | Pull request: Start trip, Live screen, send queue, start gate, plain family page (end to end) | Practice mode on the iPad and phone. |
-| 6 | Nov 28 | Pull request: family text, reminder, delete trip, family page polish. "Track from another device" and the other extras are Sprint 2 in `live-family.md`. | A short run on the water. |
+| 5 | Nov 25 (done, #12) | Pull request: Start trip, Live screen, send queue, start gate, plain family page (end to end) | Practice mode on the iPad and phone. Passed Nov 25. |
+| 6 | Nov 25 to 26 (done, #14 to #18) | Pull request: family text, reminder, delete trip, family page polish; also local times, the arrived map for every follower (D16, D17) and the home port (D15). "Track from another device" and the other extras are Sprint 2 in `live-family.md`. | Practice runs passed Nov 25 to 26. A short run on the water (Sat Nov 28). |
 
 After Stage 1, RJ can start a trip, share a family link that closes, and track
 from the helm iPad.

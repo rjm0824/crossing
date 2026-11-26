@@ -2,7 +2,29 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
-## Update: Nov 26, 2026, 12:20 AM (read this first)
+## Update: Nov 26, 2026, 1:45 AM (read this first, then the 12:20 AM update)
+
+**After the crossing build, the same night (all merged, no app changes):**
+
+| PR | What |
+| --- | --- |
+| #19 | This handoff: the steps to the crossing |
+| #20 | Sprint 2 checked against testing (now "after the crossing", code freeze on the Live page, family page and tracker until then; a "Passed …" knock-on found); draft overdue-notice numbers in `docs/overdue-numbers.md` (D6, for RJ or his attorney to confirm) |
+| #21 | **Guard:** `.claude/hooks/protect-live.sh` (a PreToolUse hook in `.claude/settings.json`) blocks any Claude session from changing the live `index.html` or `original/`. **`/pr-check`:** `.claude/commands/pr-check.md` and `.claude/pr-check/check.sh`. `docs/old-tracker-check.md` (Q2: likely a key mismatch or Google re-authorisation; a 5-minute check) |
+| #22 | **GitHub Actions** (`.github/workflows/checks.yml`): on every pull request and every change to `main`, runs the 65 trip checks, loads every preview script, the 75 tracker checks and the `/pr-check` checks. Read-only, $0. First two runs green. |
+
+*   **Crossing-day card** for RJ (private page, ticks saved on his phone):
+    https://claude.ai/artifact/2BNtygYUVDFkJmzBJnWBm1
+*   **For future sessions:** the guard will refuse edits to the live page and
+    `original/`; that is intended. A shell command that only *mentions*
+    those files is allowed; one that writes to them is not. Use `/pr-check`
+    before every pull request; the Checks box on each pull request must be
+    green before RJ merges.
+*   **Still open for RJ:** set the real home port; iPad Messages to his own
+    number; optional old-tracker check; optional call to confirm one Coast
+    Guard number; Saturday's water test.
+
+## Update: Nov 26, 2026, 12:20 AM
 
 **Everything planned for the crossing home is built, merged and passed on
 RJ's real helm iPad and iPhone.** Only Saturday's test on the water is left.
