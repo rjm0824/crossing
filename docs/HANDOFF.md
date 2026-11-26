@@ -12,23 +12,21 @@ Apps Script tracker from the preview Plan page (Sprint 2, item 1), and this
 update rides along with it. RJ marks it Ready, tests it (2 minutes) and
 merges it once he is home.
 
-**Saturday's water test changed. The steps further down are wrong.** The
-trip-home rules count anywhere west of 80.035°W (inside the Palm Beach Inlet)
-as arrived. With Hide my start off, a trip started at RJ's dock therefore
-ends about 5 seconds later. The crossing itself is not affected, because
-nothing counts until the boat is past Green Turtle. No code change is
-needed. The test now:
+**Saturday's water test is in Abaco** (correction, 1:15 AM: RJ and the helm
+iPad are at Guana Cay, not Palm Beach). Done tonight on the iPad: home port
+set; Safari allowed to use location (it was off, so a real Start trip failed
+until fixed; practice runs never needed it); a real Start trip with Hide my
+start on showed "Waiting until you're past Green Turtle", then was stopped
+and deleted. The iPad uses Mom's Apple account: the family link goes from
+the iPad to RJ, and RJ forwards it from his iPhone.
 
-1.  Set the home port first.
-2.  Run about a mile outside the inlet.
-3.  Start the trip home there, with Hide my start off, and send the link to
-    yourself.
-4.  Run 15 minutes offshore; tap All good and Remind me.
-5.  Come back in through the inlet: "heading in", then "✓ RJ is home!".
-6.  Delete the trip and send Claude the screenshots.
-
-The tick-box version is at the top of the crossing-day card:
-https://claude.ai/artifact/2BNtygYUVDFkJmzBJnWBm1
+Saturday: open the trip home with Hide my start off, start at the dock, send
+the link to yourself, run 15 minutes, All good and Remind me, Stop sharing
+now, Delete. The home-port ending ("heading in", "RJ is home!") can only
+happen at Palm Beach, so the crossing is its first real run; it passed on
+practice runs. (Do not run a trip-home test inside the Palm Beach Inlet with
+Hide off: anywhere west of 80.035°W counts as arrived, so it ends in seconds.)
+Tick-box version: https://claude.ai/artifact/2BNtygYUVDFkJmzBJnWBm1
 
 **Next sessions, and the model for each (CLAUDE.md "Model use"):**
 
@@ -102,7 +100,7 @@ end at the real dock); keep-awake over hours; Starlink drop-outs.
 3.  **Delete old practice trips** if any are still on the Ended screen
     (otherwise the tracker removes them after 7 days).
 
-### Saturday Nov 28: the water test (SUPERSEDED: see the Nov 26 afternoon update; do not start at the dock)
+### Saturday Nov 28: the water test (SUPERSEDED: see the Nov 26 afternoon update)
 
 On the iPad open `…/next/live.html?trip=home` **without** `practice=1`.
 The trip-home rules apply, so for a test near Palm Beach turn **Hide my
