@@ -20,6 +20,7 @@
 //   route: { id: 'abaco' },          // row 9 adds the other presets and tapped points
 //   followers: [ { name, phone } ],  // first names; phone optional, only pre-fills the text at Start trip
 //   answers: [ { text, chip } | { skip: true } ],  // the 7 setup questions, as tapped or typed
+//   answersAt, boatCheckedAt, followersCheckedAt,  // (ms) so newer answers refill the forms, but older ones never undo an edit
 //   agreedAt,  // when the safety box was ticked (ms)
 //   doneAt,    // when onboarding was finished (ms)
 //   savedAt

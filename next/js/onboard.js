@@ -44,7 +44,7 @@
   }
   function clip(s, n) { return String(s == null ? '' : s).replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n); }
   function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
-  function go(screen) { st.screen = screen; render(); window.scrollTo(0, 0); }
+  function go(screen) { if (!st.form && /^(boat|limits|followers|tracking)$/.test(screen)) startForm(); st.screen = screen; render(); window.scrollTo(0, 0); }
 
   // Rough fuel burn when the captain taps "Not sure": by length, engines and
   // boat type. Shown in amber as an estimate to check after the first trip.
@@ -94,7 +94,7 @@
     return f;
   }
 
-  function saveAnswers() { S.save({ answers: st.answers }); }
+  function saveAnswers() { S.save({ answers: st.answers, answersAt: Date.now() }); }
 
   // ---------- screens ----------
   function previewBanner() {
@@ -107,7 +107,7 @@
   }
 
   function welcome() {
-    var started = st.answers.length > 0 || st.agree;
+    var started = st.answers.length > 0 || st.agree, finished = !!(S.load() || {}).doneAt;
     return h('div', { class: 'welcome' }, [h('div', { class: 'ob-in' }, [
       h('div', { class: 'top' }, [
         h('a', { class: 'exit', href: 'menu.html', text: '‹ Menu' }),
@@ -117,7 +117,7 @@
       ]),
       art(),
       h('div', { class: 'acts' }, [
-        h('button', { type: 'button', class: 'bigwhite', id: 'obStart', text: started ? 'Carry on setting up' : 'Set up my boat', onclick: function () { go('safety'); } }),
+        h('button', { type: 'button', class: 'bigwhite', id: 'obStart', text: finished ? 'Change my setup' : started ? 'Carry on setting up' : 'Set up my boat', onclick: function () { go('safety'); } }),
         started ? h('button', { type: 'button', class: 'linkbtn', style: 'color:#A9C3D3;align-self:center', text: 'Start the questions over', onclick: function () {
           if (!confirm('Clear your answers to the questions and start over?')) return;
           st.answers = []; saveAnswers(); go('safety');
@@ -236,30 +236,250 @@
     } }));
 
     return stepFrame(2, 'Tell me about your boat', function () { go('safety'); }, body,
-      h('button', { type: 'button', class: 'ob-next' + (done ? '' : ' quiet'), id: 'obNext', text: done ? 'Check my boat' : 'Skip, I’ll fill the forms', onclick: function () { go('later'); } }));
+      h('button', { type: 'button', class: 'ob-next' + (done ? '' : ' quiet'), id: 'obNext', text: done ? 'Check my boat' : 'Skip, I’ll fill the forms', onclick: function () { startForm(); go('boat'); } }));
   }
 
-  // Temporary end screen for this step of row 8: shows how the answers fill
-  // the form. The next step replaces it with the boat, limits, followers and
-  // tracking screens.
-  function later() {
-    var f = fromAnswers(st.answers);
-    function row(label, v, est) { return h('li', { class: est ? 'est' : '' }, [h('span', { text: label }), h('b', { text: v || '–' })]); }
-    return stepFrame(3, 'Your boat', function () { go('tell'); }, [
-      h('p', { class: 'ob-ok', text: 'Filled in from your answers. You’ll check and change them on this screen.' }),
-      h('div', { class: 'ob-card' }, [h('ul', { class: 'rows' }, [
-        row('Boat name', f.name), row('Type of boat', f.type),
-        row('Length (feet)', f.length), row('Engines', f.engines),
-        row('Cruise speed (kt)', f.cruise), row('Fuel tank (gal)', f.tank),
-        row('Fuel burn at cruise (gph)', f.burn ? f.burn + (f.burnEstimate ? ' (estimate)' : '') : '', f.burnEstimate),
-        row('Route', 'West Palm → Abaco via Green Turtle'),
-        row('Followers', f.followers.length ? f.followers.map(function (n) { return n || '(name to add)'; }).join(', ') : '')
-      ])]),
-      h('p', { class: 'ob-placeholder', text: 'Being built: checking your boat, limits, followers and tracking come in the next update. Nothing here changes your plan yet.' })
-    ], h('a', { class: 'ob-next', href: 'menu.html', style: 'display:flex;align-items:center;justify-content:center;text-decoration:none', text: 'Back to Menu' }));
+  // ---------- Step 3: your boat ----------
+  // The form starts from the answers when they are newer than the last check
+  // of this screen; otherwise from what was saved here.
+  var NUMS = {
+    length: { label: 'Length (feet)', min: 10, max: 200, ph: 'e.g. 39' },
+    cruise: { label: 'Cruise speed (knots)', min: 5, max: 60, ph: 'e.g. 26', key: 'cruiseKt' },
+    tank:   { label: 'Fuel tank (gallons)', min: 10, max: 2000, ph: 'e.g. 215', key: 'tankGal' },
+    burn:   { label: 'Fuel burn at cruise (gallons an hour)', min: 1, max: 200, ph: 'e.g. 28', key: 'burnGph' }
+  };
+  function startForm() {
+    var s = S.load() || {}, b = s.boat || {}, f = fromAnswers(st.answers);
+    var useAnswers = st.answers.length && (s.answersAt || 0) > (s.boatCheckedAt || 0);
+    function pick(k, savedV) { var a = f[k]; return useAnswers && a ? a : (savedV != null && savedV !== '' ? String(savedV) : a); }
+    st.form = {
+      name: pick('name', b.name), type: pick('type', b.type), length: pick('length', b.length), engines: pick('engines', b.engines),
+      cruise: pick('cruise', b.cruiseKt), tank: pick('tank', b.tankGal), burn: pick('burn', b.burnGph),
+      burnEstimate: useAnswers && f.burn ? f.burnEstimate : !!b.burnEstimate
+    };
+    var savedF = Array.isArray(s.followers) ? s.followers.map(function (x) { return { name: x.name || '', phone: x.phone || '' }; }) : null;
+    var useAnsF = st.answers[6] && !st.answers[6].skip && (s.answersAt || 0) > (s.followersCheckedAt || 0);
+    st.followers = useAnsF || !savedF ? f.followers.map(function (n) { return { name: n, phone: '' }; }) : savedF;
+    var L = s.limits || {};
+    st.limits = { preset: L.preset || 'standard', seasFt: L.seasFt || 4, windKt: L.windKt || 15, noNorthInStream: L.noNorthInStream !== false };
+  }
+  function numOK(k, v) { var n = Number(String(v).replace(',', '.')); return isFinite(n) && n >= NUMS[k].min && n <= NUMS[k].max ? Math.round(n * 10) / 10 : null; }
+
+  // A simple outline for each boat type (row 10 adds the photo). Bow to the
+  // right. The cabin shapes come from the onboarding mockup.
+  function outline(type, engines) {
+    var tops = {
+      'Center console': 'M 150 64 L 152 44 L 180 44 L 182 63 M 128 28 L 206 28 M 138 28 L 146 58 M 198 28 L 190 58',
+      'Walkaround': 'M 118 62 L 124 44 L 204 44 L 244 58 M 124 44 L 130 28 L 198 28 L 204 44 M 140 52 L 196 52',
+      'Express cruiser': 'M 84 62 Q 96 40 150 38 L 214 38 Q 252 42 266 57 M 120 50 L 220 48',
+      'Catamaran': 'M 108 60 L 112 32 L 228 32 L 240 58 M 124 44 L 216 44'
+    };
+    var t = HULLS.indexOf(type) >= 0 ? type : 'Center console';
+    var out = /diesel|inboard/i.test(engines || '') ? '' : '<path d="M 6 56 L 22 56 L 22 98 L 12 98 L 12 80 L 6 74 Z" fill="none" stroke="#0E2233" stroke-width="3" stroke-linejoin="round"/>';
+    var cat = t === 'Catamaran' ? '<path d="M 46 94 L 50 104 L 250 104 L 258 94" fill="none" stroke="#0E2233" stroke-width="3"/>' : '';
+    var w = h('div', { class: 'boatpic', 'aria-hidden': 'true' });
+    w.innerHTML = '<svg viewBox="0 0 300 116" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M 22 62 L 292 56 Q 280 80 258 94 L 46 94 Z" fill="#E4EEF4" stroke="#0E2233" stroke-width="3" stroke-linejoin="round"/>' +
+      '<path d="' + tops[t] + '" fill="none" stroke="#0E2233" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>' + out + cat +
+      '<path d="M 0 108 Q 25 102 50 108 T 100 108 T 150 108 T 200 108 T 250 108 T 300 108" fill="none" stroke="#8FB1C6" stroke-width="2"/></svg>';
+    return w;
   }
 
-  var SCREENS = { welcome: welcome, safety: safety, tell: tell, later: later };
+  function field(id, label, value, opts) {
+    opts = opts || {};
+    var inp = h('input', { id: 'f_' + id, type: 'text', value: value || '', maxlength: opts.max || '60', autocomplete: 'off', placeholder: opts.ph || '', inputmode: opts.num ? 'decimal' : null });
+    inp.addEventListener('input', function () { st.form[id] = inp.value; if (id === 'burn') { st.form.burnEstimate = false; wrap.classList.remove('est'); } if (opts.oninput) opts.oninput(); });
+    var wrap = h('label', { class: 'obfield' + (opts.est ? ' est' : '') }, [h('span', { text: label }), inp, opts.extra || null]);
+    return wrap;
+  }
+
+  function boat() {
+    var f = st.form, pic = h('div', { class: 'picwrap' });
+    function drawPic() {
+      pic.replaceChildren(outline(f.type, f.engines), h('div', { class: 'pictitle', text: (clip(f.name, 40) || 'Your boat') + ' · ' + (clip(f.type, 40) || 'boat type') }));
+    }
+    drawPic();
+    var typeChips = h('div', { class: 'chips small' }, HULLS.map(function (t) {
+      return h('button', { type: 'button', class: 'chip' + (f.type === t ? ' on' : ''), 'aria-pressed': f.type === t ? 'true' : 'false', text: t, onclick: function () { f.type = t; document.getElementById('f_type').value = t; render(); } });
+    }));
+    var msg = h('div', { class: 'obresult', 'aria-live': 'polite' });
+    var body = [
+      h('div', { class: 'ob-card' }, [pic, h('p', { class: 'ob-help', text: 'A simple outline for your boat type. Adding a photo comes in a later update.' })]),
+      st.answers.length ? h('p', { class: 'ob-ok', text: 'Filled in from your answers. Check it over and change anything that’s wrong.' }) : null,
+      h('div', { class: 'ob-card' }, [
+        field('name', 'Boat name', f.name, { max: 40, ph: "e.g. Goof n' Off", oninput: drawPic }),
+        field('type', 'Type of boat', f.type, { max: 40, ph: 'e.g. Center console', extra: typeChips, oninput: drawPic }),
+        field('length', NUMS.length.label, f.length, { num: true, max: 6, ph: NUMS.length.ph }),
+        field('engines', 'Engines', f.engines, { max: 60, ph: 'e.g. Triple 300 hp outboards', oninput: drawPic }),
+        field('cruise', NUMS.cruise.label, f.cruise, { num: true, max: 6, ph: NUMS.cruise.ph }),
+        field('tank', NUMS.tank.label, f.tank, { num: true, max: 6, ph: NUMS.tank.ph }),
+        field('burn', NUMS.burn.label + (f.burnEstimate ? ' · estimate' : ''), f.burn, { num: true, max: 6, ph: NUMS.burn.ph, est: f.burnEstimate,
+          extra: f.burnEstimate ? h('small', { text: 'A rough estimate for a boat like yours. Check it after your first trip.' }) : null })
+      ]),
+      !f.burn ? h('div', { class: 'ob-ask' }, [
+        h('p', { text: 'One thing missing: about how much fuel do you burn at cruise?' }),
+        h('div', { class: 'chips small' }, ['9', '14'].map(function (g) {
+          return h('button', { type: 'button', class: 'chip', text: g + ' gph', onclick: function () { f.burn = g; f.burnEstimate = false; render(); } });
+        }).concat([h('button', { type: 'button', class: 'chip', text: 'Estimate for me', onclick: function () {
+          var e = estimateBurn({ length: numOK('length', f.length) || '', engines: f.engines, type: f.type });
+          if (!e) { msg.textContent = 'Add the length first, then I can estimate.'; return; }
+          f.burn = String(e); f.burnEstimate = true; render();
+        } })]))
+      ]) : null
+    ];
+    function save() {
+      var out = { name: clip(f.name, 40), type: clip(f.type, 40), engines: clip(f.engines, 60), burnEstimate: !!f.burnEstimate };
+      var bad = null;
+      ['length', 'cruise', 'tank', 'burn'].forEach(function (k) {
+        var raw = clip(f[k], 20), v = raw === '' ? '' : numOK(k, raw);
+        if (v === null) { bad = bad || k; return; }
+        if (k === 'length') out.length = v === '' ? '' : String(Math.round(v)); else out[NUMS[k].key] = v === '' ? null : v;
+      });
+      if (bad) {
+        msg.textContent = NUMS[bad].label + ': enter a number from ' + NUMS[bad].min + ' to ' + NUMS[bad].max + '.';
+        var el = document.getElementById('f_' + bad); el.focus(); el.scrollIntoView({ block: 'center' });
+        return;
+      }
+      if (!S.save({ boat: out, boatCheckedAt: Date.now() })) { msg.textContent = 'Couldn’t save on this device. Check that private browsing is off.'; return; }
+      go('limits');
+    }
+    return stepFrame(3, 'Your boat', function () { go('tell'); }, body, h('div', {}, [msg, h('button', { type: 'button', class: 'ob-next', id: 'obNext', text: 'Looks right', onclick: save })]));
+  }
+
+  // ---------- Step 4: limits ----------
+  var PRESETS = [['cautious', 'Cautious', 3, 12], ['standard', 'Standard', 4, 15], ['experienced', 'Experienced', 5, 18]];
+  function limits() {
+    var L = st.limits;
+    function stepper(label, key, unit, min, max) {
+      function nudge(d) { L[key] = Math.max(min, Math.min(max, L[key] + d)); L.preset = 'custom'; render(); }
+      return h('div', { class: 'stepper' }, [
+        h('div', {}, [h('span', { text: label }), h('b', { id: 'v_' + key, text: L[key] + ' ' + unit })]),
+        h('div', { class: 'pm' }, [
+          h('button', { type: 'button', 'aria-label': 'Less ' + label.toLowerCase(), text: '−', disabled: L[key] <= min, onclick: function () { nudge(-1); } }),
+          h('button', { type: 'button', 'aria-label': 'More ' + label.toLowerCase(), text: '+', disabled: L[key] >= max, onclick: function () { nudge(1); } })
+        ])
+      ]);
+    }
+    var sw = h('button', { type: 'button', class: 'switchrow', role: 'switch', 'aria-checked': L.noNorthInStream ? 'true' : 'false', id: 'obNorth', onclick: function () { L.noNorthInStream = !L.noNorthInStream; render(); } }, [
+      h('span', {}, [h('b', { text: 'No north wind in the Gulf Stream' }), h('small', { text: 'Wind against the current stacks up steep waves' })]),
+      h('span', { class: 'sw' + (L.noNorthInStream ? ' on' : ''), 'aria-hidden': 'true' })
+    ]);
+    return stepFrame(4, 'Your limits', function () { go('boat'); }, [
+      h('p', { class: 'ob-lede', text: 'Your limits decide GO or NO-GO. Start from a preset, then adjust.' }),
+      h('div', { class: 'presets' }, PRESETS.map(function (p) {
+        var on = L.preset === p[0];
+        return h('button', { type: 'button', class: on ? 'on' : '', 'aria-pressed': on ? 'true' : 'false', onclick: function () { L.preset = p[0]; L.seasFt = p[2]; L.windKt = p[3]; render(); } },
+          [h('b', { text: p[1] }), h('small', { text: p[2] + ' ft · ' + p[3] + ' kt' })]);
+      })),
+      stepper('Max seas', 'seasFt', 'ft', 1, 8),
+      stepper('Max wind', 'windKt', 'kt', 5, 30),
+      sw,
+      h('p', { class: 'ob-help', text: 'Standard matches how the Plan page judges a crossing today.' })
+    ], h('button', { type: 'button', class: 'ob-next', id: 'obNext', text: 'Save my limits', onclick: function () {
+      S.save({ limits: { preset: L.preset, seasFt: L.seasFt, windKt: L.windKt, noNorthInStream: L.noNorthInStream } });
+      go('followers');
+    } }));
+  }
+
+  // ---------- Step 5: who follows you ----------
+  function phoneOK(p) { p = clip(p, 24); return p === '' || (/^[+()\d\s.-]+$/.test(p) && p.replace(/\D/g, '').length >= 7 && p.replace(/\D/g, '').length <= 15); }
+  function followers() {
+    var list = st.followers, msg = h('div', { class: 'obresult', 'aria-live': 'polite' });
+    var rows = list.map(function (fo, i) {
+      var nm = h('input', { type: 'text', id: 'fn_' + i, value: fo.name, maxlength: '40', autocomplete: 'off', placeholder: 'First name', 'aria-label': 'Follower ' + (i + 1) + ' first name' });
+      nm.addEventListener('input', function () { fo.name = nm.value; ini.textContent = (clip(nm.value, 1) || '?').toUpperCase(); rm.setAttribute('aria-label', 'Remove ' + (clip(nm.value, 40) || 'this follower')); });
+      var ph = h('input', { type: 'tel', id: 'fp_' + i, value: fo.phone, maxlength: '24', autocomplete: 'off', placeholder: 'Phone (optional)', 'aria-label': 'Follower ' + (i + 1) + ' phone, optional' });
+      ph.addEventListener('input', function () { fo.phone = ph.value; });
+      var ini = h('span', { class: 'ini', 'aria-hidden': 'true', text: (clip(fo.name, 1) || '?').toUpperCase() });
+      var rm = h('button', { type: 'button', class: 'rm', 'aria-label': 'Remove ' + (clip(fo.name, 40) || 'this follower'), text: '×', onclick: function () { list.splice(i, 1); render(); } });
+      return h('div', { class: 'follower' }, [ini, h('div', { class: 'fins' }, [nm, ph]), rm]);
+    });
+    return stepFrame(5, 'Who follows you', function () { go('limits'); }, [
+      h('p', { class: 'ob-lede', text: 'Who should get the link to follow you? They don’t need the app.' }),
+      h('div', { class: 'followers' }, rows),
+      list.length < 6 ? h('button', { type: 'button', class: 'addrow', id: 'obAdd', text: '+ Add a follower', onclick: function () {
+        list.push({ name: '', phone: '' }); render(); var el = document.getElementById('fn_' + (list.length - 1)); if (el) el.focus();
+      } }) : null,
+      h('div', { class: 'ob-card ob-help' }, [
+        h('p', { text: 'When you start a trip, you send them one text with the link. The family page shows the rest: where you are, when you arrive, and if you’re overdue.' }),
+        h('p', { text: 'The app never sends texts itself. A phone number is optional and is kept on this device to fill in that text.' })
+      ])
+    ], h('div', {}, [msg, h('button', { type: 'button', class: 'ob-next', id: 'obNext', text: list.length ? 'Continue' : 'Skip for now', onclick: function () {
+      var out = [], bad = -1;
+      list.forEach(function (fo, i) {
+        var n = clip(fo.name, 40), p = clip(fo.phone, 24);
+        if (!n && !p) return;
+        if (!n && bad < 0) { bad = i; msg.textContent = 'Add a first name, or remove that row.'; document.getElementById('fn_' + i).focus(); return; }
+        if (!phoneOK(p) && bad < 0) { bad = i; msg.textContent = n + '’s phone: use digits only, like (561) 555-0123, or leave it empty.'; document.getElementById('fp_' + i).focus(); return; }
+        out.push({ name: n, phone: p });
+      });
+      if (bad >= 0) return;
+      st.followers = out.map(function (x) { return { name: x.name, phone: x.phone }; });
+      S.save({ followers: out, followersCheckedAt: Date.now() });
+      go('tracking');
+    } })]));
+  }
+
+  // ---------- Step 6: tracking on the water ----------
+  // Location: asks the phone once so the question doesn't pop up at the dock.
+  // The position it returns is not kept or sent. Keep screen on: the same
+  // choice as Settings (cx:next:prefs.keepAwake), which the Live screen reads
+  // after the crossing (Dec 1).
+  var PREFS = 'cx:next:prefs';
+  function readPrefs() { try { var v = JSON.parse(localStorage.getItem(PREFS) || 'null'); if (v && typeof v === 'object') return v; } catch (e) {} return {}; }
+  function tracking() {
+    var p = readPrefs(), awake = p.keepAwake !== false;
+    var loc = st.loc || 'ask';
+    var locTxt = { ask: 'Allow', asking: 'Asking…', ok: 'Allowed ✓', no: 'Not allowed', none: 'Not on this device' }[loc];
+    var locBtn = h('button', { type: 'button', class: 'permrow', id: 'obLoc', disabled: loc === 'asking' || loc === 'ok', onclick: function () {
+      if (!navigator.geolocation) { st.loc = 'none'; render(); return; }
+      st.loc = 'asking'; render();
+      navigator.geolocation.getCurrentPosition(function () { st.loc = 'ok'; render(); }, function (e) { st.loc = e && e.code === 1 ? 'no' : 'ok'; render(); }, { maximumAge: 600000, timeout: 20000 });
+    } }, [
+      h('span', {}, [h('b', { text: 'Location while a trip is on' }), h('small', { text: 'Sends your position to your private tracker, only during a trip' })]),
+      h('span', { class: 'pill' + (loc === 'ok' ? ' on' : loc === 'no' ? ' no' : '') , text: locTxt })
+    ]);
+    var awakeBtn = h('button', { type: 'button', class: 'switchrow', role: 'switch', id: 'obAwake', 'aria-checked': awake ? 'true' : 'false', onclick: function () {
+      var q = readPrefs(); q.keepAwake = !awake; q.savedAt = Date.now();
+      try { localStorage.setItem(PREFS, JSON.stringify(q)); } catch (e) {}
+      render();
+    } }, [
+      h('span', {}, [h('b', { text: 'Keep screen on while sharing' }), h('small', { text: 'Stops the phone or iPad pausing tracking when it locks' })]),
+      h('span', { class: 'sw' + (awake ? ' on' : ''), 'aria-hidden': 'true' })
+    ]);
+    return stepFrame(6, 'Tracking on the water', function () { go('followers'); }, [
+      h('p', { class: 'ob-lede', text: 'Two quick things so tracking works on the water.' }),
+      locBtn,
+      loc === 'no' ? h('p', { class: 'ob-placeholder', text: 'To turn it on: iPhone Settings → Privacy & Security → Location Services → Safari Websites → While Using the App.' }) : null,
+      awakeBtn,
+      h('p', { class: 'ob-help', text: 'Your location is only shared while a trip is running, and stops when you arrive. Tapping Allow now shares nothing.' })
+    ], h('button', { type: 'button', class: 'ob-next', id: 'obNext', text: 'Finish', onclick: function () {
+      S.save({ doneAt: Date.now() });
+      go('done');
+    } }));
+  }
+
+  // ---------- Done ----------
+  // Step 4 of row 8 adds the first verdict to this screen.
+  function done() {
+    var names = (S.load() || {}).followers || [];
+    names = names.map(function (x) { return x.name; }).filter(Boolean);
+    var follow = names.length ? names.slice(0, -1).join(', ') + (names.length > 1 ? ' and ' : '') + names[names.length - 1] + (names.length > 1 ? ' get' : ' gets') + ' a link to watch you cross when you start a trip.' : 'Add the people who worry about you in ☰ Menu → Setup.';
+    return h('div', { class: 'ob' }, [previewBanner(), h('main', { class: 'ob-body' }, [h('div', { class: 'ob-in donebox' }, [
+      h('span', { class: 'kicker', text: 'You’re set' }),
+      h('h1', { text: 'Your setup is saved.' }),
+      h('div', { class: 'ob-card', id: 'obVerdict' }),
+      h('div', { class: 'ob-card tips' }, [h('b', { text: 'Tips' }),
+        h('span', { text: '• ' + follow }),
+        h('span', { text: '• Add it to your Home Screen: Share → Add to Home Screen' }),
+        h('span', { text: '• Change anything later in ☰ Menu → Setup' })]),
+      h('a', { class: 'ob-next', id: 'obOpen', href: 'index.html#captain', text: 'Open my plan' }),
+      h('a', { class: 'ob-second', href: 'menu.html', text: 'Back to Menu' }),
+      planningAid()
+    ])])]);
+  }
+
+  var SCREENS = { welcome: welcome, safety: safety, tell: tell, boat: boat, limits: limits, followers: followers, tracking: tracking, done: done };
   // after: 'type' keeps the keyboard up for the next answer; 'scroll' shows the newest message.
   function render(after) {
     app.replaceChildren(st.screen === 'welcome' ? h('div', { class: 'ob' }, [previewBanner(), welcome()]) : SCREENS[st.screen]());
