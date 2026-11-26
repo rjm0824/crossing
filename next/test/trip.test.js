@@ -5,6 +5,7 @@
   'use strict';
   var inNode = typeof window === 'undefined' && typeof module !== 'undefined';
   var TM = inNode ? require('../js/trip-math.js') : window.TripMath;
+  var QR = inNode ? require('../js/queue.js') : window.QueueRules;
 
   var checks = [];
   function check(name, fn) { checks.push({ name: name, fn: fn }); }
@@ -290,6 +291,103 @@
     eq(TM.familyState(b, NOW).state, 'stopped');
     eq(TM.familyState({ status: 'closed' }, NOW).state, 'closed');
     eq(TM.familyState(a, NOW).overdue, false, 'no overdue after arrival');
+  });
+
+  // ---- Send queue ----
+  function pos(t) { return { id: QR.posId(t), t: t, kind: 'pos', lat: 26.9, lon: -79, sog: 24 }; }
+  function ev(id, t, kind) { return { id: id, t: t, kind: kind || 'checkin' }; }
+  function ids(list) { return list.map(function (it) { return it.id; }).join(','); }
+
+  check('Queue: item IDs are "p" + time for positions and "e-" + 8 letters for events', function () {
+    eq(QR.posId(1700000000123.4), 'p1700000000123');
+    ok(/^e-[a-z0-9]{8}$/.test(QR.eventId()), 'event id');
+    ok(QR.eventId() !== QR.eventId(), 'event ids differ');
+  });
+  check('Queue: events go before positions, then the oldest positions first', function () {
+    var q = [pos(300), pos(100), ev('e-b', 400), pos(200), ev('e-a', 50, 'overdue')];
+    eq(ids(QR.nextBatch(q, 100)), 'e-a,e-b,p100,p200,p300');
+  });
+  check('Queue: a batch holds at most 100 items, and at least 1', function () {
+    var q = [];
+    for (var i = 0; i < 150; i++) q.push(pos(1000 + i));
+    eq(QR.nextBatch(q, 100).length, 100, 'default');
+    eq(QR.nextBatch(q, 500).length, 100, 'never more than 100');
+    eq(QR.nextBatch(q, 0).length, 100, 'no size means 100');
+    eq(QR.nextBatch(q, 25).length, 25, 'a smaller size');
+    eq(QR.nextBatch(q, 25)[0].id, 'p1000', 'oldest first');
+  });
+  check('Queue: an event the tracker would not accept goes last', function () {
+    var q = [ev('e-bad', 10), pos(100), ev('e-ok', 20)];
+    eq(ids(QR.nextBatch(q, 100, ['e-bad'])), 'e-ok,p100,e-bad');
+  });
+  check('Queue: "stored" and "had" remove the item', function () {
+    var q = [pos(100), pos(200), ev('e-a', 150)];
+    var out = QR.applyResults(q, [{ id: 'p100', r: 'stored' }, { id: 'e-a', r: 'had' }]);
+    eq(ids(out.queue), 'p200');
+    eq(out.received.join(','), 'p100,e-a');
+    eq(out.notAccepted, 0);
+  });
+  check('Queue: refused as "future" is kept to try again', function () {
+    var out = QR.applyResults([pos(100), ev('e-a', 150)],
+      [{ id: 'p100', r: 'refused', why: 'future' }, { id: 'e-a', r: 'refused', why: 'future' }]);
+    eq(ids(out.queue), 'p100,e-a');
+    eq(out.notAccepted, 0);
+    eq(out.eventErrors.length, 0, 'not reported as an error');
+  });
+  check('Queue: a refused position is removed and counted', function () {
+    var out = QR.applyResults([pos(100), pos(200)], [{ id: 'p100', r: 'refused', why: 'invalid' }, { id: 'p200', r: 'stored' }]);
+    eq(out.queue.length, 0);
+    eq(out.notAccepted, 1);
+  });
+  check('Queue: a refused event is kept and reported', function () {
+    var out = QR.applyResults([ev('e-a', 150)], [{ id: 'e-a', r: 'refused', why: 'early' }]);
+    eq(ids(out.queue), 'e-a');
+    eq(ids(out.eventErrors), 'e-a');
+  });
+  check('Queue: items added while a request was out are kept', function () {
+    // The queue is read again before applying the answer; p300 arrived meanwhile.
+    var out = QR.applyResults([pos(100), pos(300)], [{ id: 'p100', r: 'stored' }]);
+    eq(ids(out.queue), 'p300');
+  });
+  check('Queue: a failed request removes nothing', function () {
+    var q = [pos(100), ev('e-a', 150)];
+    ['network', 'server', 'not_found'].forEach(function (err) {
+      var out = QR.applyFailure(q, q, err);
+      eq(ids(out.queue), 'p100,e-a', err);
+      eq(out.notAccepted, 0, err);
+    });
+    eq(QR.applyFailure(q, q, 'not_found').notFound, true, 'not_found is reported');
+  });
+  check('Queue: "too_many" or "bad_request" halves the batch', function () {
+    var q = [];
+    for (var i = 0; i < 40; i++) q.push(pos(1000 + i));
+    var out = QR.applyFailure(q, q, 'too_many');
+    eq(out.nextSize, 20);
+    eq(out.queue.length, 40, 'nothing removed');
+    eq(QR.applyFailure(q, q.slice(0, 3), 'bad_request').nextSize, 1);
+  });
+  check('Queue: a single position refused on its own is removed; a single event is kept', function () {
+    var q = [pos(100), ev('e-a', 150)];
+    var a = QR.applyFailure(q, [q[0]], 'bad_request');
+    eq(ids(a.queue), 'e-a');
+    eq(a.notAccepted, 1);
+    var b = QR.applyFailure(q, [q[1]], 'bad_request');
+    eq(ids(b.queue), 'p100,e-a');
+    eq(ids(b.eventErrors), 'e-a');
+  });
+  check('Queue: the 3,001st position drops the oldest and keeps events', function () {
+    var q = [ev('e-old', 1)];
+    for (var i = 0; i < 3000; i++) q.push(pos(1000 + i));
+    q = QR.add(q, pos(99999));
+    var positions = q.filter(function (it) { return it.kind === 'pos'; });
+    eq(positions.length, 3000);
+    ok(!q.some(function (it) { return it.id === 'p1000'; }), 'oldest dropped');
+    ok(q.some(function (it) { return it.id === 'p99999'; }), 'newest kept');
+    ok(q.some(function (it) { return it.id === 'e-old'; }), 'event kept');
+  });
+  check('Queue: adding an item already queued changes nothing', function () {
+    var q = QR.add([pos(100)], pos(100));
+    eq(q.length, 1);
   });
 
   // ---- Run ----
