@@ -470,6 +470,39 @@
   var odButtons = document.querySelectorAll('.odAdd');
   for (var i = 0; i < odButtons.length; i++) odButtons[i].onclick = odClick;
 
+  // "Send link to family" (version A, chosen by RJ on Nov 25). Draft wording
+  // for RJ's attorney, like the overdue notice. The page only opens the share
+  // screen; the iPad or iPhone does the sending, so it never says "sent".
+  function familyText() {
+    var home = DIR === 'home';
+    var boat = trip.practice ? 'Practice run' : "Goof n' Off";
+    return (home ? 'Heading home! ' : 'Heading to Abaco! ') +
+      'Leaving ' + RULES.points[0].name + ' on ' + boat + ' at ' + t(trip.startedAt) +
+      ', aiming for ' + DEST + ' around ' + t(trip.plannedArrival) + '. ' +
+      'You can follow the boat live here, no app needed: ' + familyLink() + '\n' +
+      'If you haven\'t heard from me by ' + t(trip.overdueAt) + ', check the link first, then give me a call.';
+  }
+  $('shareBtn').onclick = function () {
+    var msg = familyText();
+    show('shareBox', false);
+    var copyInstead = function () {
+      var shown = function () {
+        $('shareBox').value = msg; show('shareBox', true); $('shareBox').select();
+        setResult($('shareResult'), 'Couldn\'t open the share screen. The message is below: press and hold it to copy.', 'wait');
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(msg).then(function () { setResult($('shareResult'), 'Message copied. Paste it into a text to your family.', 'good'); }, shown);
+      } else shown();
+    };
+    if (navigator.share) {
+      setResult($('shareResult'), 'Share screen opened', 'good');
+      navigator.share({ text: msg }).catch(function (e) {
+        if (e && e.name === 'AbortError') setResult($('shareResult'), '');   // closed without choosing
+        else copyInstead();
+      });
+    } else copyInstead();
+  };
+
   $('copyBtn').onclick = function () {
     var link = familyLink();
     var shown = function () {

@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="/crossing/apple-touch-icon.png?v=1"><link rel="icon" type="image/png" href="/crossing/favicon.png?v=1">
 <title>Crossing · Live · Goof n' Off</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="css/app.css?v=20261127">
+<link rel="stylesheet" href="css/app.css?v=20261128">
 </head>
 <body class="tp">
 <div class="preview">PREVIEW · test copy, not the live page</div>
@@ -78,6 +78,9 @@
     <button type="button" class="bigbtn plain odAdd">I'm fine, add 1 hour</button>
     <div class="result odResult" aria-live="polite"></div>
     <span class="small" id="stopsAt"></span>
+    <button type="button" class="bigbtn" id="shareBtn">Send link to family</button>
+    <div class="result" id="shareResult" aria-live="polite"></div>
+    <textarea id="shareBox" class="linkbox" rows="5" readonly hidden aria-label="Message for family"></textarea>
     <button type="button" class="bigbtn plain" id="copyBtn">Copy family link</button>
     <div class="result" id="copyResult" aria-live="polite"></div>
     <input type="text" id="linkBox" class="linkbox" readonly hidden aria-label="Family link">
@@ -118,6 +121,6 @@
 <script src="js/tracker-api.js?v=20261127"></script>
 <script src="js/queue.js?v=20261127"></script>
 <script src="js/tripmap.js?v=20261127"></script>
-<script src="js/live.js?v=20261127"></script>
+<script src="js/live.js?v=20261128"></script>
 </body>
 </html>

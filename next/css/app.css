@@ -133,3 +133,4 @@ html.tp-html{background:#F3F6F8}
 .tp .arrived #arrWhere{font-size:18px;font-weight:600}
 .tp .arr-tip{background:var(--go);color:#fff;border:0;font-weight:700;font-size:13px;box-shadow:0 1px 3px rgba(0,0,0,.3)}
 .tp .arr-tip:before{border-top-color:var(--go)}
+.tp textarea{width:100%;font:inherit;font-size:15px;padding:10px;border-radius:10px;border:1px solid #B9C8D3;background:#fff;color:var(--ink)}
