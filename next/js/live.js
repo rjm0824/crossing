@@ -557,13 +557,41 @@
         : 'Open this page when you have signal so your followers see sharing has stopped.';
       el.insertBefore(d, el.firstChild);
       el.className = 'status wait';
+    } else if (trip.deleted) {
+      el.textContent = 'Deleted from the tracker. Your followers\' link no longer works.';
+      el.className = 'status';
     } else {
       el.textContent = 'Your followers can see the trip has ended.' + (row && row.rt ? ' Received ' + t(row.rt) + '.' : '');
       el.className = 'status';
     }
     show('newBtn', !q.waiting);
+    show('delBtn', !q.waiting && !trip.deleted);
   }
+  // "Delete this trip from the tracker": only once everything has been delivered.
+  $('delBtn').onclick = function () { show('delDialog', true); $('delNo').focus(); };
+  $('delNo').onclick = function () { show('delDialog', false); };
+  $('delYes').onclick = function () {
+    show('delDialog', false);
+    if (!trip || trip.deleted) return;
+    $('delBtn').disabled = true;
+    text('delBtn', 'Deleting…');
+    setResult($('delResult'), '');
+    Tracker.call('/v1/delete', { tripKey: trip.tripKey }).then(function (res) {
+      $('delBtn').disabled = false;
+      text('delBtn', 'Delete this trip from the tracker');
+      if (res.ok || res.error === 'not_found') {
+        trip.deleted = true;
+        saveTrip();
+        setResult($('delResult'), '');            // the status line says it was deleted
+      } else {
+        setResult($('delResult'), 'Couldn\'t delete. Try again with signal.', 'bad');
+      }
+      renderEnded();
+    });
+  };
+
   $('newBtn').onclick = function () {
+    setResult($('delResult'), '');
     if (Queue.status().waiting) return;
     store.remove('trip'); store.remove('trail'); Queue.clear();
     trip = null; cur = null; readings = []; lastGood = null; arriveFirst = null; gateOpenNow = false;
