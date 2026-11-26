@@ -117,39 +117,37 @@
       : 'Your home port is more than 15 nm from ' + DEST + ', so this trip ends at ' + DEST + '.');
     text('hpBtn', h ? 'Change home port' : 'Set home port');
   }
-  var hpMap = null, hpPick = null, hpMark = null;
+  // Picking the spot: a fixed crosshair in the middle of the map. Move the map
+  // until the crosshair is on the dock, then Save (always on). A tap moves the
+  // crosshair there too. (A tap alone did not register on RJ's iPad, Nov 25.)
+  var hpMap = null;
+  function sizeHpMap() {
+    if (!hpMap) return;
+    hpMap.invalidate();
+    requestAnimationFrame(function () { hpMap.invalidate(); });
+    setTimeout(function () { hpMap.invalidate(); }, 350);
+  }
   $('hpBtn').onclick = function () {
     show('hpBox', true); show('hpBtn', false);
     var h = homePort(), last = RULES.points[RULES.points.length - 1];
     if (!hpMap) {
       hpMap = makeTripMap($('hpMap'), { line: TRACK, points: RULES.points });
-      hpMap.map.on('click', function (e) {
-        hpPick = { lat: round5(e.latlng.lat), lon: round5(e.latlng.lng) };
-        if (hpMark) hpMark.setLatLng(e.latlng);
-        else hpMark = L.circleMarker(e.latlng, { radius: 9, color: '#fff', weight: 2, fillColor: '#B42318', fillOpacity: 1 }).addTo(hpMap.map);
-        $('hpSave').disabled = false;
-      });
+      hpMap.map.on('click', function (e) { hpMap.map.panTo(e.latlng); });
     }
-    setTimeout(function () {
-      hpMap.invalidate();
-      var c = h || last;
-      hpMap.map.setView([c.lat, c.lon], 12, { animate: false });
-      if (h && !hpMark) hpMark = L.circleMarker([h.lat, h.lon], { radius: 9, color: '#fff', weight: 2, fillColor: '#B42318', fillOpacity: 1 }).addTo(hpMap.map);
-    }, 60);
+    sizeHpMap();
+    var c = h || last;
+    setTimeout(function () { hpMap.map.setView([c.lat, c.lon], 13, { animate: false }); sizeHpMap(); }, 80);
     show('hpRemove', !!h);
+    $('hpSave').disabled = false;
   };
-  function closeHome() { show('hpBox', false); show('hpBtn', true); hpPick = null; $('hpSave').disabled = true; renderHome(); }
-  $('hpSave').onclick = function () { if (hpPick) store.set('homeport', hpPick); closeHome(); };
-  $('hpRemove').onclick = function () {
-    store.remove('homeport');
-    if (hpMark) { hpMap.map.removeLayer(hpMark); hpMark = null; }
+  function closeHome() { show('hpBox', false); show('hpBtn', true); renderHome(); }
+  $('hpSave').onclick = function () {
+    var c = hpMap.map.getCenter();
+    store.set('homeport', { lat: round5(c.lat), lon: round5(c.lng) });
     closeHome();
   };
-  $('hpCancel').onclick = function () {
-    var h = homePort();
-    if (hpMark) { if (h) hpMark.setLatLng([h.lat, h.lon]); else { hpMap.map.removeLayer(hpMark); hpMark = null; } }
-    closeHome();
-  };
+  $('hpRemove').onclick = function () { store.remove('homeport'); closeHome(); };
+  $('hpCancel').onclick = function () { closeHome(); };
 
   $('odMinus').onclick = function () { odSteps--; renderReady(); };
   $('odPlus').onclick = function () { odSteps++; renderReady(); };
