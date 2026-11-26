@@ -39,7 +39,10 @@
   function show(id, on) { $(id).hidden = !on; }
   function text(id, s) { $(id).textContent = s; }
   function setResult(el, s, kind) { el.textContent = s; el.className = 'result' + (kind ? ' ' + kind : '') + (el.classList.contains('odResult') ? ' odResult' : ''); }
-  function t(ms) { return fmtT(new Date(ms)); }
+  // Times in this device's own time zone (RJ, Nov 25). tz() adds the zone's
+  // short name ("7:05 AM EST") for the key times and the family message.
+  function t(ms) { return new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); }
+  function tz(ms) { return new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }); }
   function dur(ms) {
     var m = Math.max(0, Math.floor(ms / MIN));
     return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + (m % 60) + ' m';
@@ -86,7 +89,7 @@
   function renderReady() {
     text('rRoute', RULES.name);
     var p = plannedNow(), o = overdueFor(p);
-    text('rPlanned', 'about ' + t(p));
+    text('rPlanned', 'about ' + tz(p));
     text('rOverdue', t(o));
     $('odMinus').disabled = o - 30 * MIN < p;
     text('hideHelp', $('hideStart').checked
@@ -316,7 +319,7 @@
   function showLive() {
     show('ready', false); show('ended', false); show('live', true);
     show('practiceTag', !!trip.practice);
-    text('started', 'Trip started ' + t(trip.startedAt) + (trip.practice ? ' · practice run, the boat is made up' : ''));
+    text('started', 'Trip started ' + tz(trip.startedAt) + (trip.practice ? ' · practice run, the boat is made up' : ''));
     text('every', trip.practice ? 'every 5 seconds (practice)' : 'every 5 min');
     text('stopsAt', 'Stops by itself at ' + DEST + '.');
     ensureMap();
@@ -362,8 +365,8 @@
     // Overdue.
     var over = now > trip.overdueAt;
     show('odAlert', over);
-    if (over) text('odAlertText', 'You are past your overdue time (' + t(trip.overdueAt) + '). Your followers see an overdue notice.');
-    text('odLine', 'If not arrived by ' + t(trip.overdueAt) + ' your followers see an overdue notice.');
+    if (over) text('odAlertText', 'You are past your overdue time (' + tz(trip.overdueAt) + '). Your followers see an overdue notice.');
+    text('odLine', 'If not arrived by ' + tz(trip.overdueAt) + ' your followers see an overdue notice.');
 
     renderStatus($('status'), Queue.status());
   }
@@ -426,7 +429,7 @@
       var o = rowOf(pendingOd.id);
       var els = document.querySelectorAll('.odResult');
       var msg = null, kind = '';
-      if (o && o.state === 'received') { msg = 'New overdue time ' + t(pendingOd.value) + ' received'; kind = 'good'; pendingOd = null; }
+      if (o && o.state === 'received') { msg = 'New overdue time ' + tz(pendingOd.value) + ' received'; kind = 'good'; pendingOd = null; }
       else if (o && o.state === 'refused') { msg = 'The tracker did not accept the new time. Followers still see ' + t(pendingOd.before) + '.'; kind = 'bad'; pendingOd = null; }
       else if (!q.sending && q.lastError) { msg = pendingOd.wasOver ? 'Saved, will retry. Followers still see overdue.' : 'Saved, will retry.'; kind = 'wait'; }
       if (msg) { for (var i = 0; i < els.length; i++) setResult(els[i], msg, kind); setOdButtons(false); }
@@ -477,10 +480,10 @@
     var home = DIR === 'home';
     var boat = trip.practice ? 'Practice run' : "Goof n' Off";
     return (home ? 'Heading home! ' : 'Heading to Abaco! ') +
-      'Leaving ' + RULES.points[0].name + ' on ' + boat + ' at ' + t(trip.startedAt) +
-      ', aiming for ' + DEST + ' around ' + t(trip.plannedArrival) + '. ' +
+      'Leaving ' + RULES.points[0].name + ' on ' + boat + ' at ' + tz(trip.startedAt) +
+      ', aiming for ' + DEST + ' around ' + tz(trip.plannedArrival) + '. ' +
       'You can follow the boat live here, no app needed: ' + familyLink() + '\n' +
-      'If you haven\'t heard from me by ' + t(trip.overdueAt) + ', check the link first, then give me a call.';
+      'If you haven\'t heard from me by ' + tz(trip.overdueAt) + ', check the link first, then give me a call.';
   }
   $('shareBtn').onclick = function () {
     var msg = familyText();
@@ -543,8 +546,8 @@
   function renderEnded() {
     if (!trip || trip.status === 'underway') return;
     text('eHow', trip.endedHow === 'arrived'
-      ? 'Arrived at ' + DEST + ' ' + t(trip.endedAt) + '. Sharing has stopped.'
-      : 'Sharing stopped at ' + t(trip.endedAt) + '.');
+      ? 'Arrived at ' + DEST + ' ' + tz(trip.endedAt) + '. Sharing has stopped.'
+      : 'Sharing stopped at ' + tz(trip.endedAt) + '.');
     text('eUnder', 'Underway ' + dur(trip.endedAt - trip.startedAt) + (trip.practice ? ' · practice run' : ''));
     var q = Queue.status();
     var el = $('eStatus');

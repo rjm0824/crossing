@@ -23,6 +23,7 @@
 
   // Times in the follower's own zone.
   function t(ms) { return new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); }
+  function tz(ms) { return new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }); }
   function ago(ms) {
     var m = Math.max(0, Math.round(ms / MIN));
     if (m < 1) return 'just now';
@@ -117,10 +118,10 @@
     if (s.overdue) {
       var last = held && held.last;
       $('odHead').textContent = (s.nearDest ? 'Last heard close to ' + dest + '. ' : '') +
-        cap + ' has not arrived by the overdue time, ' + t(held.overdueAt) + '.';
+        cap + ' has not arrived by the overdue time, ' + tz(held.overdueAt) + '.';
       if (last) {
         $('odWhere').textContent = 'Last known position: ' + TripMath.fmtLatLon(last.lat, last.lon) + '.';
-        $('odPos').textContent = 'At ' + t(last.t) + ', ' + ago(svcNow() - last.t) + ', ' + nm(s.leftNm) + ' from ' + dest + '.';
+        $('odPos').textContent = 'At ' + tz(last.t) + ', ' + ago(svcNow() - last.t) + ', ' + nm(s.leftNm) + ' from ' + dest + '.';
       } else {
         $('odWhere').textContent = 'No position was received for this trip.';
         $('odPos').textContent = '';
@@ -142,12 +143,12 @@
       case 'arrived':
         break;                                     // shown in the arrived card below
       case 'stopped':
-        l1 = cap + ' stopped sharing at ' + t(ended.endedAt) + '. This page no longer shows the boat.';
+        l1 = cap + ' stopped sharing at ' + tz(ended.endedAt) + '. This page no longer shows the boat.';
         break;
       case 'started':
         showMap = true;
-        l1 = 'Trip started at ' + t(held.startedAt) + '. The boat\'s position will appear once it is in open water.';
-        l2 = 'Planned arrival about ' + t(held.plannedArrival) + '.';
+        l1 = 'Trip started at ' + tz(held.startedAt) + '. The boat\'s position will appear once it is in open water.';
+        l2 = 'Planned arrival about ' + tz(held.plannedArrival) + '.';
         if (s.noPosLate) amber = 'No position received yet, ' + Math.round(s.sinceStartMs / MIN) + ' min after the start.';
         break;
       default: {  // underway or quiet
@@ -156,7 +157,7 @@
         greyed = quiet;
         l1 = s.motion === 'stopped' ? cap + ' is stopped, ' + nm(s.leftNm) + ' from ' + dest : cap + ' is ' + nm(s.leftNm) + ' from ' + dest;
         if (s.motion === 'stopped') l2 = 'Arrival estimate on hold';
-        else if (s.etaMs) l2 = (quiet ? 'Estimate was about ' : s.etaPast ? 'Was due about ' : 'Arriving about ') + t(s.etaMs);
+        else if (s.etaMs) l2 = (quiet ? 'Estimate was about ' : s.etaPast ? 'Was due about ' : 'Arriving about ') + tz(s.etaMs);
         else l2 = 'Arrival estimate: not yet';
         if (s.motion === 'slow') l2 += ' · Moving slowly';
         l3 = 'Last update ' + ago(s.ageMs);
@@ -171,7 +172,7 @@
     $('statusCard').hidden = arr;
     if (arr) {
       $('arrHead').textContent = cap + ' has arrived!';
-      $('arrWhere').textContent = dest + ' \u00B7 ' + t(ended.endedAt);
+      $('arrWhere').textContent = dest + ' \u00B7 ' + tz(ended.endedAt);
       set('arrCross', seenRoute && seenRoute.startedAt ? 'Crossing time about ' + dur(ended.endedAt - seenRoute.startedAt) : '');
     }
 
@@ -215,7 +216,7 @@
     // "Remind me at [overdue time]": while underway and the overdue time is ahead.
     var canRemind = !!held && (s.state === 'started' || s.state === 'underway' || s.state === 'quiet') && held.overdueAt > svcNow();
     $('remindBtn').hidden = !canRemind;
-    if (canRemind) $('remindBtn').textContent = 'Remind me at ' + t(held.overdueAt);
+    if (canRemind) $('remindBtn').textContent = 'Remind me at ' + tz(held.overdueAt);
     else $('remindResult').textContent = '';
 
     // Check-ins and overdue-time changes, newest first.
@@ -234,7 +235,7 @@
 
     var ex = $('explain');
     if (held) {
-      ex.textContent = 'If ' + cap + ' isn\'t in by ' + t(held.overdueAt) + ' this page shows an overdue notice with the boat\'s last known position. The link closes 2 hours after the trip ends.';
+      ex.textContent = 'If ' + cap + ' isn\'t in by ' + tz(held.overdueAt) + ' this page shows an overdue notice with the boat\'s last known position. The link closes 2 hours after the trip ends.';
       ex.hidden = false;
     } else ex.hidden = true;
   }
