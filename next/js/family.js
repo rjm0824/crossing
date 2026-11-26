@@ -212,6 +212,12 @@
       parked = false;
     }
 
+    // "Remind me at [overdue time]": while underway and the overdue time is ahead.
+    var canRemind = !!held && (s.state === 'started' || s.state === 'underway' || s.state === 'quiet') && held.overdueAt > svcNow();
+    $('remindBtn').hidden = !canRemind;
+    if (canRemind) $('remindBtn').textContent = 'Remind me at ' + t(held.overdueAt);
+    else $('remindResult').textContent = '';
+
     // Check-ins and overdue-time changes, newest first.
     var rows = held ? items.filter(function (it) { return it.kind === 'checkin' || it.kind === 'overdue'; })
       .sort(function (a, b) { return b.t - a.t; }) : [];
@@ -232,6 +238,15 @@
       ex.hidden = false;
     } else ex.hidden = true;
   }
+
+  $('remindBtn').onclick = function () {
+    if (!held) return;
+    var link = location.origin + location.pathname + '#k=' + key;
+    var text = CalendarFile.calendarFile({ captain: held.captain, overdueAt: held.overdueAt, startedAt: held.startedAt }, link, svcNow());
+    $('remindResult').textContent = 'Calendar opened. Tap Add there to save the reminder. If nothing opened, open this page in Safari.';
+    $('remindResult').className = 'result good';
+    CalendarFile.openCalendarFile(text);
+  };
 
   // A newer family link opened over this one only changes the part after #,
   // and Safari keeps the old page: reload so the new trip is read.
