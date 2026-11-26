@@ -206,5 +206,9 @@
     } else ex.hidden = true;
   }
 
+  // A newer family link opened over this one only changes the part after #,
+  // and Safari keeps the old page: reload so the new trip is read.
+  window.addEventListener('hashchange', function () { location.reload(); });
+
   if (!key) render(); else readNow();
 })();
