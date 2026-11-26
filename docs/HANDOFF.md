@@ -2,7 +2,117 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
-## Update: Nov 26, 2026, afternoon (read this first)
+## Update: Nov 26, 2026, evening (read this first): MVP row 8 next
+
+**Merged tonight:** #25 (old Apps Script tracker removed from the preview
+Plan page), #26 (MVP row 7, the app frame) and #27 (privacy page date set to
+Nov 26). RJ merged #25 and #26 before the crossing on purpose; both change
+only the preview. The live page, the Live screen (`next/live.html`), the
+family page and the tracker service are unchanged, so the crossing setup is
+exactly as tested. Nothing is open from that session.
+
+**RJ's new pace (recorded in `docs/designs/mvp.md`, Build Order):**
+
+| Date | Work |
+| --- | --- |
+| Fri Nov 27 | Row 8: onboarding without AI (start it) |
+| Sat Nov 28 | Water test in Abaco (30 min), then row 9 (routes) |
+| Nov 29 to 30 | The crossing. No building. |
+| Dec 1 | Debrief; connect Settings (below); fixes from Saturday |
+| Dec 1 to 5 | Rows 10 to 14 |
+
+Stage 2 work goes up as **draft** pull requests ("DO NOT MERGE until after
+the crossing"), in steps RJ can check in 5 minutes each, one at a time with
+his OK. RJ may still choose to merge a draft early, as he did tonight.
+
+### What row 7 built (in `next/`, all merged)
+
+*   **`js/frame.js` + `css/frame.css`:** the bottom bar, **Plan · Live ·
+    Family · Menu**. A page joins the frame with `<body data-tab="...">`, the
+    two files, and `frame.js` loaded last. On the Plan page the bar shows only
+    in captain mode (`#captain`); on other frame pages always. Links with
+    `data-keep-trip` keep `?trip=home` (placed before any `#`). New tabs go
+    in the `tabs` list in `frame.js` only once their screen exists (no dead
+    buttons); **My Trips** joins in row 14. Frame styles stay out of
+    `app.css` because the frozen Live and family pages load `app.css`.
+*   **Pages:** `menu.html` (My Boat, Customs, Safety), `family-tab.html`
+    (`familytab.js`: reads `cx:next:trip` only, never writes it),
+    `boat.html` (`boat.js`), `customs.html`, `safety.html` (`safety.js`),
+    `settings.html` (`prefs.js`).
+*   **Saved on the device (localStorage):**
+
+| Key | Shape | Written by |
+| --- | --- | --- |
+| `cx:next:boat` | `{name, make, length, engines, colour, marina, savedAt}` (strings; length 10 to 200 ft; no ID numbers, RJ's rule) | My Boat |
+| `cx:next:safety` | `{ticks: {pfd, throw, flares, ...: true}, savedAt}` | Safety |
+| `cx:next:prefs` | `{intervalMin: 1/5/10/30, overdueMin: 30/60/80/120, keepAwake: bool, savedAt}` | Settings |
+| `cx:next:trip` | the Live screen's trip | Live screen only |
+
+*   **Settings is not connected yet.** It is not in the Menu, and the page
+    says so in an amber banner. After the crossing (Dec 1, Opus 5.5): make
+    `live.js` read `cx:next:prefs` (interval, overdue minutes in place of the
+    fixed 80, keep-awake), add Settings to the Menu, remove the banner. A
+    small pull request of its own.
+
+### Row 8: onboarding without AI (Fri Nov 27, Opus 5.5)
+
+Scope from `mvp.md` (Build Order row 8 and Technical Plan "Step 3:
+Onboarding"): welcome, safety tick box, the 7 questions with chips (typed
+answers go in the form as written; no AI until row 16), your boat, limits,
+followers, permissions, first verdict; **the verdict code reads the saved
+setup.** Route picking is row 9 and the boat photo is row 10, so row 8 uses
+the current Abaco route and shows the boat outline. Screens follow
+`docs/mockups/Onboarding.dc.html`, with the "mockup wording that must change"
+list in `mvp.md` (App Pages).
+
+**Watch out for these:**
+
+1.  **Code freeze reaches into `settings.js`.** `live.js` reads `CRUISE_KT`,
+    `WP`, `TRACK`, `DEST` and `HOME` from `next/js/settings.js`. Do not
+    change those, or make them read the saved setup, before the crossing:
+    the Live screen would change. Make the Plan page's verdict read the
+    saved setup through its own code (falling back to today's numbers when
+    there is no setup), and leave `settings.js` as it is until Dec 1.
+2.  **One saved shape.** `mvp.md` asks for one documented shape for boat,
+    limits, routes and followers. `cx:next:boat` already holds the profile.
+    Recommended: a single `cx:next:setup` object whose `boat` part includes
+    the profile fields, with My Boat moved over to it (reading the old key
+    once). This is a decision for RJ at the start of the session.
+3.  **Don't force onboarding on RJ yet.** He uses the preview Plan page
+    around the crossing. Recommended: onboarding at its own page, reached
+    from a **Setup** row in the Menu, and shown on first open only after the
+    crossing. Also RJ's decision.
+4.  **Privacy.** Followers' first names and optional phone numbers are new
+    data on the device. The "contacts you choose" line in `privacy.html` says
+    the app sends them the float plan; the app does not send texts (the
+    captain sends one text from the share screen). Fix that line in the same
+    pull request.
+5.  **Safety tick box wording** is a placeholder until RJ's attorney reviews
+    it. Mark it so in the page and the pull request.
+
+### Testing in the cloud workspace
+
+Starting a local web server (`python3 -m http.server`) was blocked by the
+session's safety checks, and this workspace cannot reach
+`rjm0824.github.io`, cdnjs, Open-Meteo or map tiles. What worked: Playwright
+serves the repo's files straight from disk with `page.route`, and Leaflet
+1.9.4 comes from npm (`npm pack leaflet@1.9.4` into the scratchpad) in place
+of cdnjs. The forecast shows "Offline" and the map is grey for that reason
+only; say so in screenshots. Test at 390 x 844 (touch) and 820 x 1180, check
+for sideways scroll and page errors, then `/pr-check`.
+
+**Next sessions, and the model for each:**
+
+| Work | Model |
+| --- | --- |
+| Row 8, onboarding without AI (Fri) | Opus 5.5 |
+| Row 9, routes (Sat, after the water test) | Opus 5.5 |
+| Fixes from Saturday's test (freeze allows these only) | Opus 5.5; Sonnet 5.5 for a one-line wording fix |
+| Dec 1: debrief | Sonnet 5.5 |
+| Dec 1: connect Settings to the Live screen; rest of Sprint 2 | Opus 5.5 |
+| Any new design doc plus `/egm:egm-review` | Fable 5.2 |
+
+## Update: Nov 26, 2026, afternoon
 
 **Merged:** #23 (filing) and #24 (`docs/promote-plan.md`: the gate, steps,
 test and undo for moving `/next/` to the live page; plan only).
