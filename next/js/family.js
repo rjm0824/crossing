@@ -17,6 +17,9 @@
   var error = key ? null : 'nokey';
   var closed = false, timer = null, reading = false, pollMs = 30e3;
   var map = null;
+  // Kept from the underway answers for the arrived page (D16): the named
+  // route points and the start time. Never a position.
+  var seenRoute = null, parked = false, arrTip = null;
 
   // Times in the follower's own zone.
   function t(ms) { return new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); }
@@ -60,6 +63,7 @@
       if (d.pollSeconds) pollMs = Math.max(10, d.pollSeconds) * 1000;
       if (d.status === 'underway') {
         held = d;
+        if (d.route && d.route.points && d.route.points.length) seenRoute = { points: d.route.points, startedAt: d.startedAt };
         (d.items || []).forEach(function (it) {
           if (it.seq > maxSeq) maxSeq = it.seq;
           items.push(it);
@@ -136,8 +140,7 @@
         l1 = 'This trip has ended.';
         break;
       case 'arrived':
-        l1 = cap + ' arrived at ' + dest + ' at ' + t(ended.endedAt) + '. Position sharing has stopped.';
-        break;
+        break;                                     // shown in the arrived card below
       case 'stopped':
         l1 = cap + ' stopped sharing at ' + t(ended.endedAt) + '. This page no longer shows the boat.';
         break;
@@ -161,6 +164,17 @@
         if (quiet) amber = 'No update for ' + Math.round(s.ageMs / MIN) + ' min. The boat may be out of signal. This page fills in when it reconnects.';
       }
     }
+    // Arrived (D16): celebrate, and keep the map with the boat parked on the
+    // destination's named point if this page saw the route during the trip.
+    var arr = s.state === 'arrived';
+    $('arrived').hidden = !arr;
+    $('statusCard').hidden = arr;
+    if (arr) {
+      $('arrHead').textContent = cap + ' has arrived!';
+      $('arrWhere').textContent = dest + ' \u00B7 ' + t(ended.endedAt);
+      set('arrCross', seenRoute && seenRoute.startedAt ? 'Crossing time about ' + dur(ended.endedAt - seenRoute.startedAt) : '');
+    }
+
     $('line1').textContent = l1;
     set('line2', l2); set('line3', l3); set('line4', l4); set('amber', amber);
     $('line2').style.opacity = greyed ? '.55' : '';
@@ -181,8 +195,21 @@
         }
         map.setBoat(held.last, prev ? tripHeading(prev, held.last) : 270, greyed);
       }
+    } else if (arr && map && seenRoute) {
+      $('map').hidden = false;
+      map.invalidate();
+      if (!parked) {
+        var pts = seenRoute.points, n = pts.length, end = pts[n - 1];
+        map.clearBoat();                           // removes the real trail and boat
+        map.setBoat(end, n > 1 ? tripHeading(pts[n - 2], end) : 270, false);
+        arrTip = L.tooltip({ permanent: true, direction: 'top', offset: [0, -16], className: 'arr-tip' })
+          .setLatLng([end.lat, end.lon]).setContent('\u2713 Arrived').addTo(map.map);
+        parked = true;
+      }
     } else if (map) {
       map.clearBoat();
+      if (arrTip) { map.map.removeLayer(arrTip); arrTip = null; }
+      parked = false;
     }
 
     // Check-ins and overdue-time changes, newest first.

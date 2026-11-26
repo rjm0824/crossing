@@ -9,7 +9,7 @@
 <link rel="icon" type="image/png" href="/crossing/favicon.png?v=1">
 <title>Follow the boat · Crossing</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="css/app.css?v=20261127">
+<link rel="stylesheet" href="css/app.css?v=20261128">
 </head>
 <body class="tp">
 <div class="preview">PREVIEW · test copy, not the live page</div>
@@ -24,6 +24,13 @@
     <span>This page cannot call for help. If you are worried, call the Coast Guard.</span>
   </div>
   <div class="note" id="unavail" hidden role="status"></div>
+  <div class="card arrived" id="arrived" hidden role="status">
+    <span class="big" aria-hidden="true">✓</span>
+    <b id="arrHead"></b>
+    <span id="arrWhere"></span>
+    <span id="arrCross" hidden></span>
+    <span class="sub">Position sharing has stopped. This page closes 2 hours after arrival.</span>
+  </div>
   <div id="map" aria-label="Map of the route and the boat" hidden></div>
   <div class="card" id="statusCard" aria-live="polite">
     <b id="line1">Loading the trip…</b>
