@@ -6,7 +6,7 @@
 (function () {
   var S = window.CXSetup;
   var app = document.getElementById('ob');
-  var STEPS = 6;   // safety, questions, boat, limits, followers, tracking (route joins in row 9)
+  var STEPS = 7;   // safety, questions, boat, limits, route (row 9), followers, tracking
 
   // The 7 questions. Chips come from the mockup; route chips are only the
   // routes that exist today (the Bimini presets arrive in row 9).
@@ -44,7 +44,7 @@
   }
   function clip(s, n) { return String(s == null ? '' : s).replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n); }
   function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
-  function go(screen) { if (!st.form && /^(boat|limits|followers|tracking)$/.test(screen)) startForm(); st.screen = screen; render(); window.scrollTo(0, 0); }
+  function go(screen) { if (!st.form && /^(boat|limits|route|followers|tracking)$/.test(screen)) startForm(); st.screen = screen; render(); window.scrollTo(0, 0); }
 
   // Rough fuel burn when the captain taps "Not sure": by length, engines and
   // boat type. Shown in amber as an estimate to check after the first trip.
@@ -260,6 +260,8 @@
     var savedF = Array.isArray(s.followers) ? s.followers.map(function (x) { return { name: x.name || '', phone: x.phone || '' }; }) : null;
     var useAnsF = st.answers[6] && !st.answers[6].skip && (s.answersAt || 0) > (s.followersCheckedAt || 0);
     st.followers = useAnsF || !savedF ? f.followers.map(function (n) { return { name: n, phone: '' }; }) : savedF;
+    // Route (row 9): the saved pick, else Abaco. Only ready routes are offered (routes.js).
+    st.routeId = routeById(s.route && s.route.id).id;
     var L = s.limits || {};
     st.limits = { preset: L.preset || 'standard', seasFt: L.seasFt || 4, windKt: L.windKt || 15, noNorthInStream: L.noNorthInStream !== false };
   }
@@ -407,11 +409,37 @@
       h('p', { class: 'ob-help', text: 'Seas over your max, or north wind at your max in the Stream, is NO-GO. Wind over your max anywhere else is CROSSABLE, not comfortable. Standard uses the same seas and north-wind numbers as the Plan page today.' })
     ], h('button', { type: 'button', class: 'ob-next', id: 'obNext', text: 'Save my limits', onclick: function () {
       S.save({ limits: { preset: L.preset, seasFt: L.seasFt, windKt: L.windKt, noNorthInStream: L.noNorthInStream } });
+      go('route');
+    } }));
+  }
+
+  // ---------- Step 5: your route (MVP row 9) ----------
+  function route() {
+    var list = readyRoutes();
+    var cards = list.map(function (r) {
+      var on = st.routeId === r.id;
+      var pts = h('ol', { class: 'ptlist' }, r.points.map(function (p) {
+        return h('li', {}, [p.name, p.stream ? h('span', { class: 'stag', text: 'Stream' }) : null]);
+      }));
+      return h('button', { type: 'button', class: 'routecard' + (on ? ' on' : ''), 'aria-pressed': on ? 'true' : 'false', id: 'rt_' + r.id,
+        onclick: function () { st.routeId = r.id; render(); } }, [
+        h('b', { text: r.name }),
+        h('small', { text: 'About ' + Math.round(routeNm(r)) + ' nm \u00b7 ' + r.sub }),
+        on ? pts : null,
+        on && r.home.from ? h('small', { text: 'Trip home: the same route reversed, starting at ' + r.home.from + '.' }) : null
+      ]);
+    });
+    return stepFrame(5, 'Your route', function () { go('limits'); }, [
+      h('p', { class: 'ob-lede', text: 'Pick your usual crossing. The trip home flips it.' }),
+      h('div', { class: 'routes' }, cards),
+      h('p', { class: 'ob-help', text: '\u201cStream\u201d marks where the no-north-wind rule applies. More routes are being added: Fort Lauderdale and Miami to Bimini, and your own points on a map.' })
+    ], h('button', { type: 'button', class: 'ob-next', id: 'obNext', text: 'Use this route', onclick: function () {
+      S.save({ route: { id: st.routeId } });
       go('followers');
     } }));
   }
 
-  // ---------- Step 5: who follows you ----------
+  // ---------- Step 6: who follows you ----------
   function phoneOK(p) { p = clip(p, 24); return p === '' || (/^[+()\d\s.-]+$/.test(p) && p.replace(/\D/g, '').length >= 7 && p.replace(/\D/g, '').length <= 15); }
   function followers() {
     var list = st.followers, msg = h('div', { class: 'obresult', 'aria-live': 'polite' });
@@ -424,7 +452,7 @@
       var rm = h('button', { type: 'button', class: 'rm', 'aria-label': 'Remove ' + (clip(fo.name, 40) || 'this follower'), text: '×', onclick: function () { list.splice(i, 1); render(); } });
       return h('div', { class: 'follower' }, [ini, h('div', { class: 'fins' }, [nm, ph]), rm]);
     });
-    return stepFrame(5, 'Who follows you', function () { go('limits'); }, [
+    return stepFrame(6, 'Who follows you', function () { go('route'); }, [
       h('p', { class: 'ob-lede', text: 'Who should get the link to follow you? They don’t need the app.' }),
       h('div', { class: 'followers' }, rows),
       list.length < 6 ? h('button', { type: 'button', class: 'addrow', id: 'obAdd', text: '+ Add a follower', onclick: function () {
@@ -450,7 +478,7 @@
     } })]));
   }
 
-  // ---------- Step 6: tracking on the water ----------
+  // ---------- Step 7: tracking on the water ----------
   // Location: asks the phone once so the question doesn't pop up at the dock.
   // The position it returns is not kept or sent. Keep screen on: the same
   // choice as Settings (cx:next:prefs.keepAwake), which the Live screen reads
@@ -477,7 +505,7 @@
       h('span', {}, [h('b', { text: 'Keep screen on while sharing' }), h('small', { text: 'Stops the phone or iPad pausing tracking when it locks' })]),
       h('span', { class: 'sw' + (awake ? ' on' : ''), 'aria-hidden': 'true' })
     ]);
-    return stepFrame(6, 'Tracking on the water', function () { go('followers'); }, [
+    return stepFrame(7, 'Tracking on the water', function () { go('followers'); }, [
       h('p', { class: 'ob-lede', text: 'Two quick things so tracking works on the water.' }),
       locBtn,
       loc === 'no' ? h('p', { class: 'ob-placeholder', text: 'To turn it on: iPhone Settings → Privacy & Security → Location Services → Safari Websites → While Using the App.' }) : null,
@@ -543,7 +571,7 @@
     ])])]);
   }
 
-  var SCREENS = { welcome: welcome, safety: safety, tell: tell, boat: boat, limits: limits, followers: followers, tracking: tracking, done: done };
+  var SCREENS = { welcome: welcome, safety: safety, tell: tell, boat: boat, limits: limits, route: route, followers: followers, tracking: tracking, done: done };
   // after: 'type' keeps the keyboard up for the next answer; 'scroll' shows the newest message.
   function render(after) {
     app.replaceChildren(st.screen === 'welcome' ? h('div', { class: 'ob' }, [previewBanner(), welcome()]) : SCREENS[st.screen]());

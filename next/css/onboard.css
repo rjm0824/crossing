@@ -153,3 +153,12 @@ a.ob-next{display:flex;align-items:center;justify-content:center;text-decoration
 .vbadge{flex:0 0 auto;width:92px;height:92px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;font-size:20px;line-height:1.1;color:#06131c;padding:4px}
 .vbadge.go{background:#2fbf71}.vbadge.maybe{background:#f2b33d}.vbadge.no{background:#e5484d;color:#fff}
 .vwhy{font-size:15px}.vsay{display:block;font-size:18px;margin-bottom:2px}
+
+/* Route (row 9) */
+.routes{display:flex;flex-direction:column;gap:8px}
+.routecard{min-height:64px;border:2px solid var(--ob-line);border-radius:14px;background:#fff;color:var(--ob-ink);text-align:left;padding:12px 14px;display:flex;flex-direction:column;gap:4px;cursor:pointer;width:100%}
+.routecard.on{border-color:var(--ob-accent)}
+.routecard b{font-size:16px}.routecard small{font-size:13px;color:var(--ob-soft)}
+.ptlist{margin:6px 0 2px;padding-left:22px;font-size:14px}
+.ptlist li{margin:3px 0}
+.stag{display:inline-block;margin-left:8px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--ob-accent);background:#E6F1F6;border-radius:999px;padding:1px 8px;vertical-align:1px}
