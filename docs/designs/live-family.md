@@ -245,7 +245,9 @@ of their own before building.
 *   **D17. A follower who first opens the link after arrival** sees the
     celebration without the map, because `/v1/read` returns only `dest`
     once a trip has ended. Returning the route's points with the ended
-    answer is a small tracker change in Sprint 2.
+    answer is a small tracker change in Sprint 2. **Brought forward by RJ on
+    Nov 25 (late):** built before the crossing; arrived answers only, with
+    `points` and `startedAt`.
 
 D8 (remove the old tracking code in pull request 1) was withdrawn after
 review; that work moved to Sprint 2.
