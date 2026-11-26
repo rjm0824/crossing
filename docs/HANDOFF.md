@@ -2,7 +2,37 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
-## Update: Nov 26, 2026, evening (read this first): MVP row 8 next
+## Update: Nov 27, 2026: MVP row 8 built (draft PR, held until after the crossing)
+
+**RJ's decisions at the start of the session:** (1) one saved setup,
+`cx:next:setup`, that My Boat moved into (it copies `cx:next:boat` once and
+leaves the old key); (2) onboarding at `next/setup.html`, reached from a
+**Setup** row in the Menu only; show it on first open after the crossing.
+(3) Wind over the captain's max from any direction except north in the
+Stream gives **CROSSABLE**, "Crossable, not comfortable", not NO-GO.
+
+**Built (draft PR "DO NOT MERGE until after the crossing: onboarding (MVP
+row 8)"):** welcome, safety tick box (placeholder wording for RJ's attorney;
+no Terms of use page yet), the 7 questions with chips (typed answers kept as
+written), your boat (editable, outline per type), limits, followers (first
+name, optional phone), tracking (location asked once, keep-screen-on shares
+`cx:next:prefs.keepAwake`), and "You're set" with tomorrow's first answer.
+`next/js/mysetup.js` gives the Plan page's verdict, hour table, run time and
+fuel the saved setup, falling back to today's numbers; with no setup the
+verdict matches `main` (compared on 26,000 random departures). The shape of
+`cx:next:setup` is documented at the top of `next/js/setup.js`.
+`privacy.html` updated (followers, setup answers, the "contacts" line).
+
+**Left for after the crossing (Dec 1, Opus 5.5):** turn on "show Setup on
+first open" (one line in the Plan page's boot); make `live.js` use the
+saved cruise speed (it still estimates at 26 kt) and fill the Start trip
+text with the followers' phone numbers; the "connect Settings" work below.
+Not in row 8: routes (row 9; the Bimini chips are left out and step count is
+6 until then), boat photo (row 10), "A friend sent me their setup" (row 15),
+Talk and AI (row 16). Some chips are still RJ's own ("Goof n' Off",
+"Haile + Mom") and should be made general before friends use it.
+
+## Update: Nov 26, 2026, evening: MVP row 8 next
 
 **Merged tonight:** #25 (old Apps Script tracker removed from the preview
 Plan page), #26 (MVP row 7, the app frame) and #27 (privacy page date set to
