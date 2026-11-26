@@ -18,7 +18,11 @@ doesn't work, use Notes. At the end, tap **Copy all** and paste it into
 Notes or send it to yourself.
 
 **Saturday's water test:** try the log on the iPhone while the iPad runs the
-trip, to check both work side by side.
+trip, to check both work side by side. Also check the **bottom bar** on the
+helm iPad (added Nov 26): with the trip running, tap **Family** once on
+purpose. "Stay on your trip?" should appear; tap **Back to my trip** and
+check sharing carries on. Note whether the bar sits comfortably at the helm
+or gets bumped by accident.
 
 ## At the dock, before you leave (Guana Cay)
 
