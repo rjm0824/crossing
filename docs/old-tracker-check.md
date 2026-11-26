@@ -51,7 +51,8 @@ every answer; that is why the new Live page says "Received" only when true.)
     ends `…6al4hg/exec` and "Who has access" says **Anyone**. Then **pencil**
     › **Version: New version** › **Deploy**. If Google asks you to authorise,
     approve it (it is your own script).
-5.  Test: open the Plan page with `#captain`, type the key, tap **Send test
+5.  Test: open the live Plan page (`rjm0824.github.io/crossing/#captain`;
+    the preview no longer has the old tracker), type the key, tap **Send test
     point**, and look for a new row in the **Track** tab within a minute.
     Then delete that row.
 
@@ -62,7 +63,8 @@ to change, if anything, in `tracker/Code.gs`.
 
 For this crossing, no: the preview's Live page and family link replace it,
 and the no-code fallback (your text plus Find My) stays in place. The old
-tracking code is removed from the Plan page in Sprint 2, item 1. Fixing the
+tracking code is removed from the preview Plan page in Sprint 2, item 1;
+the live page keeps it until promote. Fixing the
 old tracker only matters if you want a second, separate tracker running on
-the crossing (it would need the old Plan page open with `#captain` on a
+the crossing (it would need the live Plan page open with `#captain` on a
 second device, since one page cannot run both).

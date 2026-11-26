@@ -2,8 +2,6 @@
 const CRUISE_KT = 26;                 // ~30 mph
 const FUEL_TANK = 215, BURN_LOW = 150, BURN_HIGH = 180, ROUTE_NM_REF = 150; // RJ's numbers for a full crossing
 const TZ = 'America/New_York';
-// Boat tracking endpoint (Google Apps Script web app URL). Leave empty until set up.
-const TRACK_URL = 'https://script.google.com/macros/s/AKfycbwo_BRHW7Qf9M_cJu0r97zaQh4zuPQKrg_sx_ijKeAaCvmN5eqUTaEOarCmZImO6al4hg/exec';
 const NOAA_TIDE_STATION = '8722670';  // Lake Worth Pier (Palm Beach)
 
 // Route (approximate; check against charts). ocean:true = open-ocean leg where Gulf Stream rules apply.

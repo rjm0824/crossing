@@ -52,20 +52,10 @@
 
 <section class="card">
   <h2>Boat position</h2>
-  <div class="track"><span class="dot" id="trackDot"></span><span id="trackText">Tracking not set up yet.</span></div>
-  <div class="note" id="trackNote">Family can watch the boat on the map. Positions start once the boat is outside the Palm Beach Inlet, are rounded to about a mile, and stop near Green Turtle.</div>
+  <div class="note" id="trackNote" style="margin-top:0">Start the trip on the helm iPad, then send the family link. Family follow the boat on their own page. Nothing is shared until you are outside the Palm Beach Inlet, and sharing stops when you arrive.</div>
   <a class="btn primary" id="liveBtn" href="live.html" style="display:block;text-align:center;min-height:48px;line-height:30px;margin-top:10px;font-size:16px">Start trip &amp; share with family</a>
   <div id="captain" style="display:none;margin-top:10px">
-    <div class="note err" style="margin:0 0 8px">The old tracker below stopped working on Nov 25. Use Start trip.</div>
     <div class="track">
-      <input type="password" id="capKey" placeholder="Captain key">
-      <button class="btn primary" id="capStart">Start sharing</button>
-      <button class="btn" id="capStop" style="display:none">Stop</button>
-      <button class="btn" id="capTest">Send test point</button>
-    </div>
-    <div class="capstatus" id="capStatus" style="display:none"></div>
-    <div class="note">Captain mode: keep this page open on the helm iPad with Auto-Lock off. It sends the boat's rough position every 5 minutes.</div>
-    <div class="track" style="margin-top:8px">
       <a class="btn" href="https://drive.google.com/drive/folders/1u51aeIJ9toHbiC0g27jImnC4RvHu-O4h" target="_blank" rel="noopener">Trip docs (private)</a>
       <a class="btn" href="https://www.bahamascustoms.gov.bs/?p=5024" target="_blank" rel="noopener">Bahamas Customs</a>
     </div>
@@ -117,13 +107,12 @@
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="js/settings.js?v=20261120"></script>
+<script src="js/settings.js?v=20261130"></script>
 <script src="js/helpers.js?v=20261120"></script>
 <script src="js/forecast.js?v=20261120"></script>
-<script src="js/plan.js?v=20261120"></script>
+<script src="js/plan.js?v=20261130"></script>
 <script src="js/tides.js?v=20261120"></script>
-<script src="js/map.js?v=20261120"></script>
-<script src="js/tracking.js?v=20261120"></script>
-<script src="js/boot.js?v=20261127"></script>
+<script src="js/map.js?v=20261130"></script>
+<script src="js/boot.js?v=20261130"></script>
 </body>
 </html>

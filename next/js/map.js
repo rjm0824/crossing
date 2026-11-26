@@ -1,5 +1,5 @@
 // ---------- Map ----------
-let map,routeLine,radarLayer=null,radarOn=true,boatMarker=null,trail=null;
+let map,routeLine,radarLayer=null,radarOn=true;
 function initMap(){
   map=L.map('map',{zoomControl:true,attributionControl:true});
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:15,maxNativeZoom:13,attribution:'Tiles © Esri, GEBCO, NOAA, Garmin'}).addTo(map);
