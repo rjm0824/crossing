@@ -32,7 +32,7 @@ li:last-child{border-bottom:0}
 <div class="preview">PREVIEW · test copy, not the live page</div>
 <main>
   <h1>Trip checks</h1>
-  <p class="lead">Checks the maths behind the Live and family pages: distance left, the start gate, arrival, the family page states and the send queue. Nothing is sent anywhere. Every line should read PASS.</p>
+  <p class="lead">Checks the maths behind the Live and family pages: distance left, the start gate, arrival, the family page states, the send queue and the reminder file. Nothing is sent anywhere. Every line should read PASS.</p>
   <div class="card">
     <p id="summary" role="status">Running…</p>
     <ol id="list"></ol>
@@ -41,7 +41,8 @@ li:last-child{border-bottom:0}
 </main>
 <script src="js/trip-math.js?v=20261127"></script>
 <script src="js/queue.js?v=20261127"></script>
-<script src="test/trip.test.js?v=20261127"></script>
+<script src="js/calendar.js?v=20261128"></script>
+<script src="test/trip.test.js?v=20261128"></script>
 <script>
 (function () {
   var list = document.getElementById('list'), summary = document.getElementById('summary');

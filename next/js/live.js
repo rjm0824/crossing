@@ -39,7 +39,10 @@
   function show(id, on) { $(id).hidden = !on; }
   function text(id, s) { $(id).textContent = s; }
   function setResult(el, s, kind) { el.textContent = s; el.className = 'result' + (kind ? ' ' + kind : '') + (el.classList.contains('odResult') ? ' odResult' : ''); }
-  function t(ms) { return fmtT(new Date(ms)); }
+  // Times in this device's own time zone (RJ, Nov 25). tz() adds the zone's
+  // short name ("7:05 AM EST") for the key times and the family message.
+  function t(ms) { return new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); }
+  function tz(ms) { return new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }); }
   function dur(ms) {
     var m = Math.max(0, Math.floor(ms / MIN));
     return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + (m % 60) + ' m';
@@ -86,7 +89,7 @@
   function renderReady() {
     text('rRoute', RULES.name);
     var p = plannedNow(), o = overdueFor(p);
-    text('rPlanned', 'about ' + t(p));
+    text('rPlanned', 'about ' + tz(p));
     text('rOverdue', t(o));
     $('odMinus').disabled = o - 30 * MIN < p;
     text('hideHelp', $('hideStart').checked
@@ -316,7 +319,7 @@
   function showLive() {
     show('ready', false); show('ended', false); show('live', true);
     show('practiceTag', !!trip.practice);
-    text('started', 'Trip started ' + t(trip.startedAt) + (trip.practice ? ' · practice run, the boat is made up' : ''));
+    text('started', 'Trip started ' + tz(trip.startedAt) + (trip.practice ? ' · practice run, the boat is made up' : ''));
     text('every', trip.practice ? 'every 5 seconds (practice)' : 'every 5 min');
     text('stopsAt', 'Stops by itself at ' + DEST + '.');
     ensureMap();
@@ -362,8 +365,8 @@
     // Overdue.
     var over = now > trip.overdueAt;
     show('odAlert', over);
-    if (over) text('odAlertText', 'You are past your overdue time (' + t(trip.overdueAt) + '). Your followers see an overdue notice.');
-    text('odLine', 'If not arrived by ' + t(trip.overdueAt) + ' your followers see an overdue notice.');
+    if (over) text('odAlertText', 'You are past your overdue time (' + tz(trip.overdueAt) + '). Your followers see an overdue notice.');
+    text('odLine', 'If not arrived by ' + tz(trip.overdueAt) + ' your followers see an overdue notice.');
 
     renderStatus($('status'), Queue.status());
   }
@@ -426,7 +429,7 @@
       var o = rowOf(pendingOd.id);
       var els = document.querySelectorAll('.odResult');
       var msg = null, kind = '';
-      if (o && o.state === 'received') { msg = 'New overdue time ' + t(pendingOd.value) + ' received'; kind = 'good'; pendingOd = null; }
+      if (o && o.state === 'received') { msg = 'New overdue time ' + tz(pendingOd.value) + ' received'; kind = 'good'; pendingOd = null; }
       else if (o && o.state === 'refused') { msg = 'The tracker did not accept the new time. Followers still see ' + t(pendingOd.before) + '.'; kind = 'bad'; pendingOd = null; }
       else if (!q.sending && q.lastError) { msg = pendingOd.wasOver ? 'Saved, will retry. Followers still see overdue.' : 'Saved, will retry.'; kind = 'wait'; }
       if (msg) { for (var i = 0; i < els.length; i++) setResult(els[i], msg, kind); setOdButtons(false); }
@@ -470,6 +473,39 @@
   var odButtons = document.querySelectorAll('.odAdd');
   for (var i = 0; i < odButtons.length; i++) odButtons[i].onclick = odClick;
 
+  // "Send link to family" (version A, chosen by RJ on Nov 25). Draft wording
+  // for RJ's attorney, like the overdue notice. The page only opens the share
+  // screen; the iPad or iPhone does the sending, so it never says "sent".
+  function familyText() {
+    var home = DIR === 'home';
+    var boat = trip.practice ? 'Practice run' : "Goof n' Off";
+    return (home ? 'Heading home! ' : 'Heading to Abaco! ') +
+      'Leaving ' + RULES.points[0].name + ' on ' + boat + ' at ' + tz(trip.startedAt) +
+      ', aiming for ' + DEST + ' around ' + tz(trip.plannedArrival) + '. ' +
+      'You can follow the boat live here, no app needed: ' + familyLink() + '\n' +
+      'If you haven\'t heard from me by ' + tz(trip.overdueAt) + ', check the link first, then give me a call.';
+  }
+  $('shareBtn').onclick = function () {
+    var msg = familyText();
+    show('shareBox', false);
+    var copyInstead = function () {
+      var shown = function () {
+        $('shareBox').value = msg; show('shareBox', true); $('shareBox').select();
+        setResult($('shareResult'), 'Couldn\'t open the share screen. The message is below: press and hold it to copy.', 'wait');
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(msg).then(function () { setResult($('shareResult'), 'Message copied. Paste it into a text to your family.', 'good'); }, shown);
+      } else shown();
+    };
+    if (navigator.share) {
+      setResult($('shareResult'), 'Share screen opened', 'good');
+      navigator.share({ text: msg }).catch(function (e) {
+        if (e && e.name === 'AbortError') setResult($('shareResult'), '');   // closed without choosing
+        else copyInstead();
+      });
+    } else copyInstead();
+  };
+
   $('copyBtn').onclick = function () {
     var link = familyLink();
     var shown = function () {
@@ -510,8 +546,8 @@
   function renderEnded() {
     if (!trip || trip.status === 'underway') return;
     text('eHow', trip.endedHow === 'arrived'
-      ? 'Arrived at ' + DEST + ' ' + t(trip.endedAt) + '. Sharing has stopped.'
-      : 'Sharing stopped at ' + t(trip.endedAt) + '.');
+      ? 'Arrived at ' + DEST + ' ' + tz(trip.endedAt) + '. Sharing has stopped.'
+      : 'Sharing stopped at ' + tz(trip.endedAt) + '.');
     text('eUnder', 'Underway ' + dur(trip.endedAt - trip.startedAt) + (trip.practice ? ' · practice run' : ''));
     var q = Queue.status();
     var el = $('eStatus');
@@ -524,13 +560,41 @@
         : 'Open this page when you have signal so your followers see sharing has stopped.';
       el.insertBefore(d, el.firstChild);
       el.className = 'status wait';
+    } else if (trip.deleted) {
+      el.textContent = 'Deleted from the tracker. Your followers\' link no longer works.';
+      el.className = 'status';
     } else {
       el.textContent = 'Your followers can see the trip has ended.' + (row && row.rt ? ' Received ' + t(row.rt) + '.' : '');
       el.className = 'status';
     }
     show('newBtn', !q.waiting);
+    show('delBtn', !q.waiting && !trip.deleted);
   }
+  // "Delete this trip from the tracker": only once everything has been delivered.
+  $('delBtn').onclick = function () { show('delDialog', true); $('delNo').focus(); };
+  $('delNo').onclick = function () { show('delDialog', false); };
+  $('delYes').onclick = function () {
+    show('delDialog', false);
+    if (!trip || trip.deleted) return;
+    $('delBtn').disabled = true;
+    text('delBtn', 'Deleting…');
+    setResult($('delResult'), '');
+    Tracker.call('/v1/delete', { tripKey: trip.tripKey }).then(function (res) {
+      $('delBtn').disabled = false;
+      text('delBtn', 'Delete this trip from the tracker');
+      if (res.ok || res.error === 'not_found') {
+        trip.deleted = true;
+        saveTrip();
+        setResult($('delResult'), '');            // the status line says it was deleted
+      } else {
+        setResult($('delResult'), 'Couldn\'t delete. Try again with signal.', 'bad');
+      }
+      renderEnded();
+    });
+  };
+
   $('newBtn').onclick = function () {
+    setResult($('delResult'), '');
     if (Queue.status().waiting) return;
     store.remove('trip'); store.remove('trail'); Queue.clear();
     trip = null; cur = null; readings = []; lastGood = null; arriveFirst = null; gateOpenNow = false;

@@ -6,6 +6,7 @@
   var inNode = typeof window === 'undefined' && typeof module !== 'undefined';
   var TM = inNode ? require('../js/trip-math.js') : window.TripMath;
   var QR = inNode ? require('../js/queue.js') : window.QueueRules;
+  var CF = inNode ? require('../js/calendar.js') : window.CalendarFile;
 
   var checks = [];
   function check(name, fn) { checks.push({ name: name, fn: fn }); }
@@ -388,6 +389,34 @@
   check('Queue: adding an item already queued changes nothing', function () {
     var q = QR.add([pos(100)], pos(100));
     eq(q.length, 1);
+  });
+
+  // ---- Reminder calendar file (Remind me) ----
+  var LINK = 'https://rjm0824.github.io/crossing/next/family.html#k=' + 'f'.repeat(43);
+  var OD = Date.UTC(2026, 10, 29, 19, 10, 0);          // 2:10 PM Eastern
+  var ics = CF.calendarFile({ captain: 'RJ', overdueAt: OD, startedAt: OD - 6 * 3600e3 }, LINK, OD - 3600e3);
+  var unfolded = ics.replace(/\r\n /g, '');
+  check('Reminder: starts at the overdue time and lasts 15 minutes', function () {
+    ok(unfolded.indexOf('\r\nDTSTART:20261129T191000Z\r\n') !== -1, 'start');
+    ok(unfolded.indexOf('\r\nDTEND:20261129T192500Z\r\n') !== -1, 'end');
+  });
+  check('Reminder: has an alert at the start', function () {
+    ok(/BEGIN:VALARM\r\nACTION:DISPLAY\r\n[^]*TRIGGER:-PT0M\r\nEND:VALARM/.test(unfolded));
+  });
+  check('Reminder: title, notes and the family link', function () {
+    ok(unfolded.indexOf("SUMMARY:Check on RJ's trip\r\n") !== -1, 'title');
+    ok(unfolded.indexOf('DESCRIPTION:Open the link to see where the boat is. The overdue time may have changed.\\n' + LINK) !== -1, 'notes');
+    ok(unfolded.indexOf('URL:' + LINK + '\r\n') !== -1, 'link');
+  });
+  check('Reminder: long lines are folded to 75 characters', function () {
+    ics.split('\r\n').forEach(function (l) { ok(l.length <= 75, 'line too long: ' + l.length); });
+    ok(ics.indexOf('\r\n ') !== -1, 'nothing folded');
+  });
+  check('Reminder: commas and semicolons are escaped', function () {
+    eq(CF.esc('Hi, there; ok'), 'Hi\\, there\\; ok');
+  });
+  check('Reminder: the file opens and closes properly', function () {
+    ok(ics.indexOf('BEGIN:VCALENDAR\r\n') === 0 && /END:VEVENT\r\nEND:VCALENDAR\r\n$/.test(ics));
   });
 
   // ---- Run ----
