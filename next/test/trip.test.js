@@ -294,6 +294,38 @@
     eq(TM.familyState(a, NOW).overdue, false, 'no overdue after arrival');
   });
 
+  // ---- Home port (D15) ----
+  // A home port about 3 nm past the inlet point (inside, to the west).
+  var HP = { lat: 26.7722, lon: -80.0301 - 3 / 60 / Math.cos(26.77 * Math.PI / 180) };
+  check('Home port: none set, the ending is unchanged', function () {
+    eq(TM.endRule(HOME, null).kind, 'route');
+    eq(TM.inEndZone(north(P.inlet, 400), HOME, TM.endRule(HOME, null)), true, 'inlet still ends it');
+  });
+  check('Home port: 3 nm past the last point is used', function () {
+    var rule = TM.endRule(HOME, HP);
+    eq(rule.kind, 'home');
+    near(TM.distNm(HP, P.inlet), 3, 0.05, 'test setup');
+  });
+  check('Home port: the trip does not end at the last point, nor past it', function () {
+    var rule = TM.endRule(HOME, HP);
+    eq(TM.inEndZone(north(P.inlet, 400), HOME, rule), false, 'at the inlet');
+    eq(TM.inEndZone({ lat: 26.7722, lon: -80.04 }, HOME, rule), false, 'past the inlet line');
+  });
+  check('Home port: ends 400 yards from the home port, not 600', function () {
+    var rule = TM.endRule(HOME, HP);
+    eq(TM.inEndZone(north(HP, 400), HOME, rule), true, '400 yards');
+    eq(TM.inEndZone(north(HP, 600), HOME, rule), false, '600 yards');
+  });
+  check('Home port: more than 15 nm from the route end is not used', function () {
+    eq(TM.endRule(HOME, { lat: 26.7722, lon: -80.4 }).kind, 'route');
+  });
+  check('Family: heading in, past the route end with a home port', function () {
+    var s = TM.familyState(underway({ last: { t: NOW - 2 * 60e3, lat: 26.78, lon: -80.06, sog: 8 }, passedLast: true }), NOW);
+    eq(s.state, 'heading-in');
+    var q = TM.familyState(underway({ last: { t: NOW - 30 * 60e3, lat: 26.78, lon: -80.06, sog: 8 }, passedLast: true }), NOW);
+    eq(q.state, 'quiet', 'quiet still wins after 20 minutes');
+  });
+
   // ---- Send queue ----
   function pos(t) { return { id: QR.posId(t), t: t, kind: 'pos', lat: 26.9, lon: -79, sog: 24 }; }
   function ev(id, t, kind) { return { id: id, t: t, kind: kind || 'checkin' }; }

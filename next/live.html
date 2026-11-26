@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="/crossing/apple-touch-icon.png?v=1"><link rel="icon" type="image/png" href="/crossing/favicon.png?v=1">
 <title>Crossing · Live · Goof n' Off</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="css/app.css?v=20261128">
+<link rel="stylesheet" href="css/app.css?v=20261129">
 </head>
 <body class="tp">
 <div class="preview">PREVIEW · test copy, not the live page</div>
@@ -38,6 +38,16 @@
     <span class="small">If you are not in by the overdue time, the family page shows an overdue notice.</span>
     <label class="switch"><input type="checkbox" id="hideStart" checked> Hide my start</label>
     <span class="small" id="hideHelp"></span>
+    <div class="row"><span>Home port</span><b id="hpState">not set</b></div>
+    <span class="small" id="hpHelp"></span>
+    <button type="button" class="bigbtn plain" id="hpBtn">Set home port</button>
+    <div id="hpBox" hidden>
+      <span class="small">Tap the map where the boat is kept, then Save. It is saved on this device only: never sent to the tracker and never in a link.</span>
+      <div id="hpMap" aria-label="Map for choosing the home port"></div>
+      <button type="button" class="bigbtn" id="hpSave" disabled>Save as home port</button>
+      <button type="button" class="bigbtn plain" id="hpRemove" hidden>Remove home port</button>
+      <button type="button" class="bigbtn plain" id="hpCancel">Cancel</button>
+    </div>
     <div id="inviteBox" hidden>
       <label for="invite"><b>Invite code</b></label>
       <input type="password" id="invite" autocomplete="off" autocapitalize="off" spellcheck="false">
@@ -128,10 +138,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="js/settings.js?v=20261120"></script>
 <script src="js/helpers.js?v=20261120"></script>
-<script src="js/trip-math.js?v=20261127"></script>
+<script src="js/trip-math.js?v=20261129"></script>
 <script src="js/tracker-api.js?v=20261127"></script>
 <script src="js/queue.js?v=20261129"></script>
 <script src="js/tripmap.js?v=20261127"></script>
-<script src="js/live.js?v=20261128"></script>
+<script src="js/live.js?v=20261129"></script>
 </body>
 </html>

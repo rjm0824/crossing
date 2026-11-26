@@ -33,6 +33,16 @@ time zone with the zone's name; the message uses the captain's zone).
     crossing, as its own pull request after that one, against the
     recommendation to wait; tested on Saturday's water run. (3) RJ sets the
     helm iPad's Messages to send from his own number.
+*   **Home port (D15) built Nov 25 (late), RJ's option A for the ending:**
+    set on the Ready screen by tapping a map (saved as `cx:next:homeport` on
+    the device only). With it, the Start request's destination is "Home"
+    (never where it is); passing the route's last point sends a "Passed Palm
+    Beach Inlet" waypoint; the trip ends within 500 yards of the home port;
+    no position is recorded inside those 500 yards. Followers see "RJ has
+    passed Palm Beach Inlet and is heading in." (no distance or estimate),
+    then "✓ RJ is home!" with the time and the map, the boat parked on the
+    inlet point under "✓ Made it in". Without a home port nothing changes.
+    `privacy.html` says so. Test it on Saturday's water run.
 *   Open question Q1 in `live-family.md` is closed: the share screen opens
     from the button on the iPad.
 *   Next: home port (D15), its own small pull request, if RJ wants it before

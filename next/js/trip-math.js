@@ -14,6 +14,7 @@ var TripMath = (function () {
   var QUIET_MS = 20 * 60e3;     // family page: last position older than this is "quiet"
   var LATE_NO_POS_MS = 60 * 60e3;
   var NEAR_DEST_NM = 4;
+  var HOME_PORT_NM = 15;        // a home port is used when the route ends within 15 nm of it
 
   var rad = function (d) { return d * Math.PI / 180; };
   var isNum = function (v) { return typeof v === 'number' && isFinite(v); };
@@ -134,6 +135,23 @@ var TripMath = (function () {
     return pastLine(reading, a.pastSide, a.pastLon);
   }
 
+  // Home port (D15). The ending rule for this trip: the route's end, or the
+  // home port when the route's last point is within 15 nm of it.
+  // homePort: { lat, lon } saved on the captain's device only, or null.
+  function endRule(rules, homePort) {
+    var last = rules.points[rules.points.length - 1];
+    if (homePort && isNum(homePort.lat) && isNum(homePort.lon) && distNm(homePort, last) <= HOME_PORT_NM) {
+      return { kind: 'home', lat: homePort.lat, lon: homePort.lon };
+    }
+    return { kind: 'route' };
+  }
+  // One reading inside the ending zone for this trip. With a home port only
+  // the 500 yards round it count (not the route's end, nor "past it").
+  function inEndZone(reading, rules, rule) {
+    if (rule && rule.kind === 'home') return distNm(reading, rule) <= GATE_NM;
+    return inArrivalZone(reading, rules);
+  }
+
   // Degrees and decimal minutes, for reading aloud: 26° 48.74' N, 079° 27.40' W
   function fmtLatLon(lat, lon) {
     function part(v, width, pos, neg) {
@@ -152,7 +170,8 @@ var TripMath = (function () {
   // What the family page should show. read is the last good Read answer the
   // page holds, plus error (the service's word, 'network', or 'nokey') when
   // the latest read failed. nowMs is in service time.
-  // state: badlink, unavailable, closed, arrived, stopped, started, underway, quiet.
+  // state: badlink, unavailable, closed, arrived, stopped, started, underway,
+  // heading-in (past the route's end on the way to a home port, read.passedLast), quiet.
   // unavailable is also true when the latest read failed but older data is shown.
   function familyState(read, nowMs) {
     var out = {
@@ -185,7 +204,8 @@ var TripMath = (function () {
     out.etaPast = out.etaMs !== null && out.etaMs < nowMs;
     out.ageMs = isNum(last.t) ? nowMs - last.t : null;
     out.nearDest = out.leftNm !== null && out.leftNm <= NEAR_DEST_NM;
-    out.state = out.ageMs !== null && out.ageMs > QUIET_MS ? 'quiet' : 'underway';
+    out.state = out.ageMs !== null && out.ageMs > QUIET_MS ? 'quiet'
+      : read.passedLast ? 'heading-in' : 'underway';
     return out;
   }
 
@@ -194,7 +214,8 @@ var TripMath = (function () {
     distNm: distNm, lineLength: lineLength, alongLine: alongLine, leftNm: leftNm,
     isGood: isGood, avgSpeed: avgSpeed, motion: motion, etaMs: etaMs,
     mayShare: mayShare, nearerStart: nearerStart, inArrivalZone: inArrivalZone,
-    fmtLatLon: fmtLatLon, familyState: familyState
+    fmtLatLon: fmtLatLon, familyState: familyState,
+    endRule: endRule, inEndZone: inEndZone, HOME_PORT_NM: HOME_PORT_NM
   };
 })();
 if (typeof module !== 'undefined') module.exports = TripMath;
