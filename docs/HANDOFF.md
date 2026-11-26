@@ -2,7 +2,24 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
-## Update: Nov 26, 2026, afternoon (later): test kit merged; row 9 drafted (read this first)
+## Update: Nov 26, 2026, evening: ☰ menu on the Live screen (draft PR, the one freeze exception)
+
+RJ asked for a way back to the app's menus from `next/live.html` (Start
+trip, Live and Trip ended screens are all that one page). Built as small as
+possible: a new file `next/js/livemenu.js` and one `<script>` line at the end
+of `live.html`. `live.js`, `settings.js`, the family page and the tracker are
+unchanged. The ☰ sits at the right of the title row and opens a sheet with
+Plan, Live, Family, My Boat, Customs, Safety, Crossing log (Settings still
+hidden). While a trip is sharing, leaving asks "Sharing pauses while you're
+away from this page. Stay on your trip?" ("Back to my trip" is the default).
+It only reads `cx:next:trip`. No new data, $0, nothing runs on its own.
+Tested in the cloud with a practice trip: positions kept recording and
+sending with the sheet open for over a minute.
+
+**After #29 merges (Dec 1):** add the **Setup** row to the sheet's list in
+`livemenu.js` too, so it matches the Menu. No file conflicts with #29 or #31.
+
+## Update: Nov 26, 2026, afternoon (later): test kit merged; row 9 drafted
 
 **Date note:** the work in the two updates below was done on Thu Nov 26.
 Some commit messages and draft-branch notes say Nov 27 by mistake (the plan
