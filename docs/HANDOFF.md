@@ -2,7 +2,48 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
-## Update: Nov 26, 2026, 1:45 AM (read this first, then the 12:20 AM update)
+## Update: Nov 26, 2026, afternoon (read this first)
+
+**Merged:** #23 (filing) and #24 (`docs/promote-plan.md`: the gate, steps,
+test and undo for moving `/next/` to the live page; plan only).
+
+**Open, held until after the crossing:** #25, a draft. It removes the old
+Apps Script tracker from the preview Plan page (Sprint 2, item 1), and this
+update rides along with it. RJ marks it Ready, tests it (2 minutes) and
+merges it once he is home.
+
+**Saturday's water test changed. The steps further down are wrong.** The
+trip-home rules count anywhere west of 80.035°W (inside the Palm Beach Inlet)
+as arrived. With Hide my start off, a trip started at RJ's dock therefore
+ends about 5 seconds later. The crossing itself is not affected, because
+nothing counts until the boat is past Green Turtle. No code change is
+needed. The test now:
+
+1.  Set the home port first.
+2.  Run about a mile outside the inlet.
+3.  Start the trip home there, with Hide my start off, and send the link to
+    yourself.
+4.  Run 15 minutes offshore; tap All good and Remind me.
+5.  Come back in through the inlet: "heading in", then "✓ RJ is home!".
+6.  Delete the trip and send Claude the screenshots.
+
+The tick-box version is at the top of the crossing-day card:
+https://claude.ai/artifact/2BNtygYUVDFkJmzBJnWBm1
+
+**Next sessions, and the model for each (CLAUDE.md "Model use"):**
+
+| Work | Model |
+| --- | --- |
+| Fixes from Saturday's test (the code freeze allows these only) | Opus 5.5; Sonnet 5.5 for a one-line wording fix |
+| After the crossing: debrief (what worked, battery, signal) | Sonnet 5.5 |
+| After the crossing: merge #25, then the rest of Sprint 2 | Opus 5.5 |
+| MVP row 7, the app frame (built from `mvp.md`, lighter check) | Opus 5.5, held as a draft until after the crossing |
+| Any new design doc plus `/egm:egm-review` (offline loading W16, promote details) | Fable 5.2 |
+
+Every handoff names the model for the next step.
+
+## Update: Nov 26, 2026, 1:45 AM
+
 
 **After the crossing build, the same night (all merged, no app changes):**
 
@@ -61,7 +102,7 @@ end at the real dock); keep-awake over hours; Starlink drop-outs.
 3.  **Delete old practice trips** if any are still on the Ended screen
     (otherwise the tracker removes them after 7 days).
 
-### Saturday Nov 28: the water test (about 30 minutes, daylight, away from the house)
+### Saturday Nov 28: the water test (SUPERSEDED: see the Nov 26 afternoon update; do not start at the dock)
 
 On the iPad open `…/next/live.html?trip=home` **without** `practice=1`.
 The trip-home rules apply, so for a test near Palm Beach turn **Hide my
