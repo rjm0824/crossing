@@ -141,5 +141,7 @@ a.ob-next{display:flex;align-items:center;justify-content:center;text-decoration
 /* First verdict */
 .vlabel{font-size:13px;color:var(--ob-soft)}
 .vrow{display:flex;align-items:center;gap:14px;font-size:15px}
-.vword{font-size:30px;font-weight:800;line-height:1;flex:0 0 auto}
-.vword.go{color:var(--ob-go)}.vword.maybe{color:#8A4B00}.vword.no{color:#B42318}
+/* Badge: the same green, yellow and red circles as the Plan page */
+.vbadge{flex:0 0 auto;width:92px;height:92px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;font-size:20px;line-height:1.1;color:#06131c;padding:4px}
+.vbadge.go{background:#2fbf71}.vbadge.maybe{background:#f2b33d}.vbadge.no{background:#e5484d;color:#fff}
+.vwhy{font-size:15px}.vsay{display:block;font-size:18px;margin-bottom:2px}

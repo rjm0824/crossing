@@ -374,7 +374,7 @@
       stepper('Max seas', 'seasFt', 'ft', 1, 8),
       stepper('Max wind', 'windKt', 'kt', 5, 30),
       sw,
-      h('p', { class: 'ob-help', text: 'Seas over your max, or wind over your max anywhere on the route, makes it NO-GO. Standard uses the same seas and north-wind numbers as the Plan page today.' })
+      h('p', { class: 'ob-help', text: 'Seas over your max, or north wind at your max in the Stream, is NO-GO. Wind over your max anywhere else is CROSSABLE, not comfortable. Standard uses the same seas and north-wind numbers as the Plan page today.' })
     ], h('button', { type: 'button', class: 'ob-next', id: 'obNext', text: 'Save my limits', onclick: function () {
       S.save({ limits: { preset: L.preset, seasFt: L.seasFt, windKt: L.windKt, noNorthInStream: L.noNorthInStream } });
       go('followers');
@@ -463,7 +463,9 @@
   // Tomorrow's best departure on today's route, judged with the saved limits,
   // using the Plan page's own forecast code (forecast.js, mysetup.js).
   function firstVerdict(box) {
-    var WORDS = ['GO', 'CROSSABLE', 'NO-GO'], CLS = ['go', 'maybe', 'no'];
+    // Same badge colours and words as the Plan page.
+    var WORDS = ['GO', 'CROSS-ABLE', 'NO-GO'], CLS = ['go', 'maybe', 'no'];
+    var SAY = ['Looks like a go', 'Crossable, not comfortable', 'Not today'];
     function show(kids) { box.replaceChildren.apply(box, kids); }
     if (typeof loadForecast !== 'function') return;
     Object.assign(MY, readMySetup());
@@ -480,8 +482,8 @@
       var arr = best.rows[best.rows.length - 1].t;
       show([label,
         h('div', { class: 'vrow' }, [
-          h('span', { class: 'vword ' + CLS[best.level], id: 'obWord', text: WORDS[best.level] }),
-          h('span', {}, ['Best departure ', h('b', { text: fmtT(best.dep) }), '. Worst seas ' + best.worstWave.toFixed(1) + ' ft. ' + DEST + ' about ' + fmtT(arr) + '.'])
+          h('span', { class: 'vbadge ' + CLS[best.level], id: 'obWord', text: WORDS[best.level] }),
+          h('span', { class: 'vwhy' }, [h('b', { class: 'vsay', text: SAY[best.level] }), 'Best departure ', h('b', { text: fmtT(best.dep) }), '. Worst seas ' + best.worstWave.toFixed(1) + ' ft. ' + DEST + ' about ' + fmtT(arr) + '.'])
         ]),
         best.flags.length ? h('p', { class: 'ob-help', text: best.flags[0] }) : null,
         h('p', { class: 'ob-help', text: 'Judged with your limits: seas ' + MY.seasFt + ' ft, wind ' + MY.windKt + ' kt, at ' + MY.cruiseKt + ' kt. Forecasts can be wrong; the captain decides.' })

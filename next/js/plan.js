@@ -52,7 +52,7 @@ function renderLegs(o){
   const t=$('legs');
   if(!o){t.innerHTML='';return;}
   t.innerHTML='<tr><th>Point</th><th>Pass</th><th>Seas</th><th>Wind</th><th>Rain</th></tr>'+o.rows.map(r=>{const v=r.v;
-    const windCls=(MY.noNorth&&isNorthish(v.dir)&&(r.wp.ocean||r.wp.id==='inlet'))?cls(v.wind,MY.windKt-5,MY.windKt-0.1):MY.windRule?cls(v.wind,MY.windKt-3,MY.windKt):cls(v.wind,15,20);
+    const windCls=(MY.noNorth&&isNorthish(v.dir)&&(r.wp.ocean||r.wp.id==='inlet'))?cls(v.wind,MY.windKt-5,MY.windKt-0.1):cls(v.wind,MY.windKt,MY.windKt+5);
     return `<tr><td>${r.wp.name}<br><small style="color:var(--soft)">${Math.round(cum[WP.indexOf(r.wp)])} nm</small></td><td>${fmtT(r.t)}</td><td class="${cls(v.wave,MY.seasFt-1,MY.seasFt)}">${v.wave==null?'–':v.wave.toFixed(1)+' ft'}<br><small>${v.per==null?'':v.per.toFixed(0)+'s '+dirName(v.wdir)}</small></td><td class="${windCls}">${v.wind==null?'–':Math.round(v.wind)+' kt '+dirName(v.dir)}<br><small>${v.gust==null?'':'gusts '+Math.round(v.gust)}</small></td><td>${v.rain==null?'–':v.rain+'%'}</td></tr>`;}).join('');
 }
 function chop(w){if(w==null)return '–';if(w<10)return 'under 1 ft';if(w<15)return '1–2 ft';if(w<20)return '2–3 ft';return '3+ ft, sloppy';}
