@@ -2,7 +2,39 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
-## Update: Nov 27, 2026: MVP row 8 built (draft PR, held until after the crossing)
+## Update: Nov 26, 2026, afternoon (later): test kit merged; row 9 drafted (read this first)
+
+**Date note:** the work in the two updates below was done on Thu Nov 26.
+Some commit messages and draft-branch notes say Nov 27 by mistake (the plan
+had row 8 on Fri Nov 27). Saturday's water test is Sat Nov 28; the
+crossing is Nov 29 to 30.
+
+**Calendar reminders (RJ's):** Sat Nov 28, 9:00 AM water test with the
+crossing log on the iPhone; Sat Nov 28, 6:00 PM text Haile and Mom.
+Open Loops rows 226 to 230 hold the follow-ups.
+
+| PR | State | What |
+| --- | --- | --- |
+| #29 | Draft, after the crossing | Onboarding (row 8), see below |
+| #30 | **Merged Nov 26** | Crossing test kit: `docs/crossing-test-plan.md` and the crossing log (`next/log.html`, Menu → Crossing log, iPhone only; `cx:next:crosslog`, no location) |
+| #31 | Draft, after the crossing, **merge after #29** | Routes (row 9) |
+
+**Row 9 (#31), built on #29's branch:** `next/js/routes.js` (one route shape;
+Abaco built read-only from `settings.js`, 152.7 nm), Setup step 5 of 7 "Your
+route", "Tap my own points on the map" (fixed crosshair like the home port
+picker; 2 to 12 points, names, Stream ticks; saved as `myRoute` in
+`cx:next:setup`), and `next/js/active-route.js` so the Plan page plans the
+chosen route. For Abaco the Plan page is unchanged (compared card by card
+with `main`). On other routes, Abaco-only cards hide and Start trip is
+replaced by a note: the frozen Live screen only knows Abaco until Dec 1.
+
+**Waiting on RJ:** check the Bimini points in `docs/route-points.md` (on the
+#31 branch until it merges) against charts (drafted from general knowledge, `ready: false` until approved).
+**After the crossing (Opus 5.5):** merge #29 then #31; switch on the Bimini
+presets once approved; nearest tide station; make `live.js` follow the
+chosen route along with the other Dec 1 Live screen work.
+
+## Update: Nov 26, 2026, afternoon: MVP row 8 built (draft PR, held until after the crossing)
 
 **RJ's decisions at the start of the session:** (1) one saved setup,
 `cx:next:setup`, that My Boat moved into (it copies `cx:next:boat` once and
