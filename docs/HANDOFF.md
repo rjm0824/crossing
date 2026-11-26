@@ -2,7 +2,40 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
-## Update: Nov 25, 2026 (read this first, then the Nov 19 update)
+## Update: Nov 26, 2026 (read this first, then the Nov 25 update)
+
+**Pull request 1 of `docs/designs/live-family.md` is built** on branch
+`claude/magical-gauss-di1223`, for RJ to test by 3:00 PM Fri Nov 27. Next
+session: pull request 2 (Saturday), after RJ's Friday test.
+
+*   **New in the preview:** `next/live.html` (Ready, Live and Ended screens,
+    practice mode with `?practice=1` and `&overdue=1`), `next/family.html`
+    (the family page, opened from `family.html#k=` + family key),
+    `next/trip-test.html` (all calculation and queue checks, PASS or FAIL),
+    and a "Start trip & share with family" button on the Plan page. The
+    Plan page's old tracking code is still there (removed in Sprint 2).
+*   **New code:** `next/js/trip-math.js` (calculations), `queue.js` (send
+    queue), `tracker-api.js` (the only code that talks to the tracker),
+    `tripmap.js` (map with recenter), `live.js`, `family.js`. Checks:
+    `node --test next/test/trip.test.js` (the same file runs in
+    `trip-test.html`).
+*   **Choices made while building** (none changes a decision): the Live and
+    family pages use the mockup's light look, while the Plan page stays dark;
+    Saturday's "Moving slowly" and "stopped" wording on the family page came
+    early; in practice mode the arrival estimate is in real time while the
+    boat runs 60 times fast, so it looks far off; the family page says "the
+    boat's last known position".
+*   **Tested in this workspace:** full practice crossings against a local copy
+    of the tracker, at phone and iPad width, with the connection cut and
+    restored, a reload mid-trip, overdue and "add 1 hour", stop sharing, and
+    every family page state. **Not tested:** a real iPhone or iPad, real GPS,
+    keep-awake over hours, chart images (blocked here), Starlink drop-outs.
+*   **Local testing** as in `live-family.md` "Settled Details": a made-up
+    invite code goes in `tracker-service/.dev.vars` (ignored by git) with
+    `ALLOWED_ORIGINS="http://localhost:8788"`; run
+    `npx wrangler d1 migrations apply DB --local` once.
+
+## Update: Nov 25, 2026
 
 **Next build session: pull request 1 of `docs/designs/live-family.md`, on Opus
 5.5.** Read its One-Page Summary first.
