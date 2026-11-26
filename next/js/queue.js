@@ -91,3 +91,147 @@ var QueueRules = (function () {
   };
 })();
 if (typeof module !== 'undefined') module.exports = QueueRules;
+
+// ---------- Saved data and the sender (browser only) ----------
+// Saved names start with cx:next: on the preview (cx:live: at promote).
+var Queue = (typeof window === 'undefined') ? null : (function () {
+  'use strict';
+  var PREFIX = 'cx:next:';
+  var LOG_MAX = 30;
+  var TICK_MS = 30e3, NOT_FOUND_MS = 60e3;
+
+  var mem = {};                 // used when the device can't save
+  var saveFailed = false;
+  var store = {
+    get: function (name) {
+      try {
+        var raw = localStorage.getItem(PREFIX + name);
+        if (raw !== null) return JSON.parse(raw);
+      } catch (e) {}
+      return mem.hasOwnProperty(name) ? mem[name] : null;
+    },
+    set: function (name, value) {
+      mem[name] = value;
+      try { localStorage.setItem(PREFIX + name, JSON.stringify(value)); return true; }
+      catch (e) { saveFailed = true; emit(); return false; }
+    },
+    remove: function (name) {
+      delete mem[name];
+      try { localStorage.removeItem(PREFIX + name); } catch (e) {}
+    }
+  };
+
+  var tripKey = null;
+  var sending = 0;              // items in the request now out
+  var size = QueueRules.BATCH_MAX;
+  var stuck = [];               // IDs of events the tracker would not accept
+  var lastReceivedMs = null, notAccepted = 0, eventError = null, notFound = false;
+  var lastError = null, lastNotFoundTry = 0;
+  var listeners = [];
+
+  function readQueue() { var q = store.get('queue'); return Array.isArray(q) ? q : []; }
+  function writeQueue(q) { store.set('queue', q); }
+  function readLog() { var l = store.get('log'); return Array.isArray(l) ? l : []; }
+
+  // Log rows: { id, t, text, state: saved | received | refused, rt }.
+  function logAdd(id, t, text) {
+    var log = readLog().filter(function (r) { return r.id !== id; });
+    log.push({ id: id, t: t, text: text, state: 'saved' });
+    store.set('log', log.slice(-LOG_MAX));
+  }
+  function logMark(idList, state, when) {
+    if (!idList.length) return;
+    var log = readLog(), changed = false;
+    log.forEach(function (r) {
+      if (idList.indexOf(r.id) !== -1 && r.state !== 'received') { r.state = state; if (when) r.rt = when; changed = true; }
+    });
+    if (changed) store.set('log', log);
+  }
+  function logText(id) {
+    var row = readLog().filter(function (r) { return r.id === id; })[0];
+    return row ? row.text : null;
+  }
+
+  function status() {
+    var q = readQueue();
+    return {
+      waiting: q.length,
+      waitingPositions: q.filter(function (it) { return it.kind === 'pos'; }).length,
+      sending: sending, lastReceivedMs: lastReceivedMs, notAccepted: notAccepted,
+      eventError: eventError, notFound: notFound, saveFailed: saveFailed,
+      lastError: lastError, log: readLog()
+    };
+  }
+  function emit() { var s = status(); listeners.forEach(function (fn) { try { fn(s); } catch (e) {} }); }
+
+  // Saved first, then sent.
+  function enqueue(item, text) {
+    writeQueue(QueueRules.add(readQueue(), item));
+    if (text) logAdd(item.id, item.t, text);
+    emit();
+    sendNow();
+  }
+
+  function sendNow() {
+    if (sending || !tripKey) return;
+    var q = readQueue();
+    if (!q.length) return;
+    if (notFound && Date.now() - lastNotFoundTry < NOT_FOUND_MS) return;
+    var batch = QueueRules.nextBatch(q, size, stuck);
+    sending = batch.length;
+    emit();
+    Tracker.call('/v1/add', { tripKey: tripKey, items: batch }).then(function (res) {
+      var cur = readQueue();          // read again: items may have been added meanwhile
+      var again = false;
+      if (res.ok) {
+        var out = QueueRules.applyResults(cur, res.data.results || []);
+        writeQueue(out.queue);
+        size = QueueRules.BATCH_MAX;
+        notFound = false; lastError = null;
+        if (out.received.length) {
+          lastReceivedMs = Date.now();
+          logMark(out.received, 'received', lastReceivedMs);
+          stuck = stuck.filter(function (id) { return out.received.indexOf(id) === -1; });
+        }
+        notAccepted += out.notAccepted;
+        noteEventErrors(out.eventErrors);
+        // More waiting that the tracker hasn't just refused: send the next batch now.
+        again = out.received.length > 0 && out.queue.length > 0;
+      } else {
+        var f = QueueRules.applyFailure(cur, batch, res.error);
+        writeQueue(f.queue);
+        size = f.nextSize;
+        lastError = res.error;
+        notAccepted += f.notAccepted;
+        noteEventErrors(f.eventErrors);
+        if (f.notFound) { notFound = true; lastNotFoundTry = Date.now(); }
+        again = (res.error === 'too_many' || res.error === 'bad_request') && f.queue.length > 0 && batch.length > 1;
+      }
+      sending = 0;
+      emit();
+      if (again) sendNow();
+    });
+  }
+  function noteEventErrors(list) {
+    list.forEach(function (it) {
+      if (stuck.indexOf(it.id) === -1) stuck.push(it.id);
+      eventError = logText(it.id) || it.kind;
+      logMark([it.id], 'refused');
+    });
+  }
+
+  setInterval(function () { if (readQueue().length) sendNow(); }, TICK_MS);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') sendNow(); });
+  window.addEventListener('online', sendNow);
+
+  return {
+    store: store, enqueue: enqueue, sendNow: sendNow, status: status,
+    onStatus: function (fn) { listeners.push(fn); fn(status()); },
+    start: function (key) { tripKey = key; notFound = false; sendNow(); },
+    clear: function () {
+      store.remove('queue'); store.remove('log');
+      stuck = []; notAccepted = 0; eventError = null; notFound = false; lastReceivedMs = null; lastError = null;
+      emit();
+    }
+  };
+})();

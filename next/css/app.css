@@ -64,3 +64,9 @@ td.g{color:var(--go)}td.m{color:var(--maybe)}td.n{color:var(--no);font-weight:70
 .capstatus.ok{border-color:var(--go)}.capstatus.warn{border-color:var(--maybe)}
 .capstatus.ok b:first-child{color:var(--go)}.capstatus.warn b:first-child{color:var(--maybe)}
 input[type=password]{background:#0e2333;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px;font-size:15px;width:160px}
+/* ---------- Trip map (Live and family pages) ---------- */
+.tm-recenter a{display:flex;align-items:center;justify-content:center;color:#0b1d2c}
+.tm-recenter .tm-dot{fill:none;stroke:currentColor;stroke-width:2}
+.tm-recenter a.on{color:#0b6fa8}
+.tm-recenter a.on .tm-dot{fill:currentColor;stroke:none}
+.boat-ico.grey{filter:grayscale(1) opacity(.5)}
