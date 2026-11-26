@@ -32,3 +32,10 @@ body.mapfull .tabbar{display:none}
 .fsee{margin:0;padding-left:20px;font-size:15px}.fsee li{margin:6px 0}
 .result{font-size:14px;font-weight:600;margin-top:10px}.result:empty{display:none}
 .result.good{color:var(--go)}.result.wait{color:var(--maybe)}
+
+/* My Boat form */
+.ffield{display:block;margin:0 0 12px}
+.ffield span{display:block;font-size:14px;color:var(--soft);margin-bottom:4px}
+.ffield input{width:100%;min-height:48px;font-size:16px;color:var(--ink);background:#0e2333;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.ffield input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.btn:disabled{opacity:.55}
