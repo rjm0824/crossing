@@ -5,13 +5,12 @@ function renderDays(){
   const box=$('days');box.innerHTML='';
   dayList().forEach(d=>{const b=document.createElement('button');b.textContent=fmtDay(etTime(d,12));if(d===DAY)b.className='on';b.onclick=()=>{DAY=d;try{localStorage.setItem('crossDay',d)}catch(e){};render();};box.appendChild(b);});
 }
-// The chosen departure: saved on this device for its date. On the family link, the captain's time (from the tracker) wins.
-let CAP_PLAN=null,LASTSEL=null;
+// The chosen departure: saved on this device for its date.
+let LASTSEL=null;
 const DEPKEY='crossDep';
 function savedDep(){try{const v=JSON.parse(localStorage.getItem(DEPKEY)||'null');if(v&&v.day&&v.ms&&!!v.home===HOME)return v;}catch(e){}return null;}
-function saveDep(ms,actual){const v={day:etDate(new Date(ms)),ms,home:HOME,actual:!!actual};try{localStorage.setItem(DEPKEY,JSON.stringify(v));}catch(e){}if(IS_CAPTAIN)sendPlan(v);}
+function saveDep(ms,actual){const v={day:etDate(new Date(ms)),ms,home:HOME,actual:!!actual};try{localStorage.setItem(DEPKEY,JSON.stringify(v));}catch(e){}}
 function chosenDep(){
-  if(!IS_CAPTAIN&&CAP_PLAN&&!!CAP_PLAN.home===HOME){const ms=Date.parse(CAP_PLAN.dep);if(!isNaN(ms)&&etDate(new Date(ms))===DAY)return {ms,actual:!!CAP_PLAN.actual,captain:true};}
   const v=savedDep();return v&&v.day===DAY?{ms:v.ms,actual:!!v.actual}:null;
 }
 function render(){
