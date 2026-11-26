@@ -235,6 +235,18 @@ of their own before building.
     thing dropped and the trip ends at the inlet point (D11). It moves into
     the profile when onboarding is built (row 8). See "Home Port".
 
+*   **D16. The arrived page celebrates and keeps a map (RJ, Nov 25
+    evening, after testing pull request 1).** Wording: "✓ RJ has arrived!",
+    the place and time, the crossing time, and "Position sharing has stopped.
+    This page closes 2 hours after arrival." The map stays, with the route
+    and the boat parked on the destination's named point, never a real
+    position, so the privacy statement is unchanged. This replaces "Map:
+    Removed" for the Arrived row of the family table. Pull request 2.
+*   **D17. A follower who first opens the link after arrival** sees the
+    celebration without the map, because `/v1/read` returns only `dest`
+    once a trip has ended. Returning the route's points with the ended
+    answer is a small tracker change in Sprint 2.
+
 D8 (remove the old tracking code in pull request 1) was withdrawn after
 review; that work moved to Sprint 2.
 
