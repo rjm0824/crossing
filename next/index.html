@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#0b1d2c"><link rel="apple-touch-icon" href="/crossing/apple-touch-icon.png?v=1"><link rel="icon" type="image/png" href="/crossing/favicon.png?v=1">
 <title>Crossing · Goof n' Off</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="css/app.css?v=20261120">
+<link rel="stylesheet" href="css/app.css?v=20261127">
 </head>
 <body>
 <div class="preview" id="previewBar">PREVIEW · test copy, not the live page</div>
@@ -54,7 +54,9 @@
   <h2>Boat position</h2>
   <div class="track"><span class="dot" id="trackDot"></span><span id="trackText">Tracking not set up yet.</span></div>
   <div class="note" id="trackNote">Family can watch the boat on the map. Positions start once the boat is outside the Palm Beach Inlet, are rounded to about a mile, and stop near Green Turtle.</div>
+  <a class="btn primary" id="liveBtn" href="live.html" style="display:block;text-align:center;min-height:48px;line-height:30px;margin-top:10px;font-size:16px">Start trip &amp; share with family</a>
   <div id="captain" style="display:none;margin-top:10px">
+    <div class="note err" style="margin:0 0 8px">The old tracker below stopped working on Nov 25. Use Start trip.</div>
     <div class="track">
       <input type="password" id="capKey" placeholder="Captain key">
       <button class="btn primary" id="capStart">Start sharing</button>
@@ -122,6 +124,6 @@
 <script src="js/tides.js?v=20261120"></script>
 <script src="js/map.js?v=20261120"></script>
 <script src="js/tracking.js?v=20261120"></script>
-<script src="js/boot.js?v=20261120"></script>
+<script src="js/boot.js?v=20261127"></script>
 </body>
 </html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" class="tp-html">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#F3F6F8">
+<link rel="icon" type="image/png" href="/crossing/favicon.png?v=1">
+<title>Follow the boat · Crossing</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="css/app.css?v=20261127">
+</head>
+<body class="tp">
+<div class="preview">PREVIEW · test copy, not the live page</div>
+<header>
+  <h1 id="title">⚓ Follow the boat</h1>
+</header>
+<main>
+  <div class="alert" id="odAlert" hidden role="alert">
+    <b id="odHead"></b>
+    <span id="odWhere"></span>
+    <span id="odPos"></span>
+    <span>This page cannot call for help. If you are worried, call the Coast Guard.</span>
+  </div>
+  <div class="note" id="unavail" hidden role="status"></div>
+  <div id="map" aria-label="Map of the route and the boat" hidden></div>
+  <div class="card" id="statusCard" aria-live="polite">
+    <b id="line1">Loading the trip…</b>
+    <span id="line2"></span>
+    <span class="sub" id="line3"></span>
+    <span class="sub" id="line4"></span>
+    <span class="note" id="amber" hidden></span>
+  </div>
+  <div class="card" id="listCard" hidden>
+    <h2>Check-ins</h2>
+    <ul class="log" id="list"></ul>
+  </div>
+  <p class="small" id="explain" hidden></p>
+</main>
+<p class="nfn"><b>Planning aid, not for navigation.</b> The captain decides. This page cannot call for help. In an emergency call the Coast Guard.</p>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="js/trip-math.js?v=20261127"></script>
+<script src="js/tracker-api.js?v=20261127"></script>
+<script src="js/tripmap.js?v=20261127"></script>
+<script src="js/family.js?v=20261127"></script>
+</body>
+</html>

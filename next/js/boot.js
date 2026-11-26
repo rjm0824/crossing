@@ -6,6 +6,9 @@ window.addEventListener('hashchange',()=>location.reload());
   DAY=days.includes(saved)?saved:days[0];
   if(location.pathname.includes('/next/')){$('previewBar').style.display='block';document.title='PREVIEW · '+document.title;}
   renderDays();initMap();setupCaptain();
+  // Start trip & share with family: opens the Live page, keeping the direction.
+  try{const tr=JSON.parse(localStorage.getItem('cx:next:trip')||'null');$('liveBtn').href='live.html'+(HOME?'?trip=home':'');
+    if(tr&&tr.status==='underway')$('liveBtn').textContent='Back to your trip';}catch(e){}
   try{await loadForecast();$('upd').textContent='Updated '+fmtT(new Date());render();}
   catch(e){$('upd').textContent='Forecast failed to load';$('call').innerHTML='<div class="badge na">Offline</div><div class="why">Couldn\'t reach the forecast service. Pull to refresh, or use the source links below.</div>';}
   loadTrack();setInterval(loadTrack,2*60e3);
