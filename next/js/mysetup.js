@@ -21,7 +21,7 @@ function readMySetup() {
     windRule: !!L,                                    // any wind over the max is CROSSABLE, once limits are saved
     // The chosen route (routes.js; row 9). Only Abaco is ready, so the Plan page's
     // points don't change yet; switching them comes with the Bimini presets.
-    route: (typeof routeById === 'function') ? routeById(s && s.route && s.route.id) : null
+    route: (typeof routeById === 'function') ? routeById(s && s.route && s.route.id, s) : null
   };
   // Fuel for a run: today's figures scaled by distance, or the captain's burn
   // with 20% on top for sea state and idling.

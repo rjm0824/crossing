@@ -48,10 +48,26 @@ const ROUTES = (function () {
   ];
 })();
 
-// Routes a captain can pick today.
-function readyRoutes() { return ROUTES.filter(r => r.ready); }
+// The captain's own route, tapped on the map in Setup and saved in the setup
+// as myRoute = { name, points: [ { name, lat, lon, stream } ] }. 2 to 12 points.
+const MY_ROUTE_MAX = 12;
+function myRouteFrom(saved) {
+  const m = saved && saved.myRoute;
+  if (!m || !Array.isArray(m.points)) return null;
+  const ok = v => typeof v === 'number' && isFinite(v);
+  const points = m.points.filter(p => p && ok(p.lat) && ok(p.lon) && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180)
+    .slice(0, MY_ROUTE_MAX)
+    .map((p, i) => ({ id: 'p' + (i + 1), name: String(p.name || 'Point ' + (i + 1)).slice(0, 30), lat: p.lat, lon: p.lon, stream: !!p.stream }));
+  if (points.length < 2) return null;
+  const name = String(m.name || 'My route').slice(0, 40);
+  return { id: 'mine', name, sub: points[0].name + ' \u2192 ' + points[points.length - 1].name, ready: true, mine: true,
+    points, track: points.map(p => ({ lat: p.lat, lon: p.lon })), arriveYards: 500,
+    tide: { noaa: null, note: 'nearest station picked later' }, home: { from: null, points: [] } };
+}
+// Routes a captain can pick today: the ready presets, then their own route if saved.
+function readyRoutes(saved) { const mine = myRouteFrom(saved); return ROUTES.filter(r => r.ready).concat(mine ? [mine] : []); }
 // The route for a saved id; anything unknown or not ready falls back to Abaco.
-function routeById(id) { return readyRoutes().find(r => r.id === id) || ROUTES[0]; }
+function routeById(id, saved) { return readyRoutes(saved).find(r => r.id === id) || ROUTES[0]; }
 // Length along the route's line, in nautical miles.
 function routeNm(r) {
   const R = 3440.065, rad = d => d * Math.PI / 180;
