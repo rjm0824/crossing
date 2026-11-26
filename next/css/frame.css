@@ -45,3 +45,12 @@ body.mapfull .tabbar{display:none}
 .chk .chkrow{display:flex;gap:12px;align-items:flex-start;width:100%;min-height:44px;cursor:pointer}
 .chk .chkrow input{margin-top:2px}
 .chk .chkrow b{font-size:16px}
+
+/* Settings: big segmented choices */
+.fwarn{background:#3a2a08;border:1px solid var(--maybe);color:#ffe2a6;border-radius:12px;padding:10px 12px;margin:10px 0 0;font-size:14px}
+.fwarn b{color:#fff}
+.pgroup+.pgroup{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.ptitle{font-size:16px;font-weight:700;margin-bottom:8px}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;min-height:48px;font-size:15px;color:var(--ink);background:#0e2333;border:1px solid var(--line);border-radius:10px;padding:6px 4px}
+.seg button.on{background:var(--accent);border-color:var(--accent);color:#04121c;font-weight:700}
