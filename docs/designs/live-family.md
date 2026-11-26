@@ -233,7 +233,10 @@ of their own before building.
     Saturday's pull request as a simple setting. If Saturday has to be
     simplified to have a working version before he leaves, it is the first
     thing dropped and the trip ends at the inlet point (D11). It moves into
-    the profile when onboarding is built (row 8). See "Home Port".
+    the profile when onboarding is built (row 8). See "Home Port". **Built on Nov 25 (late)** in
+    its own pull request: a home-port trip's arrived card reads "✓ RJ is
+    home!" with the time only, the map label is "✓ Made it in" (RJ's option
+    A), and no position is recorded inside the 500 yards round the home port.
 
 *   **D16. The arrived page celebrates and keeps a map (RJ, Nov 25
     evening, after testing pull request 1).** Wording: "✓ RJ has arrived!",

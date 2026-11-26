@@ -92,6 +92,8 @@
     var out = {};
     for (var k in v) out[k] = v[k];
     if (error) out.error = error;
+    // With a home port the captain's device tells us when the route's end was passed.
+    out.passedLast = !!held && items.some(function (it) { return it.kind === 'waypoint' && /^Passed /.test(it.label || ''); });
     return out;
   }
 
@@ -104,7 +106,12 @@
     if (!v && !error) return;                      // first read not back yet
     var s = TripMath.familyState(v, svcNow());
     var cap = (held && held.captain) || (ended && ended.captain) || 'The captain';
-    var dest = (held && held.route && held.route.dest) || (ended && ended.dest) || 'the destination';
+    var rawDest = (held && held.route && held.route.dest) || (ended && ended.dest) || 'the destination';
+    // Home port trips are saved with the destination "Home" (never where it is):
+    // distances and "passed" use the route's last named point instead.
+    var homeMode = rawDest === 'Home';
+    var pts0 = (held && held.route && held.route.points) || (ended && ended.points) || (seenRoute && seenRoute.points) || [];
+    var dest = homeMode ? (pts0.length ? pts0[pts0.length - 1].name : 'the end of the route') : rawDest;
     var boat = (held && held.boat) || (ended && ended.boat);
     if (boat) { $('title').textContent = '⚓ ' + boat; document.title = boat + ' · Crossing'; }
 
@@ -121,7 +128,8 @@
         cap + ' has not arrived by the overdue time, ' + tz(held.overdueAt) + '.';
       if (last) {
         $('odWhere').textContent = 'Last known position: ' + TripMath.fmtLatLon(last.lat, last.lon) + '.';
-        $('odPos').textContent = 'At ' + tz(last.t) + ', ' + ago(svcNow() - last.t) + ', ' + nm(s.leftNm) + ' from ' + dest + '.';
+        $('odPos').textContent = 'At ' + tz(last.t) + ', ' + ago(svcNow() - last.t) + ', ' +
+          (v.passedLast ? 'past ' + dest + ', heading in.' : nm(s.leftNm) + ' from ' + dest + '.');
       } else {
         $('odWhere').textContent = 'No position was received for this trip.';
         $('odPos').textContent = '';
@@ -156,7 +164,9 @@
         var quiet = s.state === 'quiet';
         greyed = quiet;
         l1 = s.motion === 'stopped' ? cap + ' is stopped, ' + nm(s.leftNm) + ' from ' + dest : cap + ' is ' + nm(s.leftNm) + ' from ' + dest;
-        if (s.motion === 'stopped') l2 = 'Arrival estimate on hold';
+        if (v.passedLast) l1 = cap + ' has passed ' + dest + ' and is heading in.';   // no distance or estimate
+        if (v.passedLast) l2 = '';
+        else if (s.motion === 'stopped') l2 = 'Arrival estimate on hold';
         else if (s.etaMs) l2 = (quiet ? 'Estimate was about ' : s.etaPast ? 'Was due about ' : 'Arriving about ') + tz(s.etaMs);
         else l2 = 'Arrival estimate: not yet';
         if (s.motion === 'slow') l2 += ' · Moving slowly';
@@ -176,8 +186,8 @@
     $('arrived').hidden = !arr;
     $('statusCard').hidden = arr;
     if (arr) {
-      $('arrHead').textContent = cap + ' has arrived!';
-      $('arrWhere').textContent = dest + ' \u00B7 ' + tz(ended.endedAt);
+      $('arrHead').textContent = homeMode ? cap + ' is home!' : cap + ' has arrived!';
+      $('arrWhere').textContent = homeMode ? tz(ended.endedAt) : dest + ' \u00B7 ' + tz(ended.endedAt);
       set('arrCross', arrRoute && arrRoute.startedAt ? 'Crossing time about ' + dur(ended.endedAt - arrRoute.startedAt) : '');
     }
 
@@ -210,7 +220,7 @@
         map.clearBoat();                           // removes the real trail and boat
         map.setBoat(end, n > 1 ? tripHeading(pts[n - 2], end) : 270, false);
         arrTip = L.tooltip({ permanent: true, direction: 'top', offset: [0, -16], className: 'arr-tip' })
-          .setLatLng([end.lat, end.lon]).setContent('\u2713 Arrived').addTo(map.map);
+          .setLatLng([end.lat, end.lon]).setContent(homeMode ? '\u2713 Made it in' : '\u2713 Arrived').addTo(map.map);
         parked = true;
       }
     } else if (map) {
@@ -226,15 +236,15 @@
     else $('remindResult').textContent = '';
 
     // Check-ins and overdue-time changes, newest first.
-    var rows = held ? items.filter(function (it) { return it.kind === 'checkin' || it.kind === 'overdue'; })
+    var rows = held ? items.filter(function (it) { return it.kind === 'checkin' || it.kind === 'overdue' || it.kind === 'waypoint'; })
       .sort(function (a, b) { return b.t - a.t; }) : [];
     $('listCard').hidden = !rows.length;
     var ul = $('list');
     ul.innerHTML = '';
     rows.forEach(function (it) {
       var li = document.createElement('li');
-      li.textContent = it.kind === 'checkin'
-        ? '✓ “All good” from ' + cap + ' · ' + t(it.t)
+      li.textContent = it.kind === 'checkin' ? '✓ “All good” from ' + cap + ' · ' + t(it.t)
+        : it.kind === 'waypoint' ? (it.label || 'Passed a point') + ' · ' + t(it.t)
         : 'Overdue time changed to ' + t(it.value) + ' · ' + t(it.t);
       ul.appendChild(li);
     });

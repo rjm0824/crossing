@@ -95,6 +95,7 @@
     text('hideHelp', $('hideStart').checked
       ? 'On: your position is hidden until you are ' + DIRS[DIR].gatePlace + '. Off: shared from the dock, for test runs away from home.'
       : 'Off: your position is shared from the dock. For test runs away from home only.');
+    renderHome();
     var saved = store.get('invite');
     show('inviteBox', !saved);
     show('inviteChange', !!saved);
@@ -106,6 +107,50 @@
     odSteps = 0;
     renderReady();
   }
+  // ---- Home port (D15): saved on this device only ----
+  function homePort() { var h = store.get('homeport'); return h && typeof h.lat === 'number' && typeof h.lon === 'number' ? h : null; }
+  function renderHome() {
+    var h = homePort(), rule = TripMath.endRule(RULES, h);
+    text('hpState', !h ? 'not set' : rule.kind === 'home' ? 'set' : 'set, not used for this route');
+    text('hpHelp', !h ? 'Optional. Set where the boat is kept, and the trip keeps sharing past ' + DEST + ' until you are nearly home.'
+      : rule.kind === 'home' ? 'This trip keeps sharing past ' + DEST + ' and ends within about 500 yards of your home port. Followers see the boat until then.'
+      : 'Your home port is more than 15 nm from ' + DEST + ', so this trip ends at ' + DEST + '.');
+    text('hpBtn', h ? 'Change home port' : 'Set home port');
+  }
+  var hpMap = null, hpPick = null, hpMark = null;
+  $('hpBtn').onclick = function () {
+    show('hpBox', true); show('hpBtn', false);
+    var h = homePort(), last = RULES.points[RULES.points.length - 1];
+    if (!hpMap) {
+      hpMap = makeTripMap($('hpMap'), { line: TRACK, points: RULES.points });
+      hpMap.map.on('click', function (e) {
+        hpPick = { lat: round5(e.latlng.lat), lon: round5(e.latlng.lng) };
+        if (hpMark) hpMark.setLatLng(e.latlng);
+        else hpMark = L.circleMarker(e.latlng, { radius: 9, color: '#fff', weight: 2, fillColor: '#B42318', fillOpacity: 1 }).addTo(hpMap.map);
+        $('hpSave').disabled = false;
+      });
+    }
+    setTimeout(function () {
+      hpMap.invalidate();
+      var c = h || last;
+      hpMap.map.setView([c.lat, c.lon], 12, { animate: false });
+      if (h && !hpMark) hpMark = L.circleMarker([h.lat, h.lon], { radius: 9, color: '#fff', weight: 2, fillColor: '#B42318', fillOpacity: 1 }).addTo(hpMap.map);
+    }, 60);
+    show('hpRemove', !!h);
+  };
+  function closeHome() { show('hpBox', false); show('hpBtn', true); hpPick = null; $('hpSave').disabled = true; renderHome(); }
+  $('hpSave').onclick = function () { if (hpPick) store.set('homeport', hpPick); closeHome(); };
+  $('hpRemove').onclick = function () {
+    store.remove('homeport');
+    if (hpMark) { hpMap.map.removeLayer(hpMark); hpMark = null; }
+    closeHome();
+  };
+  $('hpCancel').onclick = function () {
+    var h = homePort();
+    if (hpMark) { if (h) hpMark.setLatLng([h.lat, h.lon]); else { hpMap.map.removeLayer(hpMark); hpMark = null; } }
+    closeHome();
+  };
+
   $('odMinus').onclick = function () { odSteps--; renderReady(); };
   $('odPlus').onclick = function () { odSteps++; renderReady(); };
   $('hideStart').onchange = renderReady;
@@ -156,19 +201,25 @@
         return;
       }
       var planned = plannedNow(), overdue = overdueFor(planned);
+      var rule = TripMath.endRule(RULES, homePort());
       var body = {
         invite: invite,
         boat: (PRACTICE_URL ? 'Practice run' : "Goof n' Off"), captain: 'RJ',
-        route: { name: RULES.name, points: RULES.points, dest: RULES.dest, cruiseKt: CRUISE_KT },
+        // With a home port the destination is saved as "Home" (never where it is),
+        // so the family page knows to say "heading in" and "RJ is home!".
+        route: { name: RULES.name, points: RULES.points, dest: rule.kind === 'home' ? 'Home' : RULES.dest, cruiseKt: CRUISE_KT },
         plannedArrival: planned, overdueAt: overdue
       };
+      body.endRule = rule;                    // kept on this device; removed before sending
       tryStart(body, reading, hideStart, 1);
     });
   };
 
   function tryStart(body, reading, hideStart, attempt) {
     var sentAt = Date.now();
-    Tracker.call('/v1/start', body).then(function (res) {
+    var send = {};
+    for (var k in body) if (k !== 'endRule') send[k] = body[k];
+    Tracker.call('/v1/start', send).then(function (res) {
       if (res.ok) { started(res.data, body, reading, hideStart, sentAt); return; }
       var e = res.error;
       if (e === 'invite') { show('inviteBox', true); show('inviteChange', false); return startFail('Invite code not accepted. Check it and try again.'); }
@@ -196,7 +247,8 @@
       hideStart: hideStart, startPoint: null, gateOpened: false,
       status: 'underway', endedAt: null, endedHow: null,
       practice: PRACTICE_URL, overdueTest: PRACTICE_URL && OVERDUE_TEST,
-      lastRecordT: 0
+      lastRecordT: 0,
+      endRule: body.endRule || { kind: 'route' }, passedLast: false
     };
     if (TripMath.isGood(reading)) trip.startPoint = { lat: reading.lat, lon: reading.lon };
     saveTrip();
@@ -225,6 +277,11 @@
   // Practice: a made-up boat runs the detailed line at 26 kt, 60 times fast.
   var practiceLine = TRACK.map(function (p) { return { lat: p.lat, lon: p.lon }; });
   var practiceTotal = TripMath.lineLength(practiceLine);
+  function practiceFor(t) {      // with a home port, the made-up boat runs on to it
+    var line = TRACK.map(function (p) { return { lat: p.lat, lon: p.lon }; });
+    if (t && t.endRule && t.endRule.kind === 'home') line.push({ lat: t.endRule.lat, lon: t.endRule.lon });
+    practiceLine = line; practiceTotal = TripMath.lineLength(line);
+  }
   function pointAlong(d) {
     for (var i = 1; i < practiceLine.length; i++) {
       var seg = TripMath.distNm(practiceLine[i - 1], practiceLine[i]);
@@ -246,6 +303,7 @@
 
   function startGps() {
     stopGps();
+    practiceFor(trip);
     if (trip.practice) {
       var tick = function () { onReading(practiceReading(svcNow() - trip.startedAt)); };
       tick();
@@ -289,6 +347,9 @@
   // One recorded position every 5 minutes (5 seconds in practice), if the gate allows.
   function maybeRecord(r) {
     if (!gateOpenNow || trip.status !== 'underway') return;
+    // Never record inside the 500 yards round a home port (privacy page: followers
+    // see the boat "to within about 500 yards" of where it is kept).
+    if (trip.endRule && trip.endRule.kind === 'home' && TripMath.inEndZone(r, RULES, trip.endRule)) return;
     var every = trip.practice ? PRACTICE_RECORD_MS : RECORD_MS;
     var now = svcNow();
     if (now - (trip.lastRecordT || 0) < every) return;
@@ -306,7 +367,14 @@
   // Arrival: two good readings at least 5 seconds apart in the zone, after the gate has opened once.
   function checkArrival(r) {
     if (!trip.gateOpened) return;
-    if (!TripMath.inArrivalZone(r, RULES)) { arriveFirst = null; return; }
+    var rule = trip.endRule || { kind: 'route' };
+    // With a home port: passing the route's end is told to followers ("heading in").
+    if (rule.kind === 'home' && !trip.passedLast && TripMath.inArrivalZone(r, RULES)) {
+      trip.passedLast = true;
+      saveTrip();
+      Queue.enqueue({ id: QueueRules.eventId(), t: svcNow(), kind: 'waypoint', label: 'Passed ' + DEST }, 'Passed ' + DEST);
+    }
+    if (!TripMath.inEndZone(r, RULES, rule)) { arriveFirst = null; return; }
     if (!arriveFirst) { arriveFirst = r; return; }
     if (r.t - arriveFirst.t >= ARRIVE_GAP_MS) endTrip('arrived');
   }
@@ -321,7 +389,8 @@
     show('practiceTag', !!trip.practice);
     text('started', 'Trip started ' + tz(trip.startedAt) + (trip.practice ? ' · practice run, the boat is made up' : ''));
     text('every', trip.practice ? 'every 5 seconds (practice)' : 'every 5 min');
-    text('stopsAt', 'Stops by itself at ' + DEST + '.');
+    text('stopsAt', trip.endRule && trip.endRule.kind === 'home'
+      ? 'Stops by itself within about 500 yards of your home port.' : 'Stops by itself at ' + DEST + '.');
     ensureMap();
     var trail = store.get('trail') || [];
     if (trail.length) map.setTrail(trail);
@@ -355,9 +424,9 @@
       text('sSpeed', sp == null ? '–' : Math.round(sp) + ' kt');
       show('sMotion', mo === 'slow' || mo === 'stopped');
       text('sMotion', mo === 'slow' ? 'Slow' : mo === 'stopped' ? 'Stopped' : '');
-      text('sLeft', Math.round(left) + ' nm');
+      text('sLeft', trip.passedLast ? 'Heading in' : Math.round(left) + ' nm');
       var eta = TripMath.etaMs(now, left, sp);
-      text('sEta', mo === 'stopped' ? 'On hold' : eta ? 'about ' + t(eta) : '–');
+      text('sEta', trip.passedLast ? '–' : mo === 'stopped' ? 'On hold' : eta ? 'about ' + t(eta) : '–');
       text('sAcc', 'GPS accuracy ± ' + Math.round(cur.accM) + ' m' + (TripMath.isGood(cur) ? '' : ' · too rough to use'));
     }
     text('sUnder', dur(now - trip.startedAt));
@@ -379,6 +448,7 @@
       if (gpsError) add(gpsError, 'bad');
       else if (Date.now() - (lastGood ? lastGood.t : liveSince) > NO_GPS_MS) add('No GPS position right now.', 'wait');
       if (trip.hideStart !== false && !gateOpenNow) add(GATE_TEXT, 'wait');
+      if (trip.passedLast) add('Past ' + DEST + ', heading in. Sharing until you are within about 500 yards of your home port.');
     }
     if (q.notFound) add('The tracker can\'t find this trip. Still saving. Trying again each minute.', 'bad');
     if (q.sending) add('Sending ' + q.sending + (q.sending === 1 ? ' update…' : ' updates…'));
@@ -546,7 +616,7 @@
   function renderEnded() {
     if (!trip || trip.status === 'underway') return;
     text('eHow', trip.endedHow === 'arrived'
-      ? 'Arrived at ' + DEST + ' ' + tz(trip.endedAt) + '. Sharing has stopped.'
+      ? (trip.endRule && trip.endRule.kind === 'home' ? 'Arrived at your home port ' : 'Arrived at ' + DEST + ' ') + tz(trip.endedAt) + '. Sharing has stopped.'
       : 'Sharing stopped at ' + tz(trip.endedAt) + '.');
     text('eUnder', 'Underway ' + dur(trip.endedAt - trip.startedAt) + (trip.practice ? ' · practice run' : ''));
     var q = Queue.status();
