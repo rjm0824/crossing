@@ -1,0 +1,41 @@
+# Automatic checks (RJ, Nov 26): runs on every pull request and every change
+# to main. Read-only: it changes nothing and publishes nothing. Free for a
+# public repository. Shows a tick or a cross on the pull request page.
+name: Checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Trip maths, queue and reminder checks (next/)
+        run: node --test next/test/trip.test.js
+
+      - name: Every preview script loads
+        run: for f in next/js/*.js; do node --check "$f"; done
+
+      - name: Tracker service checks
+        working-directory: tracker-service
+        run: |
+          npm ci --no-audit --no-fund
+          npm test
+
+      - name: Pull request checks (protected files, keys, wording, Planning aid line, version tags)
+        if: github.event_name == 'pull_request'
+        run: bash .claude/pr-check/check.sh

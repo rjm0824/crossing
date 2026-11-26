@@ -59,6 +59,9 @@ plus Apple Find My.
 
 ### Crossing day (about Nov 29 to 30)
 
+RJ's tick-box version of these steps (private page, ticks saved on his phone):
+https://claude.ai/artifact/2BNtygYUVDFkJmzBJnWBm1
+
 *   Helm iPad charged and on power; **Auto-Lock: Never**; close other tabs
     and apps; **one** Live tab only.
 *   Open `…/next/live.html?trip=home` (not practice). **Hide my start: on.**
