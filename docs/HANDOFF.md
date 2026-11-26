@@ -10,11 +10,16 @@ leaves the old key); (2) onboarding at `next/setup.html`, reached from a
 **Setup** row in the Menu only; show it on first open after the crossing.
 (3) Wind over the captain's max from any direction except north in the
 Stream gives **CROSSABLE**, "Crossable, not comfortable", not NO-GO.
+(4) **Boat photo instead of the outline** (RJ: the outline looked
+cartoonish). "Add a photo of your boat" is built in row 8 (`next/js/photo.js`:
+shrunk to 1200 px, saved in IndexedDB on the device, never uploaded). The
+line-drawing outline is dropped and moves to a later phase; row 10 now only
+needs the boat card on the Plan screen to show the photo.
 
 **Built (draft PR "DO NOT MERGE until after the crossing: onboarding (MVP
 row 8)"):** welcome, safety tick box (placeholder wording for RJ's attorney;
 no Terms of use page yet), the 7 questions with chips (typed answers kept as
-written), your boat (editable, outline per type), limits, followers (first
+written), your boat (editable, optional photo), limits, followers (first
 name, optional phone), tracking (location asked once, keep-screen-on shares
 `cx:next:prefs.keepAwake`), and "You're set" with tomorrow's first answer.
 `next/js/mysetup.js` gives the Plan page's verdict, hour table, run time and
@@ -28,7 +33,7 @@ first open" (one line in the Plan page's boot); make `live.js` use the
 saved cruise speed (it still estimates at 26 kt) and fill the Start trip
 text with the followers' phone numbers; the "connect Settings" work below.
 Not in row 8: routes (row 9; the Bimini chips are left out and step count is
-6 until then), boat photo (row 10), "A friend sent me their setup" (row 15),
+6 until then), the photo on the Plan screen's boat card (row 10), "A friend sent me their setup" (row 15),
 Talk and AI (row 16). Some chips are still RJ's own ("Goof n' Off",
 "Haile + Mom") and should be made general before friends use it.
 

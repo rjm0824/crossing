@@ -25,6 +25,8 @@
 //   doneAt,    // when onboarding was finished (ms)
 //   savedAt
 // }
+// The boat photo is kept apart, by photo.js, in the browser's database on
+// this device (IndexedDB 'cx-next' > 'files' > 'boat-photo'); never uploaded.
 // No ID numbers anywhere (RJ, Nov 26): no hull ID, registration, passport or card.
 (function () {
   var KEY = 'cx:next:setup', OLD_BOAT = 'cx:next:boat';

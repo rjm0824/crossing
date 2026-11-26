@@ -265,24 +265,57 @@
   }
   function numOK(k, v) { var n = Number(String(v).replace(',', '.')); return isFinite(n) && n >= NUMS[k].min && n <= NUMS[k].max ? Math.round(n * 10) / 10 : null; }
 
-  // A simple outline for each boat type (row 10 adds the photo). Bow to the
-  // right. The cabin shapes come from the onboarding mockup.
-  function outline(type, engines) {
-    var tops = {
-      'Center console': 'M 150 64 L 152 44 L 180 44 L 182 63 M 128 28 L 206 28 M 138 28 L 146 58 M 198 28 L 190 58',
-      'Walkaround': 'M 118 62 L 124 44 L 204 44 L 244 58 M 124 44 L 130 28 L 198 28 L 204 44 M 140 52 L 196 52',
-      'Express cruiser': 'M 84 62 Q 96 40 150 38 L 214 38 Q 252 42 266 57 M 120 50 L 220 48',
-      'Catamaran': 'M 108 60 L 112 32 L 228 32 L 240 58 M 124 44 L 216 44'
-    };
-    var t = HULLS.indexOf(type) >= 0 ? type : 'Center console';
-    var out = /diesel|inboard/i.test(engines || '') ? '' : '<path d="M 6 56 L 22 56 L 22 98 L 12 98 L 12 80 L 6 74 Z" fill="none" stroke="#0E2233" stroke-width="3" stroke-linejoin="round"/>';
-    var cat = t === 'Catamaran' ? '<path d="M 46 94 L 50 104 L 250 104 L 258 94" fill="none" stroke="#0E2233" stroke-width="3"/>' : '';
-    var w = h('div', { class: 'boatpic', 'aria-hidden': 'true' });
-    w.innerHTML = '<svg viewBox="0 0 300 116" xmlns="http://www.w3.org/2000/svg">' +
-      '<path d="M 22 62 L 292 56 Q 280 80 258 94 L 46 94 Z" fill="#E4EEF4" stroke="#0E2233" stroke-width="3" stroke-linejoin="round"/>' +
-      '<path d="' + tops[t] + '" fill="none" stroke="#0E2233" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>' + out + cat +
-      '<path d="M 0 108 Q 25 102 50 108 T 100 108 T 150 108 T 200 108 T 250 108 T 300 108" fill="none" stroke="#8FB1C6" stroke-width="2"/></svg>';
+  // The boat photo (photo.js): picked from the phone's photos or camera, made
+  // smaller and saved on this device only. Replaces the outline (RJ, Nov 27).
+  function setPhoto(blob) {
+    if (st.photoUrl) URL.revokeObjectURL(st.photoUrl);
+    st.photoUrl = blob ? URL.createObjectURL(blob) : null;
+  }
+  function cameraIcon() {
+    var w = h('span', { class: 'camicon', 'aria-hidden': 'true' });
+    w.innerHTML = '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.6-2.4h6.8L17 8h3v11H4z"/><circle cx="12" cy="13.2" r="3.6"/></svg>';
     return w;
+  }
+  function photoCard() {
+    var card = h('div', { class: 'ob-card photocard' });
+    var input = h('input', { type: 'file', accept: 'image/*', id: 'obPhotoFile', class: 'vh', tabindex: '-1', 'aria-hidden': 'true' });
+    var note = h('div', { class: 'obresult', 'aria-live': 'polite' });
+    function pick() { note.textContent = ''; input.value = ''; input.click(); }
+    function draw() {
+      var top;
+      if (st.photoUrl) {
+        top = [h('img', { src: st.photoUrl, alt: 'Photo of your boat', class: 'boatphoto', id: 'obPhotoImg' }),
+          h('div', { class: 'photorow' }, [
+            h('span', { class: 'photook', text: '\u2713 Photo added' }),
+            h('span', { class: 'photoacts' }, [
+              h('button', { type: 'button', class: 'linkbtn', id: 'obPhotoChange', text: 'Use a different photo', onclick: pick }),
+              h('button', { type: 'button', class: 'linkbtn quiet', id: 'obPhotoRemove', text: 'Remove', onclick: function () {
+                window.CXPhoto.remove().catch(function () {}).then(function () { setPhoto(null); draw(); });
+              } })
+            ])
+          ])];
+      } else {
+        top = [h('button', { type: 'button', class: 'addphoto', id: 'obPhoto', disabled: !!st.photoBusy, onclick: pick }, [
+          cameraIcon(),
+          h('b', { text: st.photoBusy ? 'Saving your photo\u2026' : 'Add a photo of your boat' }),
+          h('small', { text: 'A side view works best. It stays on this phone.' })
+        ])];
+      }
+      card.replaceChildren.apply(card, top.concat([note, input]));
+    }
+    input.addEventListener('change', function () {
+      var file = input.files && input.files[0];
+      if (!file) return;
+      note.textContent = ''; st.photoBusy = true; draw();
+      window.CXPhoto.save(file).then(function (b) { st.photoBusy = false; setPhoto(b); draw(); })
+        .catch(function () { st.photoBusy = false; draw(); note.textContent = 'Couldn\u2019t use that photo. Try a different one.'; });
+    });
+    if (!st.photoLoaded) {
+      st.photoLoaded = true;
+      window.CXPhoto.get().then(function (b) { if (b) { setPhoto(b); draw(); } }).catch(function () {});
+    }
+    draw();
+    return card;
   }
 
   function field(id, label, value, opts) {
@@ -294,23 +327,20 @@
   }
 
   function boat() {
-    var f = st.form, pic = h('div', { class: 'picwrap' });
-    function drawPic() {
-      pic.replaceChildren(outline(f.type, f.engines), h('div', { class: 'pictitle', text: (clip(f.name, 40) || 'Your boat') + ' · ' + (clip(f.type, 40) || 'boat type') }));
-    }
-    drawPic();
+    var f = st.form;
     var typeChips = h('div', { class: 'chips small' }, HULLS.map(function (t) {
       return h('button', { type: 'button', class: 'chip' + (f.type === t ? ' on' : ''), 'aria-pressed': f.type === t ? 'true' : 'false', text: t, onclick: function () { f.type = t; document.getElementById('f_type').value = t; render(); } });
     }));
     var msg = h('div', { class: 'obresult', 'aria-live': 'polite' });
     var body = [
-      h('div', { class: 'ob-card' }, [pic, h('p', { class: 'ob-help', text: 'A simple outline for your boat type. Adding a photo comes in a later update.' })]),
+      photoCard(),
+      h('p', { class: 'ob-help', text: 'The photo is optional. No photo? Skip it; you can add one later in Menu \u2192 Setup.' }),
       st.answers.length ? h('p', { class: 'ob-ok', text: 'Filled in from your answers. Check it over and change anything that’s wrong.' }) : null,
       h('div', { class: 'ob-card' }, [
-        field('name', 'Boat name', f.name, { max: 40, ph: "e.g. Goof n' Off", oninput: drawPic }),
-        field('type', 'Type of boat', f.type, { max: 40, ph: 'e.g. Center console', extra: typeChips, oninput: drawPic }),
+        field('name', 'Boat name', f.name, { max: 40, ph: "e.g. Goof n' Off" }),
+        field('type', 'Type of boat', f.type, { max: 40, ph: 'e.g. Center console', extra: typeChips }),
         field('length', NUMS.length.label, f.length, { num: true, max: 6, ph: NUMS.length.ph }),
-        field('engines', 'Engines', f.engines, { max: 60, ph: 'e.g. Triple 300 hp outboards', oninput: drawPic }),
+        field('engines', 'Engines', f.engines, { max: 60, ph: 'e.g. Triple 300 hp outboards' }),
         field('cruise', NUMS.cruise.label, f.cruise, { num: true, max: 6, ph: NUMS.cruise.ph }),
         field('tank', NUMS.tank.label, f.tank, { num: true, max: 6, ph: NUMS.tank.ph }),
         field('burn', NUMS.burn.label + (f.burnEstimate ? ' · estimate' : ''), f.burn, { num: true, max: 6, ph: NUMS.burn.ph, est: f.burnEstimate,
