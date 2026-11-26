@@ -135,3 +135,9 @@ html.tp-html{background:#F3F6F8}
 .tp .arr-tip:before{border-top-color:var(--go)}
 .tp textarea{width:100%;font:inherit;font-size:15px;padding:10px;border-radius:10px;border:1px solid #B9C8D3;background:#fff;color:var(--ink)}
 .tp #hpMap{height:300px;border-radius:12px;border:1px solid #BFD4E1;background:#DCEAF2;margin:8px 0}
+.tp .hpWrap{position:relative;margin:8px 0}
+.tp .hpWrap #hpMap{margin:0}
+.tp .hpCross{position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px;pointer-events:none;z-index:1000;
+  background:linear-gradient(#B42318,#B42318) center/3px 100% no-repeat,linear-gradient(#B42318,#B42318) center/100% 3px no-repeat;
+  border-radius:50%;box-shadow:0 0 0 2px #fff inset}
+.tp .hpCross:after{content:'';position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:#B42318;border:2px solid #fff}
