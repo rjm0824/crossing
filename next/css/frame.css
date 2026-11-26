@@ -39,3 +39,9 @@ body.mapfull .tabbar{display:none}
 .ffield input{width:100%;min-height:48px;font-size:16px;color:var(--ink);background:#0e2333;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
 .ffield input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
 .btn:disabled{opacity:.55}
+
+/* Safety checklist: the whole row is the tap target */
+.ftop.fback{padding-bottom:0}
+.chk .chkrow{display:flex;gap:12px;align-items:flex-start;width:100%;min-height:44px;cursor:pointer}
+.chk .chkrow input{margin-top:2px}
+.chk .chkrow b{font-size:16px}
