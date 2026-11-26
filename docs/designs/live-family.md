@@ -255,7 +255,8 @@ review; that work moved to Sprint 2.
 *   **Q1. Does the share screen open after the service answers,** or only
     straight from a tap? The design assumes only from a tap. Checked on RJ's
     iPhone and iPad on Saturday. "Copy family link" does not depend on the
-    answer.
+    answer. **Closed (Nov 25):** the share screen opened from the
+    "Send link to family" button on RJ's iPad.
 *   **Q2. Why did the old tracker stop on Nov 25?** Not known. See
     "Fallback".
 *   **Q3. Does the screen stay awake for a whole crossing?** The crossing is
@@ -1078,6 +1079,9 @@ Saturday. Nothing else in pull request 1 is optional.
     added to the family page and the family text.
 *   **Start the crossing on the helm iPad (D5),** with "Hide my start" on,
     other tabs and apps closed, Auto-Lock set to Never.
+*   **Messages on the helm iPad:** its iMessage account shows as "Mom" on
+    RJ's phone. Set it to send from RJ's own number or address, or send the
+    family link from the iPhone.
 *   **The overdue wording and the family text** are drafts until RJ's
     attorney has seen them.
 *   **Exact positions.** The preview no longer rounds positions (W10).

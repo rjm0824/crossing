@@ -2,7 +2,43 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
-## Update: Nov 25, 2026, evening (read this first, then the earlier Nov 25 update)
+## Update: Nov 25, 2026, late evening (read this first)
+
+**Pull request 2 is merged (#14) and passed RJ's test on the helm iPad and
+iPhone (10:18 to 10:32 PM):** 59 checks; Delete this trip; times with "EST";
+"Send link to family" (the share screen opened with version A, received in
+Messages); "Remind me" (Calendar opened "Check on RJ's trip" at the overdue
+time with the alert at the start); a newer family link taking over; "✓ RJ has
+arrived!" on the iPhone. Built in that pull request: the family-link reload
+fix, D16 (arrived page), Send link (RJ chose version A of the message), Remind
+me, Delete this trip, and local times (RJ: every screen in the viewer's own
+time zone with the zone's name; the message uses the captain's zone).
+
+**Found in the test:**
+
+*   Fixed in the next pull request: after Safari reloads the Live page in the
+    background, the status line said "Nothing to send yet." although
+    everything had been sent. The time of the tracker's last confirmation is
+    now kept on the device (`cx:next:lastrx`).
+*   **Crossing-day reminder:** the helm iPad's iMessage account shows as
+    "Mom" on RJ's phone, so "Send link to family" from the iPad sends from
+    that account. Before the crossing: set the iPad's Messages to send from
+    RJ's own number or address (Settings › Messages › Send & Receive), or
+    copy the family link on the iPad and send it from the iPhone.
+*   **For RJ to decide:** iPhones often reload a family page that sits in the
+    background, and a reloaded page no longer knows the route, so a follower
+    who watched the trip can still get the arrived card without the map.
+    Recommendation: bring D17 forward from Sprint 2 to before the crossing
+    (the tracker returns the route's named points with the arrived answer).
+    It changes the tracker service, so it needs RJ's OK.
+*   Open question Q1 in `live-family.md` is closed: the share screen opens
+    from the button on the iPad.
+*   Next: home port (D15), its own small pull request, if RJ wants it before
+    the crossing.
+*   The build workspace cannot reach `*.workers.dev`, so the preview tracker
+    cannot be checked from there; use a local copy (see "Local testing").
+
+## Update: Nov 25, 2026, evening (read after the late-evening update)
 
 **Pull request 1 of `docs/designs/live-family.md` is merged (#12) and passed
 RJ's test on the real helm iPad and iPhone on Nov 25, two days early.** Next
