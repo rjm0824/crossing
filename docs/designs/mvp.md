@@ -802,6 +802,20 @@ pull request per day it ends around Dec 6. Reaching Nov 29 needs two small
 pull requests tested on about half the days. Dates are given for Stage 1 only;
 later stages get dates once Stage 1 shows the real pace.
 
+**New pace (RJ, Nov 26): deadlines moved up.** Stage 1 is done. Stage 2 dates:
+
+| Date | Work |
+| --- | --- |
+| Thu Nov 26 | Row 7, the app frame, as far as it gets (short steps) |
+| Fri Nov 27 | Finish row 7; start row 8 (onboarding without AI) |
+| Sat Nov 28 | Water test in Abaco (30 min), then row 9 (routes) |
+| Nov 29 to 30 | The crossing. No building. |
+| Dec 1 | Crossing debrief; merge #25; any fixes from Saturday's test |
+| Dec 1 to 5 | Rows 10 to 14 |
+
+All Stage 2 work goes up as draft pull requests, held until after the
+crossing. Each step is small enough for RJ to check in 5 minutes.
+
 **Stage 1: usable on the water** (RJ's boat and route, as in the preview page)
 
 | # | Target | Work | RJ does |
