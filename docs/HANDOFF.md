@@ -2,6 +2,26 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
+## Update: Nov 26, 2026, late night: past trips (row 14b) in beta
+
+*   **Past trips** (`beta/js/mytrips.js`, `capture()`): when a real (not
+    practice) trip ends, its summary is copied from what the Live screen
+    keeps (`cx:beta:trip` and `cx:beta:trail`) into `cx:beta:pasttrips`
+    (device only, up to 30): date, direction, end reason, duration, distance
+    shared, average and top speed (a fix implying over 70 kt is treated as a
+    bad fix and left out), a track of up to 400 points. Runs on page load
+    (Plan, My Trips, Float plan, Live) and every 30 s on the Live page;
+    **`live.js` is not changed** (live.html only loads mytrips.js). A saved
+    upcoming trip on the same day and direction lends its name and
+    followers and is cleared.
+*   **My Trips → Past trips:** stats, **Fuel used** (typed; gal an hour shown),
+    **View track** (map with first and last shared position), **Duplicate as
+    new** (same route, direction, name and followers; pick a date), Delete
+    (tap twice).
+*   **Add to calendar** on upcoming trips: an all-day entry with a reminder
+    at 6 PM the evening before (`calendar.js`'s `CalendarFile`).
+*   `privacy.html`: past trips and their track stay on the device.
+
 ## Update: Nov 26, 2026, late night: My Trips (row 14a) in beta
 
 RJ split row 14: **14a** (upcoming trips) now; **14b** (past trips from the
