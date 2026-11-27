@@ -30,9 +30,8 @@ Everything a new build session needs, pulled from the planning chats. Decisions 
 *   `docs/promote-plan.md`: after the crossing, beta replaces next first (its
     own pull request and tests), then next goes live later as planned.
 
-**#29 and #31:** recommendation is to close both once this pull request
-passes RJ's test (their work now lives in beta), keeping their branches.
-RJ decides; nothing closed yet.
+**#29 and #31:** closed Nov 27 on RJ's OK after #36 merged (their work now
+lives in beta). Their branches are kept for history.
 
 **After the crossing:** RJ lifts the freeze (`FREEZE_NEXT=0`), then the
 "beta replaces next" pull request. The Dec 1 Live screen work goes in beta.
