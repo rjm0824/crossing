@@ -2,6 +2,43 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
+## Update: Nov 27, 2026: second preview copy `/beta/`; `next/` frozen for the crossing
+
+**Why (RJ):** keep building and trying features before the crossing home
+(Nov 29 to 30) without touching `/next/`, which the helm iPad runs.
+
+**What (one pull request, not merged until RJ tests it):**
+*   `beta/` is a copy of `next/` as it was on main (commit 387f324), with a
+    **violet BETA banner** on every page and "BETA ·" tab titles.
+*   **Own saved data:** every saved name in beta starts `cx:beta:`, including
+    the day, departure and go-day ticks that next/ saves without a prefix
+    (`crossDay`, `crossDep`, `goday-ticks`); the boat photo store is `cx-beta`.
+    Beta never reads or changes what `/next/` saved, so on first open beta is
+    empty: RJ types the invite code once (from Keeper) and runs onboarding.
+*   **Family links** come out as `beta/family.html` (built from the page's own
+    address). Beta uses the **existing preview tracker**: beta and /next/
+    trips are separate trips with their own keys. Family only see a beta trip
+    if RJ sends them a beta link. Beta test trips count toward the tracker's
+    50 trip starts a day.
+*   **Onboarding (#29) then routes (#31)** applied to `beta/` instead of
+    `next/`, with beta's names. `privacy.html` takes #29's wording plus one
+    line about the beta copy. `docs/route-points.md` comes with #31.
+*   **Guard:** `.claude/hooks/protect-live.sh` now blocks `next/` too while
+    `FREEZE_NEXT=1`. `/pr-check` and the GitHub checks fail if `next/` changes
+    while frozen or if beta code names `cx:next:`, and run beta's trip checks.
+    CLAUDE.md: new work goes in `beta/`.
+*   `docs/promote-plan.md`: after the crossing, beta replaces next first (its
+    own pull request and tests), then next goes live later as planned.
+
+**#29 and #31:** recommendation is to close both once this pull request
+passes RJ's test (their work now lives in beta), keeping their branches.
+RJ decides; nothing closed yet.
+
+**After the crossing:** RJ lifts the freeze (`FREEZE_NEXT=0`), then the
+"beta replaces next" pull request. The Dec 1 Live screen work goes in beta.
+
+**Cost:** $0. Nothing new runs on its own.
+
 ## Update: Nov 26, 2026, evening (wrap-up): bottom bar merged and passed on RJ's iPhone
 
 **Merged today:** #33 (☰ menu sheet on the Live page) and #34 (the same

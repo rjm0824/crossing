@@ -1,9 +1,29 @@
 # Promote plan: moving the preview to the live page
 
-**Status:** plan only, written Nov 26, 2026. Nothing here is started. Promote
+**Status:** plan only, written Nov 26, 2026; beta step added Nov 27. Nothing here is started. Promote
 is the pull request that makes `rjm0824.github.io/crossing/` show what
 `/crossing/next/` shows today. It happens once, with RJ's approval, after the
 conditions below are met. Planning aid, not for navigation.
+
+## First, after the crossing: beta replaces next (added Nov 27)
+
+Since Nov 27 there are two preview copies: `/next/` (amber PREVIEW banner,
+frozen: it is what the helm iPad runs for the crossing home) and `/beta/`
+(violet BETA banner, where new features are built and tried, starting with
+onboarding #29 and routes #31). After the crossing, promoting happens in two
+separate pull requests, each tested by RJ before he merges it:
+
+1.  **Beta replaces next.** RJ lifts the freeze (`FREEZE_NEXT=0` in
+    `.claude/hooks/protect-live.sh`). One pull request copies `beta/` over
+    `next/` and changes it back to the preview's own names: PREVIEW banner and
+    titles, saved names `cx:next:` (and the day, departure and go-day names
+    next/ uses today, so RJ's saved setup and trips carry over), photo store
+    `cx-next`, family links to `next/family.html`. `beta/` stays for the next
+    round of features. Tests: `/pr-check`, the automatic checks, the trip
+    checks at iPhone and iPad sizes, and RJ's phone test on `/next/` after
+    merging (saved setup still there, a practice run, the family link).
+    Undo: revert that pull request.
+2.  **Next goes live, later,** exactly as planned below, once the gate is met.
 
 ## When (the gate)
 
@@ -35,6 +55,7 @@ All of these, in this order:
 | 5 | The old tracker is retired: the Plan page's old tracking code is already gone (Sprint 2, item 1); `tracker/Code.gs` stays in the repo for history; RJ archives the Apps Script deployment and the Crossing Tracker sheet. | One tracker, no confusion. |
 | 6 | `privacy.html`: "preview version" wording becomes the live wording. | The statement matches what the live page does. |
 | 7 | `next/tracker-test.html` and `next/trip-test.html` stay on the preview only. | Test pages are not part of the live app. |
+| 8 | `beta/` stays as the feature copy; it keeps the preview tracker and `cx:beta:`. | New features are still tried away from the live page. |
 
 **The guard:** `.claude/hooks/protect-live.sh` blocks Claude from writing the
 live `index.html`. For the promote pull request, RJ switches it off for that
