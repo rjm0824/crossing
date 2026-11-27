@@ -2,6 +2,56 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
+## Start here: Nov 26, 2026, late night (wrap-up; next session is Dec 1)
+
+**Where things stand.** `/next/` (amber PREVIEW) is frozen exactly as the
+helm iPad runs it for the crossing home (Nov 29 to 30). Everything built
+tonight is in **`/beta/`** (violet BETA, saved data `cx:beta:`), merged to
+main in #36 to #46: onboarding and routes (from the closed drafts #29 and
+#31), Plan page rows 11 to 13, My Trips (14a, 14b), Share and Backup (15),
+opens with no signal (17), Setup on first open. RJ merged each one; **none
+has had his iPhone test yet** (Open Loops row 234).
+
+**Dec 1, in this order (Opus 5.5 unless noted):**
+1.  Debrief the crossing (Sonnet 5.5): the crossing-day card's debrief box,
+    the crossing log, family notes (`docs/crossing-test-plan.md`).
+2.  RJ runs the beta iPhone tests from #36 to #46 (each PR has 5-minute
+    steps), including #45's Airplane Mode test.
+3.  RJ lifts the freeze (`FREEZE_NEXT=0` in `.claude/hooks/protect-live.sh`,
+    in a pull request), then the **"beta replaces next"** pull request as in
+    `docs/promote-plan.md` (names back to `cx:next:`, PREVIEW banner, the
+    saved copy as a `sw.js` with `cx-next-app-…` caches, `cx:next:lastfc`).
+4.  Live screen work in beta: follow the chosen route, use Settings
+    (interval, overdue, keep-awake) and the saved cruise speed. **Update
+    `docs/designs/live-family.md` and run the review first** (CLAUDE.md;
+    Fable 5.2 for the review).
+
+**Waiting on RJ:** the Bimini chart check (reminder Fri Nov 27, 8 AM; Open
+Loops row 228); Joey's wording review (row 230); emergency numbers
+(`docs/overdue-numbers.md`). Later: AI setup helper (row 236, needs the
+tracker service and a $5-limit key), GPX import design doc (row 237),
+general onboarding answer buttons (row 235), the confidence badge (row 233).
+
+**Rules learned tonight:**
+*   Write dates in **Eastern time**: the cloud machine runs on UTC
+    (`TZ=America/New_York date`). Tonight's PRs #36 to #40 say Nov 27 by
+    mistake.
+*   **Every change to `beta/` bumps `VERSION` in `beta/sw.js`** and lists
+    any new page, script or style in its `FILES`; `/pr-check` fails
+    otherwise.
+*   The "crossing" cloud environment can reach `open-meteo.com`,
+    `api.open-meteo.com`, `marine-api.open-meteo.com`, `api.weather.gov` and
+    `www.weather.gov` (RJ approved), so test against the real forecast. Map
+    tiles, radar and cdnjs are still blocked: serve Leaflet from a local copy
+    (`npm pack leaflet@1.9.4`) in browser tests.
+*   The guard also blocks shell commands whose text merely names a frozen
+    path after a write command; edit docs with the editor tool, and put
+    such test inputs in a scratchpad file.
+
+**Shared records:** Google project doc section "Nov 26, 2026 (late night)
+— from Crossing App build"; "Session Summary – Crossing App – Nov 26, 2026"
+(late-night section); Open Loops rows 225, 228, 229, 233 to 237.
+
 ## Update: Nov 26, 2026, late night: Setup on first open, in beta
 
 The row 8 leftover ("show Setup on first open"), built in beta at RJ's
