@@ -141,3 +141,16 @@ html.tp-html{background:#F3F6F8}
   background:linear-gradient(#B42318,#B42318) center/3px 100% no-repeat,linear-gradient(#B42318,#B42318) center/100% 3px no-repeat;
   border-radius:50%;box-shadow:0 0 0 2px #fff inset}
 .tp .hpCross:after{content:'';position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:#B42318;border:2px solid #fff}
+/* Plan page part A (MVP row 11, beta): route line with a flip button, Seas/Wind/Arrive tiles. */
+header{flex-wrap:wrap}
+.routeline{flex:1 1 100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px}
+.routeline .rt{font-size:16px;font-weight:600;min-width:0}
+.routeline .rt small{display:block;color:var(--soft);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+.routeline .flip{flex:none;display:inline-flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:#0e2333;color:var(--accent);font-weight:700;font-size:14px;text-decoration:none}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.tiles:empty{display:none}
+.tiles div{background:#0e2333;border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+.tiles span{display:block;color:var(--soft);font-size:12px}
+.tiles b{display:block;font-size:17px}
+.tiles small{display:block;color:var(--soft);font-size:12px;line-height:1.3;overflow-wrap:anywhere}
+.card h2.sub{margin:14px 0 0}

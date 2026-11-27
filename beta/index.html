@@ -8,15 +8,15 @@
 <meta name="theme-color" content="#0b1d2c"><link rel="apple-touch-icon" href="/crossing/apple-touch-icon.png?v=1"><link rel="icon" type="image/png" href="/crossing/favicon.png?v=1">
 <title>Crossing · Goof n' Off</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="css/app.css?v=20261127">
+<link rel="stylesheet" href="css/app.css?v=20261128a">
 <link rel="stylesheet" href="css/frame.css?v=20261205">
 </head>
 <body data-tab="plan">
 <div class="preview" id="previewBar">BETA · trying new features, not the crossing copy</div>
 <header>
-  <h1>⚓ Crossing · Goof n' Off</h1>
-  <div class="note" id="dirBar"></div>
+  <h1>⚓ Crossing · <span id="boatTitle">Goof n' Off</span></h1>
   <div class="upd" id="upd">Loading…</div>
+  <div class="routeline" id="dirBar"></div>
 </header>
 <div class="nfn"><b>Planning aid, not for navigation.</b> The captain decides.</div>
 <main>
@@ -24,13 +24,21 @@
 <section class="card">
   <div class="days" id="days"></div>
   <div class="call" id="call"><div class="badge na">…</div><div class="why">Pulling the forecast…</div></div>
+  <div class="tiles" id="tiles"></div>
   <ul class="flags" id="flags"></ul>
+  <h2 class="sub">Departure times · tap to compare</h2>
   <div class="deps" id="deps"></div>
   <div class="note"><span id="depHow">Tap a time to see it; your pick is saved on this device. ★ marks the best departure.</span> <span id="depFrom">Departure options from the Palm Beach Inlet.</span> <span id="callHow">The call scores seas and wind at each point along the route at the hour you'd pass it (cruise ~26 kt / 30 mph). Your limits: under 3 ft = go; 3–4 ft = crossable, not comfortable; over 4 ft = no; no north wind against the Gulf Stream.</span> <b>A draft, not a decision:</b> check NWS and your charts, then make the call.</div>
 </section>
 
 <section class="card">
-  <h2>Route &amp; radar</h2>
+  <h2>Hour by hour along the route</h2>
+  <div class="scroll"><table id="legs"></table></div>
+  <div class="note">Seas = significant wave height (ft) and period (s). Wind in knots with direction it blows from. Model data (Open-Meteo / NOAA GFS-Wave, ECMWF); it smooths things out, so expect bigger sets.</div>
+</section>
+
+<section class="card">
+  <h2>Route map + radar</h2>
   <div id="mapwrap">
   <div id="map"></div>
   <div class="maprow">
@@ -51,40 +59,29 @@
   <div class="note" id="tideNote"></div>
 </section>
 
-<section class="card">
-  <h2>Boat position</h2>
-  <div class="note" id="trackNote" style="margin-top:0">Start the trip on the helm iPad, then send the family link. Family follow the boat on their own page. Nothing is shared until you are outside the Palm Beach Inlet, and sharing stops when you arrive.</div>
-  <a class="btn primary" id="liveBtn" href="live.html" style="display:block;text-align:center;min-height:48px;line-height:30px;margin-top:10px;font-size:16px">Start trip &amp; share with family</a>
-  <div id="captain" style="display:none;margin-top:10px">
-    <div class="track">
-      <a class="btn" href="https://drive.google.com/drive/folders/1u51aeIJ9toHbiC0g27jImnC4RvHu-O4h" target="_blank" rel="noopener">Trip docs (private)</a>
-      <a class="btn" href="https://www.bahamascustoms.gov.bs/?p=5024" target="_blank" rel="noopener">Bahamas Customs</a>
-    </div>
-    <div class="note">Trip docs opens your private Drive folder (your Google sign-in only). Customs: Cruising Permit &gt; Pleasure Craft &gt; Create Inbound.</div>
-  </div>
-</section>
-<section class="card" id="goday" style="display:none">
-  <h2>Go-day checklist</h2>
-  <ol class="chk" id="chkList"></ol>
-  <div class="track" style="margin-top:8px"><span class="note" id="chkCount"></span><button class="btn" id="chkReset">Reset</button></div>
-  <div class="note">Captain mode only. Ticks save on this device.</div>
-</section>
-
-<section class="card">
-  <h2>Hour by hour along the route</h2>
-  <div class="scroll"><table id="legs"></table></div>
-  <div class="note">Seas = significant wave height (ft) and period (s). Wind in knots with direction it blows from. Model data (Open-Meteo / NOAA GFS-Wave, ECMWF); it smooths things out, so expect bigger sets.</div>
-</section>
-
 <section class="card" id="insideCard">
-  <h2>Inside the Sea of Abaco</h2>
+  <h2>Inside water (Sea of Abaco)</h2>
   <div class="kv" id="inside"></div>
   <div class="note">Inside chop is estimated from the wind (the cays block ocean swell). Whale Cay passage goes outside: watch for a rage when there's big northeast swell, and wait it out or take the inside route on a good tide.</div>
 </section>
 
 <section class="card">
-  <h2>Arrival · fuel · tide times</h2>
+  <h2>Fuel and arrival</h2>
   <div class="kv" id="tff"></div>
+</section>
+
+<section class="card" id="goday" style="display:none">
+  <h2>Get ready</h2>
+  <ol class="chk" id="chkList"></ol>
+  <div class="track" style="margin-top:8px"><span class="note" id="chkCount"></span><button class="btn" id="chkReset">Reset</button></div>
+  <div class="track" id="captainLinks" style="margin-top:10px"></div>
+  <div class="note">Captain mode only. Ticks save on this device.</div>
+</section>
+
+<section class="card">
+  <h2>Start trip</h2>
+  <div class="note" id="trackNote" style="margin-top:0">Start the trip on the helm iPad, then send the family link. Family follow the boat on their own page. Nothing is shared until you are outside the Palm Beach Inlet, and sharing stops when you arrive.</div>
+  <a class="btn primary" id="liveBtn" href="live.html" style="display:block;text-align:center;min-height:48px;line-height:30px;margin-top:10px;font-size:16px">Start trip &amp; share with family</a>
 </section>
 
 <section class="card">
@@ -111,13 +108,13 @@
 <script src="js/settings.js?v=20261130"></script>
 <script src="js/routes.js?v=20261127d"></script>
 <script src="js/helpers.js?v=20261120"></script>
-<script src="js/mysetup.js?v=20261127d"></script>
+<script src="js/mysetup.js?v=20261128a"></script>
 <script src="js/active-route.js?v=20261127b"></script>
 <script src="js/forecast.js?v=20261127c"></script>
-<script src="js/plan.js?v=20261127c"></script>
+<script src="js/plan.js?v=20261128a"></script>
 <script src="js/tides.js?v=20261120"></script>
 <script src="js/map.js?v=20261127a"></script>
-<script src="js/boot.js?v=20261127a"></script>
+<script src="js/boot.js?v=20261128a"></script>
 <script src="js/frame.js?v=20261202"></script>
 </body>
 </html>

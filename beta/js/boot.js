@@ -4,9 +4,11 @@ window.addEventListener('hashchange',()=>location.reload());
   const days=dayList();
   let saved=null;try{saved=localStorage.getItem('cx:beta:crossDay');}catch(e){}
   DAY=days.includes(saved)?saved:days[0];
+  // The boat's name from setup (row 11); with no setup it reads as before.
+  $('boatTitle').textContent=MY.boatName;
+  document.title=(HOME?'Trip home · ':'Crossing · ')+MY.boatName;
   if(location.pathname.includes('/beta/')){$('previewBar').style.display='block';document.title='BETA · '+document.title;}
   renderDays();initMap();
-  if(IS_CAPTAIN)$('captain').style.display='block';
   // Saved setup and route (rows 8 and 9). With no setup and the Abaco route, the page reads as before.
   if(MY.saved)$('callHow').textContent=`The call scores seas and wind at each point along the route at the hour you'd pass it (cruise ${MY.cruiseKt} kt, from your setup). Your limits: seas over ${MY.seasFt} ft = no, within a foot of it = crossable, not comfortable; wind over ${MY.windKt} kt = crossable, not comfortable`+(MY.noNorth?`; north wind of ${MY.windKt} kt or more against the Gulf Stream = no.`:'.');
   if(!RT.abaco){
@@ -26,48 +28,71 @@ window.addEventListener('hashchange',()=>location.reload());
   setInterval(async()=>{try{await loadForecast();$('upd').textContent='Updated '+fmtT(new Date());render();}catch(e){}},30*60e3);
 })();
 
-// Go-day checklist (captain mode only; ticks in localStorage on this device)
+// Get ready (the go-day checklist; captain mode only; ticks saved on this device).
+// Plan page part A (row 11): built from the saved setup (followers, tank and
+// fuel, destination, papers link). The Abaco route keeps its customs and Sea
+// of Abaco steps; other routes get the general list. Ticks are kept by item id.
 (function(){
   if(!location.hash.startsWith('#captain'))return;
-  if(!RT.abaco)return;   // this checklist is the Abaco trip's; other routes get theirs later
-  const ITEMS=HOME?[
-    ['Final weather call','Check the call card above; go only on a green or a yellow you accept.'],
-    ['Starlink to Roam + Ocean Mode','In the Starlink app on the boat; it takes effect right away.'],
-    ['Float plan texts sent','To Mom and Raul: route, departure, ETA and the trip-home link.'],
-    ['Fuel and reserve check','Top up at Green Turtle if the reserve looks thin.'],
-    ['Whale Cay passage check','See Inside the Sea of Abaco; go inside or wait in a big northeast swell.'],
-    ['Registration, insurance, permit aboard','Copies also in <a href="https://drive.google.com/drive/folders/1u51aeIJ9toHbiC0g27jImnC4RvHu-O4h" target="_blank" rel="noopener">trip docs</a>.'],
-    ['Start trip & share with family','Button above (on the helm iPad), then Send link to family. Positions begin past Green Turtle.'],
-    ['Report arrival in CBP ROAM','Right after you reach Palm Beach; DTOPS decal number ready.'],
-    ['Trip ends by itself near home','Check the Live page says your followers can see the trip has ended.']
-  ]:[
-    ['Final weather call','Check the call card above; go only on a green or a yellow you accept.'],
-    ['Starlink to Roam + Ocean Mode','In the Starlink app on the boat; it takes effect right away.'],
-    ['Float plan texts sent','To Mom and Raul: route, departure, ETA, this page\'s link.'],
-    ['Fuel and reserve check','215 gal tank; crossing burns ~150 to 180 gal. Note the gauge.'],
-    ['Current registration + insurance aboard','Copies also in <a href="https://drive.google.com/drive/folders/1u51aeIJ9toHbiC0g27jImnC4RvHu-O4h" target="_blank" rel="noopener">trip docs</a>.'],
-    ['Start trip & share with family','Button above (on the helm iPad), then Send link to family. Positions begin outside the inlet.'],
-    ['Click2Clear filed and paid','<a href="https://www.bahamascustoms.gov.bs/?p=5024" target="_blank" rel="noopener">Bahamas Customs</a>: Cruising Permit, Pleasure Craft, Create Inbound. 30-day permit + fishing.'],
-    ['Q flag up at Green Turtle','Only the captain goes ashore until cleared.'],
-    ['Cleared: permit stamped and signed','Then the courtesy flag goes up.'],
-    ['Whale Cay passage check','See Inside the Sea of Abaco; skip it in a big northeast swell.'],
-    ['Arrived at Coconut Grove','The trip ends by itself at Green Turtle Cay. Text Mom and Raul you\'re in.']
+  const who=MY.followerList();
+  const fu=MY.fuel(RT.totalNm);
+  const fuelHint=`${MY.tankGal} gal tank; this run burns about ${fu.lo} to ${fu.hi} gal${fu.estimate?' (estimated burn)':''}. Note the gauge.`;
+  const papers=MY.papers
+    ?'Copies in <a href="'+esc(MY.papers)+'" target="_blank" rel="noopener">your papers</a>.'
+    :'Tip: add a link to your papers folder in Menu \u2192 My Boat.';
+  const customs='<a href="https://www.bahamascustoms.gov.bs/?p=5024" target="_blank" rel="noopener">Bahamas Customs</a>';
+  const it=(id,title,hint)=>({id,title,hint});
+  const common=[
+    it('weather','Final weather call','Check the answer card above; go only on a green or a yellow you accept.'),
+    it('net','Starlink or Wi-Fi set for offshore','Check it works before you lose the shore signal. For Starlink: Roam and Ocean Mode.'),
+    it('float','Float plan texts sent','To '+esc(who)+': route, departure, ETA'+(HOME?' and the trip-home link.':', this page\'s link.'))
   ];
-  const KEY='cx:beta:goday-ticks';let t={};try{t=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+  let ITEMS;
+  if(RT.abaco&&HOME)ITEMS=common.concat([
+    it('fuel','Fuel and reserve check','Top up at Green Turtle if the reserve looks thin. '+fuelHint),
+    it('whale','Whale Cay passage check','See Inside water; go inside or wait in a big northeast swell.'),
+    it('papers','Registration, insurance, permit aboard',papers),
+    it('start','Start trip & share with family','Button below (on the helm iPad), then Send link to family. Positions begin past Green Turtle.'),
+    it('roam','Report arrival in CBP ROAM','Right after you reach Palm Beach; DTOPS decal number ready.'),
+    it('ends','Trip ends by itself near home','Check the Live page says your followers can see the trip has ended.')
+  ]);
+  else if(RT.abaco)ITEMS=common.concat([
+    it('fuel','Fuel and reserve check',fuelHint),
+    it('papers','Current registration + insurance aboard',papers),
+    it('start','Start trip & share with family','Button below (on the helm iPad), then Send link to family. Positions begin outside the inlet.'),
+    it('c2c','Click2Clear filed and paid',customs+': Cruising Permit, Pleasure Craft, Create Inbound. 30-day permit + fishing.'),
+    it('qflag','Q flag up at Green Turtle','Only the captain goes ashore until cleared.'),
+    it('cleared','Cleared: permit stamped and signed','Then the courtesy flag goes up.'),
+    it('whale','Whale Cay passage check','See Inside water; skip it in a big northeast swell.'),
+    it('arrived','Arrived','The trip ends by itself at Green Turtle Cay. Text '+esc(who)+' you\'re in.')
+  ]);
+  else ITEMS=common.concat([
+    it('fuel','Fuel and reserve check',fuelHint),
+    it('papers','Registration and insurance aboard',papers),
+    it('arrived','Arrived at '+esc(RT.dest),'Text '+esc(who)+' you\'re in.')
+  ]);
+  const KEY='cx:beta:goday-ticks';let t={};try{t=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){}
   const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(t))}catch(e){}};
   const ol=$('chkList');
   function draw(){
     ol.innerHTML='';let n=0;
-    ITEMS.forEach(([title,hint],i)=>{
-      const li=document.createElement('li');if(t[i]){li.className='done';n++;}
-      const cb=document.createElement('input');cb.type='checkbox';cb.checked=!!t[i];
-      cb.onchange=()=>{t[i]=cb.checked;save();draw();};
-      const sp=document.createElement('span');sp.innerHTML='<b>'+(i+1)+'. '+title+'</b><small>'+hint+'</small>';
+    ITEMS.forEach((x,i)=>{
+      const li=document.createElement('li');if(t[x.id]){li.className='done';n++;}
+      const cb=document.createElement('input');cb.type='checkbox';cb.checked=!!t[x.id];
+      cb.setAttribute('aria-label',x.title);
+      cb.onchange=()=>{t[x.id]=cb.checked;save();draw();};
+      const sp=document.createElement('span');sp.innerHTML='<b>'+(i+1)+'. '+x.title+'</b><small>'+x.hint+'</small>';
       li.append(cb,sp);ol.append(li);
     });
     $('chkCount').textContent=n+' of '+ITEMS.length+' done';
   }
   $('chkReset').onclick=()=>{t={};save();draw();};
+  // Buttons under the list: the captain's own papers (when a link is saved) and Bahamas Customs (Abaco only).
+  const links=[];
+  if(MY.papers)links.push('<a class="btn" href="'+esc(MY.papers)+'" target="_blank" rel="noopener">Open my papers</a>');
+  if(RT.abaco)links.push('<a class="btn" href="https://www.bahamascustoms.gov.bs/?p=5024" target="_blank" rel="noopener">Bahamas Customs</a>');
+  $('captainLinks').innerHTML=links.join('');
+  if(!links.length)$('captainLinks').style.display='none';
   $('goday').style.display='block';draw();
 })();
 
@@ -75,11 +100,13 @@ window.addEventListener('hashchange',()=>location.reload());
 (function(){
   const h=location.hash||'';
   const other=HOME?location.pathname+h:location.pathname+'?trip=home'+h;
-  $('dirBar').innerHTML=(!RT.abaco?(HOME?'<b>Trip home:</b> ':'<b>Trip over:</b> ')+esc(RT.orig)+' → '+esc(RT.dest):HOME?'<b>Trip home:</b> Guana → Palm Beach':'<b>Trip over:</b> Palm Beach → Green Turtle')+' · <a href="'+other+'" style="color:var(--accent)">'+(HOME?'switch to trip over':'switch to trip home')+'</a>';
-  if(!RT.abaco){$('depFrom').textContent='Departure options from '+RT.orig+'.';if(HOME)document.title='Trip home · '+document.title;}
+  // Route line with a ⇄ button to flip direction (mockup: route label and flip).
+  const label=!RT.abaco?esc(RT.orig)+' → '+esc(RT.dest):HOME?'Guana Cay → Palm Beach':'Palm Beach → Green Turtle';
+  $('dirBar').innerHTML='<div class="rt"><small>'+(HOME?'Trip home':'Trip over')+'</small>'+label+'</div>'
+    +'<a class="flip" href="'+other+'" aria-label="'+(HOME?'Switch to the trip over':'Switch to the trip home')+'">⇄ '+(HOME?'Trip over':'Trip home')+'</a>';
+  if(!RT.abaco){$('depFrom').textContent='Departure options from '+RT.orig+'.';}
   else if(HOME){
     $('depFrom').textContent='Departure options from Guana Cay (via Whale Cay and Green Turtle).';
     $('trackNote').textContent='Start the trip on the helm iPad, then send the family link. Family follow the boat on their own page. Nothing is shared until you are past Green Turtle, and sharing stops when you arrive.';
-    document.title='Trip home · Goof n\' Off';
   }
 })();

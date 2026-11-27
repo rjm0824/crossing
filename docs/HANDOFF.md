@@ -2,6 +2,34 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
+## Update: Nov 27, 2026, evening: Plan page part A (row 11) and papers link, in beta
+
+**Crossing-day card** (https://claude.ai/artifact/2BNtygYUVDFkJmzBJnWBm1)
+updated: Saturday's crossing log and bottom-bar checks, the heads-up text
+for Haile and Mom with a Copy button, and "amber PREVIEW, not violet BETA"
+at the dock.
+
+**Pull request (beta only; `next/` untouched):**
+*   **Plan page part A (MVP row 11):** boat name from setup in the heading
+    and tab title; route line with a **⇄ Trip home / Trip over** button;
+    **Seas · Wind · Arrive** tiles on the answer card (worst seas, strongest
+    wind, arrival); sections in the mockup's order and names (Departure
+    times, Hour by hour, Route map + radar, Tides, Inside water, Fuel and
+    arrival, Get ready, Start trip); "Fuel needed: X–Y gal of Z · reserve
+    left"; **Get ready** (was the go-day checklist) built from setup:
+    followers' names, tank and fuel for this run, "Starlink or Wi-Fi set for
+    offshore" (RJ's wording), a general list on routes other than Abaco.
+    Ticks are kept by item id. RJ's private Drive folder link is removed.
+*   **Papers link (option 1, RJ):** Menu → My Boat has an optional "Link to
+    your boat papers" (https only, saved in `cx:beta:setup` as
+    `boat.papers`, on the device only). Get ready shows **Open my papers**.
+    `privacy.html` says so.
+*   **Document photos** (registration and insurance on the phone, never
+    passports) moved to **Phase 2** in `docs/feature-map.md` (RJ); its own
+    design review first.
+
+Water and air temperatures, the brief and best day are row 12.
+
 ## Update: Nov 27, 2026: second preview copy `/beta/`; `next/` frozen for the crossing
 
 **Why (RJ):** keep building and trying features before the crossing home

@@ -46,7 +46,7 @@ Legend: **Live** = in today's page · **MVP** = friends version / initial build 
 - Trip logbook → now My Trips past trips. **MVP** · Trip recap card. **Paid**
 
 ## Side tools (☰ Menu, not the home screen)
-- My Boat: vessel profile (**MVP**), expiry reminders (MVP-Next), maintenance log + service history (Phase 2), anchor alarm (Soon), document storage (paid, later; never passports, expiry dates only).
+- My Boat: vessel profile (**MVP**), expiry reminders (MVP-Next), maintenance log + service history (Phase 2), anchor alarm (Soon), document storage: a link to the captain's own papers folder (beta, Nov 27); photos of registration and insurance kept on the phone in **Phase 2** (RJ, Nov 27; own design review first; never passports).
 - Customs, Safety, Settings, My Trips (also in the bottom bar).
 
 ## Legal and decided
