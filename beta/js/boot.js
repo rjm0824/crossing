@@ -36,7 +36,7 @@ window.addEventListener('hashchange',()=>location.reload());
   if(!location.hash.startsWith('#captain'))return;
   const who=MY.followerList();
   const fu=MY.fuel(RT.totalNm);
-  const fuelHint=`${MY.tankGal} gal tank; this run burns about ${fu.lo} to ${fu.hi} gal${fu.estimate?' (estimated burn)':''}. Note the gauge.`;
+  const fuelHint=`${MY.tankGal} gal tank; this run burns about ${fu.lo} to ${fu.hi} gal${fu.estimate?' (estimated burn)':''} before any allowance for the seas (see Fuel and arrival). Note the gauge.`;
   const papers=MY.papers
     ?'Copies in <a href="'+esc(MY.papers)+'" target="_blank" rel="noopener">your papers</a>.'
     :'Tip: add a link to your papers folder in Menu \u2192 My Boat.';
@@ -45,7 +45,7 @@ window.addEventListener('hashchange',()=>location.reload());
   const common=[
     it('weather','Final weather call','Check the answer card above; go only on a green or a yellow you accept.'),
     it('net','Starlink or Wi-Fi set for offshore','Check it works before you lose the shore signal. For Starlink: Roam and Ocean Mode.'),
-    it('float','Float plan texts sent','To '+esc(who)+': route, departure, ETA'+(HOME?' and the trip-home link.':', this page\'s link.'))
+    it('float','Float plan sent','To '+esc(who)+': route, departure, ETA'+(HOME?' and the trip-home link.':', this page\'s link.')+' The Float plan button below makes a page you can save as a PDF.')
   ];
   let ITEMS;
   if(RT.abaco&&HOME)ITEMS=common.concat([
@@ -88,11 +88,12 @@ window.addEventListener('hashchange',()=>location.reload());
   }
   $('chkReset').onclick=()=>{t={};save();draw();};
   // Buttons under the list: the captain's own papers (when a link is saved) and Bahamas Customs (Abaco only).
-  const links=[];
+  const links=['<a class="btn" id="fpLink" href="float-plan.html">Float plan</a>'];
   if(MY.papers)links.push('<a class="btn" href="'+esc(MY.papers)+'" target="_blank" rel="noopener">Open my papers</a>');
   if(RT.abaco)links.push('<a class="btn" href="https://www.bahamascustoms.gov.bs/?p=5024" target="_blank" rel="noopener">Bahamas Customs</a>');
   $('captainLinks').innerHTML=links.join('');
-  if(!links.length)$('captainLinks').style.display='none';
+  // The float plan link carries the departure picked at the moment it is tapped.
+  $('fpLink').addEventListener('click',e=>{e.currentTarget.href=floatPlanHref();});
   $('goday').style.display='block';draw();
 })();
 

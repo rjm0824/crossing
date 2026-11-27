@@ -2,6 +2,26 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
+## Update: Nov 27, 2026, night: Plan page row 13, part 1, in beta
+
+RJ split row 13 (Nov 27): **part 1** (no new services) now; **part 2**
+(forecast models agree, NWS marine warnings) next session, after this
+workspace is allowed to reach `open-meteo.com` and `weather.gov` so the
+model names and the marine zones for Palm Beach can be checked against
+real answers (both hosts were blocked here, so nothing was guessed).
+
+*   **Fuel for the forecast seas** (RJ's table): worst seas on the run under
+    2 ft +0%, 2 to 3 ft +5%, 3 to 4 ft +10%, over 4 ft +15%, shown as
+    "Includes +10% for the forecast seas (worst 3.4 ft)".
+*   **Float plan page** `beta/float-plan.html` (Get ready → Float plan):
+    trip, route points with positions, boat, followers' first names (no phone
+    numbers), departure, arrival and overdue time and fuel passed from the
+    Plan page in the link; captain, people aboard and notes typed on the
+    page and saved on the device (`cx:beta:floatplan`). Prints black on
+    white; Share › Print › Save to Files makes a PDF. Emergency line is
+    only "VHF channel 16, or call the US Coast Guard" until
+    `docs/overdue-numbers.md` is confirmed. `privacy.html` updated.
+
 ## Update: Nov 27, 2026, late evening: Plan page row 12 in beta
 
 *   **Water · Air · Sunrise tiles** after Seas · Wind · Arrive (°F only, RJ).
