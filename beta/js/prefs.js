@@ -1,10 +1,10 @@
 // ---------- Settings screen (MVP row 7) ----------
-// Saved on this device only, as cx:next:prefs = { intervalMin, overdueMin, keepAwake }.
+// Saved on this device only, as cx:beta:prefs = { intervalMin, overdueMin, keepAwake }.
 // NOT CONNECTED YET (RJ, Nov 26): the Live screen is in a code freeze until
 // after the crossing and still uses 5 min, 80 min and keep-awake on. After
 // the crossing, live.js reads these values and this screen joins the Menu.
 (function () {
-  var KEY = 'cx:next:prefs';
+  var KEY = 'cx:beta:prefs';
   function $(id) { return document.getElementById(id); }
   var GROUPS = [
     { id: 'intervalMin', title: 'Tracking interval', help: 'How often the boat\'s position is sent. Shorter uses more battery and data.',

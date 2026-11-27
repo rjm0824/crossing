@@ -93,10 +93,10 @@ var QueueRules = (function () {
 if (typeof module !== 'undefined') module.exports = QueueRules;
 
 // ---------- Saved data and the sender (browser only) ----------
-// Saved names start with cx:next: on the preview (cx:live: at promote).
+// Saved names start with cx:beta: in beta (cx:next: on the preview, cx:live: at promote).
 var Queue = (typeof window === 'undefined') ? null : (function () {
   'use strict';
-  var PREFIX = 'cx:next:';
+  var PREFIX = 'cx:beta:';
   var LOG_MAX = 30;
   var TICK_MS = 30e3, NOT_FOUND_MS = 60e3;
 

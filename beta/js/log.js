@@ -1,9 +1,9 @@
 // ---------- Crossing log (test kit, Nov 27) ----------
 // One-tap notes with the time, for the crossing home and the Dec 1 debrief.
-// Saved on this device only as cx:next:crosslog = [{ t, what, text }].
+// Saved on this device only as cx:beta:crosslog = [{ t, what, text }].
 // No location. It never reads or changes the Live screen's saved data.
 (function () {
-  var KEY = 'cx:next:crosslog', MAX = 500;
+  var KEY = 'cx:beta:crosslog', MAX = 500;
   var BUTTONS = ['Sharing started', 'Signal lost', 'Signal back', 'Check-in sent', 'Passed inlet', 'Home / trip ended', 'Battery %'];
   function $(id) { return document.getElementById(id); }
 

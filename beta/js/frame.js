@@ -2,7 +2,7 @@
 // The bottom bar for the captain's app. On the Plan page it shows only in
 // captain mode (#captain), so the plain preview link looks as before. Other
 // frame pages (Menu and its screens) always show it.
-// It only READS the trip the Live screen saved (cx:next:trip); it never writes it.
+// It only READS the trip the Live screen saved (cx:beta:trip); it never writes it.
 (function () {
   var page = document.body.getAttribute('data-tab') || 'plan';
   var isPlan = page === 'plan';
@@ -11,7 +11,7 @@
   var home = new URLSearchParams(location.search).get('trip') === 'home';
   var q = home ? '?trip=home' : '';
   var underway = false;
-  try { var tr = JSON.parse(localStorage.getItem('cx:next:trip') || 'null'); underway = !!(tr && tr.status === 'underway'); } catch (e) {}
+  try { var tr = JSON.parse(localStorage.getItem('cx:beta:trip') || 'null'); underway = !!(tr && tr.status === 'underway'); } catch (e) {}
 
   // Tabs appear here only once their screen exists (no dead buttons).
   // My Trips joins in MVP row 14.
@@ -38,10 +38,10 @@
   document.body.appendChild(nav);
   document.body.classList.add('framed');
 
-  // Menu pages: PREVIEW banner and the trip direction on their own links.
+  // Menu pages: BETA banner and the trip direction on their own links.
   if (!isPlan) {
     var bar = document.getElementById('previewBar');
-    if (bar && location.pathname.indexOf('/next/') !== -1) { bar.style.display = 'block'; document.title = 'PREVIEW · ' + document.title; }
+    if (bar && location.pathname.indexOf('/beta/') !== -1) { bar.style.display = 'block'; document.title = 'BETA · ' + document.title; }
     document.querySelectorAll('a[data-keep-trip]').forEach(function (a) {
       var h = a.getAttribute('href'), i = h.indexOf('#');   // the trip goes before any #captain
       a.href = i < 0 ? h + q : h.slice(0, i) + q + h.slice(i);

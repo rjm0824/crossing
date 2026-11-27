@@ -1,8 +1,8 @@
 // ---------- My Boat (profile only, MVP row 7) ----------
-// Saved on this device only (cx:next:boat). No ID numbers (RJ, Nov 26):
+// Saved on this device only (cx:beta:boat). No ID numbers (RJ, Nov 26):
 // no hull ID, no registration number. Not sent anywhere.
 (function () {
-  var KEY = 'cx:next:boat';
+  var KEY = 'cx:beta:boat';
   function $(id) { return document.getElementById(id); }
   var FIELDS = [
     { id: 'name',   label: 'Boat name',          max: 40, ph: "Goof n' Off" },

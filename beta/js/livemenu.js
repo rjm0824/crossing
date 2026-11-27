@@ -10,13 +10,13 @@
 //   * while a trip is sharing, leaving asks first, because leaving this page
 //     pauses sharing.
 // It never touches the trip, GPS, the send queue or the screen-awake lock. It
-// only READS cx:next:trip. Followers use family.html, which does not load it.
+// only READS cx:beta:trip. Followers use family.html, which does not load it.
 (function () {
   'use strict';
   if (!document.body.classList.contains('tp')) return;
 
   function sharing() {
-    try { var t = JSON.parse(localStorage.getItem('cx:next:trip') || 'null'); return !!(t && t.status === 'underway'); }
+    try { var t = JSON.parse(localStorage.getItem('cx:beta:trip') || 'null'); return !!(t && t.status === 'underway'); }
     catch (e) { return false; }
   }
 

@@ -2,13 +2,13 @@
 window.addEventListener('hashchange',()=>location.reload());
 (async function(){
   const days=dayList();
-  let saved=null;try{saved=localStorage.getItem('crossDay');}catch(e){}
+  let saved=null;try{saved=localStorage.getItem('cx:beta:crossDay');}catch(e){}
   DAY=days.includes(saved)?saved:days[0];
-  if(location.pathname.includes('/next/')){$('previewBar').style.display='block';document.title='PREVIEW · '+document.title;}
+  if(location.pathname.includes('/beta/')){$('previewBar').style.display='block';document.title='BETA · '+document.title;}
   renderDays();initMap();
   if(IS_CAPTAIN)$('captain').style.display='block';
   // Start trip & share with family: opens the Live page, keeping the direction.
-  try{const tr=JSON.parse(localStorage.getItem('cx:next:trip')||'null');$('liveBtn').href='live.html'+(HOME?'?trip=home':'');
+  try{const tr=JSON.parse(localStorage.getItem('cx:beta:trip')||'null');$('liveBtn').href='live.html'+(HOME?'?trip=home':'');
     if(tr&&tr.status==='underway')$('liveBtn').textContent='Back to your trip';}catch(e){}
   try{await loadForecast();$('upd').textContent='Updated '+fmtT(new Date());render();}
   catch(e){$('upd').textContent='Forecast failed to load';$('call').innerHTML='<div class="badge na">Offline</div><div class="why">Couldn\'t reach the forecast service. Pull to refresh, or use the source links below.</div>';}
@@ -43,7 +43,7 @@ window.addEventListener('hashchange',()=>location.reload());
     ['Whale Cay passage check','See Inside the Sea of Abaco; skip it in a big northeast swell.'],
     ['Arrived at Coconut Grove','The trip ends by itself at Green Turtle Cay. Text Mom and Raul you\'re in.']
   ];
-  const KEY='goday-ticks';let t={};try{t=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+  const KEY='cx:beta:goday-ticks';let t={};try{t=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
   const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(t))}catch(e){}};
   const ol=$('chkList');
   function draw(){

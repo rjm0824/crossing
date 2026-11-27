@@ -1,11 +1,11 @@
 // ---------- Family tab (captain's view, MVP row 7) ----------
 // Shows the family link for the trip on this device, "Share again" and
 // "Open the family page". It only READS the trip the Live screen saved
-// (cx:next:trip) and never changes it or calls the tracker.
+// (cx:beta:trip) and never changes it or calls the tracker.
 (function () {
   var MIN = 60e3, HOUR = 3600e3, LINK_OPEN_MS = 2 * HOUR;   // the link closes 2 h after the trip ends
   var trip = null;
-  try { trip = JSON.parse(localStorage.getItem('cx:next:trip') || 'null'); } catch (e) {}
+  try { trip = JSON.parse(localStorage.getItem('cx:beta:trip') || 'null'); } catch (e) {}
   // Same direction as the trip, like the Live screen does (route names come from settings.js).
   if (trip && trip.dir && trip.dir !== (HOME ? 'home' : 'over')) {
     var p = new URLSearchParams(location.search);

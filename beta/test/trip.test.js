@@ -1,6 +1,6 @@
 // Checks for the trip maths (and, from step 2, the send-queue rules).
-// Node:    node --test next/test/trip.test.js
-// Browser: next/trip-test.html loads this file and lists PASS or FAIL.
+// Node:    node --test beta/test/trip.test.js
+// Browser: beta/trip-test.html loads this file and lists PASS or FAIL.
 (function () {
   'use strict';
   var inNode = typeof window === 'undefined' && typeof module !== 'undefined';
@@ -18,7 +18,7 @@
     if (!(Math.abs(a - b) <= tol)) throw new Error((msg || 'not close') + ': got ' + a + ', want ' + b + ' ± ' + tol);
   }
 
-  // ---- The routes, as in next/js/settings.js ----
+  // ---- The routes, as in beta/js/settings.js ----
   var P = {
     guana: { name: 'Guana Cay', lat: 26.6950, lon: -77.1300 },
     whale: { name: 'Whale Cay Passage', lat: 26.7400, lon: -77.1900 },
@@ -424,7 +424,7 @@
   });
 
   // ---- Reminder calendar file (Remind me) ----
-  var LINK = 'https://rjm0824.github.io/crossing/next/family.html#k=' + 'f'.repeat(43);
+  var LINK = 'https://rjm0824.github.io/crossing/beta/family.html#k=' + 'f'.repeat(43);
   var OD = Date.UTC(2026, 10, 29, 19, 10, 0);          // 2:10 PM Eastern
   var ics = CF.calendarFile({ captain: 'RJ', overdueAt: OD, startedAt: OD - 6 * 3600e3 }, LINK, OD - 3600e3);
   var unfolded = ics.replace(/\r\n /g, '');

@@ -1,9 +1,9 @@
 // ---------- Safety gear checklist (MVP row 7) ----------
 // A reminder list, not an official requirement list. Ticks are saved on this
-// device only (cx:next:safety), by item id so a later list change can't
+// device only (cx:beta:safety), by item id so a later list change can't
 // move a tick onto the wrong item. "Reset for a new trip" clears them.
 (function () {
-  var KEY = 'cx:next:safety';
+  var KEY = 'cx:beta:safety';
   function $(id) { return document.getElementById(id); }
   var ITEMS = [
     ['pfd',      'Life jackets', 'One per person, sizes checked'],

@@ -57,7 +57,7 @@ td.g{color:var(--go)}td.m{color:var(--maybe)}td.n{color:var(--no);font-weight:70
 .tide text{fill:var(--soft);font-size:17px}
 .tide text.k{font-weight:700;letter-spacing:.6px;font-size:16px}
 .tide text.h{fill:var(--accent)}
-.preview{display:none;background:var(--maybe);color:#231700;font-weight:800;font-size:13px;letter-spacing:.6px;text-align:center;padding:5px 10px}
+.preview{display:none;background:#6d28d9;color:#fff;font-weight:800;font-size:13px;letter-spacing:.6px;text-align:center;padding:5px 10px}
 .nfn{color:var(--soft);font-size:12px;padding:0 16px 2px}
 .nfn b{color:var(--ink)}
 .capstatus{margin-top:10px;border-radius:10px;padding:9px 11px;font-size:14px;border:1px solid var(--line);background:#0e2333}

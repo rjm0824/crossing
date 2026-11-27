@@ -3,11 +3,11 @@ let DAY=null;
 function dayList(){const out=[];const now=new Date();for(let i=0;i<4;i++){out.push(etDate(new Date(now.getTime()+i*86400e3)));}return out;}
 function renderDays(){
   const box=$('days');box.innerHTML='';
-  dayList().forEach(d=>{const b=document.createElement('button');b.textContent=fmtDay(etTime(d,12));if(d===DAY)b.className='on';b.onclick=()=>{DAY=d;try{localStorage.setItem('crossDay',d)}catch(e){};render();};box.appendChild(b);});
+  dayList().forEach(d=>{const b=document.createElement('button');b.textContent=fmtDay(etTime(d,12));if(d===DAY)b.className='on';b.onclick=()=>{DAY=d;try{localStorage.setItem('cx:beta:crossDay',d)}catch(e){};render();};box.appendChild(b);});
 }
 // The chosen departure: saved on this device for its date.
 let LASTSEL=null;
-const DEPKEY='crossDep';
+const DEPKEY='cx:beta:crossDep';
 function savedDep(){try{const v=JSON.parse(localStorage.getItem(DEPKEY)||'null');if(v&&v.day&&v.ms&&!!v.home===HOME)return v;}catch(e){}return null;}
 function saveDep(ms,actual){const v={day:etDate(new Date(ms)),ms,home:HOME,actual:!!actual};try{localStorage.setItem(DEPKEY,JSON.stringify(v));}catch(e){}}
 function chosenDep(){
