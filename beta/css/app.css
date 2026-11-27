@@ -154,3 +154,14 @@ header{flex-wrap:wrap}
 .tiles b{display:block;font-size:17px}
 .tiles small{display:block;color:var(--soft);font-size:12px;line-height:1.3;overflow-wrap:anywhere}
 .card h2.sub{margin:14px 0 0}
+/* Row 12: the written summary and Best day this week. */
+.brief{margin:10px 0 0;font-size:15px;line-height:1.45}
+.brief:empty{display:none}
+.bestdays{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.bestday{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;min-height:48px;background:#0e2333;color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;cursor:pointer}
+.bestday.on{outline:3px solid var(--accent);outline-offset:1px}
+.bestday b{font-size:15px}
+.bestday small{color:var(--soft);font-size:12px}
+.bestday em{display:block;font-style:normal;color:var(--accent);font-weight:700}
+.bestday .lv{font-size:12px;font-weight:800;letter-spacing:.4px;border-radius:999px;padding:2px 8px;color:#06131c}
+.bestday .lv.go{background:var(--go)}.bestday .lv.maybe{background:var(--maybe)}.bestday .lv.no{background:var(--no);color:#fff}

@@ -16,6 +16,7 @@ function chosenDep(){
 function render(){
   renderDays();
   if(!FC)return;
+  renderBest();
   const now=new Date();
   const opts=[];for(let h=5.5;h<=11;h+=0.5){const dep=etTime(DAY,h);if(dep>now-1800e3)opts.push(scoreRun(dep));}
   const deps=$('deps');deps.innerHTML='';
@@ -24,7 +25,7 @@ function render(){
   const fromCaptain=!!(chosen&&chosen.captain);
   deps.style.display=fromCaptain?'none':'';
   $('depHow').textContent=fromCaptain?(chosen.actual?'This is the time the captain left.':'This is the departure time the captain picked.'):'Tap a time to see it; your pick is saved on this device. ★ marks the best departure.';
-  if(!opts.length){$('tiles').innerHTML='';$('call').innerHTML='<div class="badge na">Past</div><div class="why">No departure windows left for this day. Pick another day.</div>';$('flags').innerHTML='';renderLegs(null);renderInside(null);renderTFF(null);return;}
+  if(!opts.length){clearTiles();$('call').innerHTML='<div class="badge na">Past</div><div class="why">No departure windows left for this day. Pick another day.</div>';$('flags').innerHTML='';renderLegs(null);renderInside(null);renderTFF(null);return;}
   const valid=opts.filter(o=>o.level>=0&&!o.extra);
   const best=valid.length?valid.reduce((a,b)=>(b.level<a.level||(b.level===a.level&&b.worstWave<a.worstWave))?b:a):null;
   // Tapping a time saves it, unless the boat has already left (then a tap only previews).
@@ -37,12 +38,12 @@ function render(){
     d.innerHTML=`<b>${fmtT(o.dep)}</b>${o.level<0?'no data':(o.worstWave.toFixed(1)+' ft max')}${tag?'<span class="star">'+tag+'</span>':''}`;d.onclick=()=>select(o,d,true);deps.appendChild(d);if(o===best)bestEl=d;if(o===chosen)chosenEl=d;});
   if(chosen)select(chosen,chosenEl);
   else if(best)select(best,bestEl);
-  else{$('tiles').innerHTML='';$('call').innerHTML='<div class="badge na">No data</div><div class="why">The forecast doesn\'t reach this day yet.</div>';$('flags').innerHTML='';renderLegs(null);renderInside(null);renderTFF(null);}
+  else{clearTiles();$('call').innerHTML='<div class="badge na">No data</div><div class="why">The forecast doesn\'t reach this day yet.</div>';$('flags').innerHTML='';renderLegs(null);renderInside(null);renderTFF(null);}
 }
 function showCall(o,isBest){
   const t=o.rows,arr=t[t.length-1].t;
   const lead=o.actual?'Left at':o.captain?'Captain\'s departure':isBest?'Best departure':'Departure';
-  if(o.level<0){$('tiles').innerHTML='';$('call').innerHTML=`<div class="badge na">No data</div><div class="why"><b>${lead} ${fmtT(o.dep)}</b>The forecast doesn't cover this time.</div>`;$('flags').innerHTML='';return;}
+  if(o.level<0){clearTiles();$('call').innerHTML=`<div class="badge na">No data</div><div class="why"><b>${lead} ${fmtT(o.dep)}</b>The forecast doesn't cover this time.</div>`;$('flags').innerHTML='';return;}
   const txt=o.level===0?'Looks like a go':o.level===1?'Crossable, not comfortable':'Not today';
   $('call').innerHTML=`<div class="badge ${LV[o.level]}">${LVTXT[o.level]}</div><div class="why"><b>${txt}</b>${lead} <b style="display:inline;font-size:inherit">${fmtT(o.dep)}</b> · worst seas ${o.worstWave.toFixed(1)} ft · ${esc(RT.dest)} about ${fmtT(arr)}</div>`;
   $('flags').innerHTML=o.flags.map(f=>`<li>${esc(f)}</li>`).join('')||'<li>No wind-against-Stream, storm or gust flags.</li>';
@@ -50,16 +51,90 @@ function showCall(o,isBest){
 }
 // Seas · Wind · Arrive for the chosen departure (Plan page part A, row 11): the
 // worst seas and the strongest wind along the route, and the arrival time.
+function clearTiles(){$('tiles').innerHTML='';$('brief').textContent='';}
 function renderTiles(o,arr){
   const has=k=>o.rows.filter(r=>r.v[k]!=null);
   const ws=has('wave'),wd=has('wind');
   const sea=ws.length?ws.reduce((a,b)=>b.v.wave>a.v.wave?b:a):null;
   const win=wd.length?wd.reduce((a,b)=>b.v.wind>a.v.wind?b:a):null;
+  const sun=sunFor(DAY);
   const tile=(l,v,sub)=>`<div><span>${l}</span><b>${v}</b><small>${sub}</small></div>`;
   $('tiles').innerHTML=
     tile('Seas',sea?sea.v.wave.toFixed(1)+' ft':'–',sea?'worst, at '+esc(sea.wp.name):'')+
     tile('Wind',win?Math.round(win.v.wind)+' kt '+dirName(win.v.dir):'–',win?'strongest, at '+esc(win.wp.name):'')+
-    tile('Arrive',fmtT(arr),esc(RT.dest));
+    tile('Arrive',fmtT(arr),esc(RT.dest))+
+    tile('Water',range(o.rows,'sst','°F'),'along the route')+
+    tile('Air',range(o.rows,'air','°F'),'while underway')+
+    tile('Sunrise',sun?fmtT(sun.rise):'–',sun?'sunset '+fmtT(sun.set):'');
+  $('brief').textContent=briefText(o);
+}
+// Low to high along the run, rounded: "79°F" or "75–81°F".
+function range(rows,k,unit){
+  const v=rows.map(r=>r.v[k]).filter(x=>x!=null).map(Math.round);
+  if(!v.length)return '–';
+  const lo=Math.min(...v),hi=Math.max(...v);
+  return lo===hi?lo+unit:lo+'–'+hi+unit;
+}
+// Sunrise and sunset for the planned day (Open-Meteo daily).
+function sunFor(day){
+  if(!FC||!FC.daily||!FC.daily.time)return null;
+  const i=FC.daily.time.indexOf(day);
+  if(i<0||!FC.daily.sunrise[i])return null;
+  return {rise:new Date(etMs(FC.daily.sunrise[i])),set:new Date(etMs(FC.daily.sunset[i]))};
+}
+// ---------- The written summary (row 12) ----------
+// Fixed rules from the forecast numbers; no AI. It only describes conditions:
+// never advice, never "go" or "safe" (house rules). The answer card and the
+// captain make the call.
+const DIRWORD=d=>['north','northeast','east','southeast','south','southwest','west','northwest'][Math.round(d/45)%8];
+function briefText(o){
+  const R=o.rows,has=k=>R.filter(r=>r.v[k]!=null),out=[];
+  const between=(a,b,u)=>a===b?'about '+b+u:a+' to '+b+u;
+  const W=has('wave');
+  if(W.length){
+    const top=W.reduce((a,b)=>b.v.wave>a.v.wave?b:a);
+    const lo=Math.round(Math.min(...W.map(r=>r.v.wave))),hi=Math.round(top.v.wave);
+    out.push('Seas '+between(lo,hi,' ft')+(hi>lo?', highest near '+top.wp.name+' around '+fmtT(top.t):'')+'.');
+  }
+  const D=has('wind');
+  if(D.length){
+    const top=D.reduce((a,b)=>b.v.wind>a.v.wind?b:a);
+    const lo=Math.round(Math.min(...D.map(r=>r.v.wind))),hi=Math.round(top.v.wind);
+    const g=has('gust').map(r=>r.v.gust),gust=g.length?Math.round(Math.max(...g)):null;
+    const dir=top.v.dir==null?'':DIRWORD(top.v.dir)+' ';
+    const w=dir+'wind '+between(lo,hi,' kt')+(gust!=null&&gust>=hi+5?', gusts to '+gust:'');
+    out.push(w.charAt(0).toUpperCase()+w.slice(1)+'.');
+  }
+  const wt=range(R,'sst','°F'),at=range(R,'air','°F');
+  if(wt!=='–'||at!=='–')out.push([wt!=='–'?'Water '+wt.replace('–',' to '):'',at!=='–'?'air '+at.replace('–',' to '):''].filter(Boolean).join(', ').replace(/^air/,'Air')+'.');
+  const rain=has('rain').map(r=>r.v.rain),storm=R.some(r=>r.v.code!=null&&r.v.code>=95);
+  if(storm)out.push('Thunderstorms possible.');
+  else if(rain.length){const m=Math.max(...rain);out.push(m>=50?'Rain likely.':m>=20?'A chance of rain.':'Rain unlikely.');}
+  return out.join(' ');
+}
+// ---------- Best day this week (row 12) ----------
+// The same scoring as the answer card, run for each day's departure times.
+function bestOfDay(d){
+  const now=Date.now(),opts=[];
+  for(let h=5.5;h<=11;h+=0.5){const dep=etTime(d,h);if(dep>now-1800e3){const o=scoreRun(dep);if(o.level>=0)opts.push(o);}}
+  return opts.length?opts.reduce((a,b)=>(b.level<a.level||(b.level===a.level&&b.worstWave<a.worstWave))?b:a):null;
+}
+function renderBest(){
+  const box=$('bestDays');if(!FC){box.innerHTML='';return;}
+  const days=dayList().map(d=>({d,o:bestOfDay(d)}));
+  const ok=days.filter(x=>x.o);
+  const top=ok.length?ok.reduce((a,b)=>(b.o.level<a.o.level||(b.o.level===a.o.level&&b.o.worstWave<a.o.worstWave))?b:a):null;
+  const WORD=['GO','CROSSABLE','NO-GO'];
+  box.innerHTML='';
+  days.forEach(x=>{
+    const b=document.createElement('button');b.type='button';
+    b.className='bestday'+(x.d===DAY?' on':'');
+    b.innerHTML=`<b>${fmtDay(etTime(x.d,12))}</b>`+(x.o
+      ?`<span class="lv ${LV[x.o.level]}">${WORD[x.o.level]}</span><small>${fmtT(x.o.dep)} · ${x.o.worstWave.toFixed(1)} ft max${top===x?'<em>★ Best day</em>':''}</small>`
+      :`<small>${x.d===etDate(new Date())&&etTime(x.d,11)<new Date()-1800e3?'This morning\u2019s departures have passed':'No forecast for that morning yet'}</small>`);
+    b.onclick=()=>{DAY=x.d;try{localStorage.setItem('cx:beta:crossDay',x.d)}catch(e){};render();window.scrollTo(0,0);};
+    box.appendChild(b);
+  });
 }
 function cls(v,lo,hi){return v==null?'':v>hi?'n':v>=lo?'m':'g';}
 function renderLegs(o){
@@ -67,7 +142,7 @@ function renderLegs(o){
   if(!o){t.innerHTML='';return;}
   t.innerHTML='<tr><th>Point</th><th>Pass</th><th>Seas</th><th>Wind</th><th>Rain</th></tr>'+o.rows.map(r=>{const v=r.v;
     const windCls=(MY.noNorth&&isNorthish(v.dir)&&(r.wp.ocean||r.wp.id==='inlet'))?cls(v.wind,MY.windKt-5,MY.windKt-0.1):cls(v.wind,MY.windKt,MY.windKt+5);
-    return `<tr><td>${esc(r.wp.name)}<br><small style="color:var(--soft)">${Math.round(RT.cum[RT.wp.indexOf(r.wp)])} nm</small></td><td>${fmtT(r.t)}</td><td class="${cls(v.wave,MY.seasFt-1,MY.seasFt)}">${v.wave==null?'–':v.wave.toFixed(1)+' ft'}<br><small>${v.per==null?'':v.per.toFixed(0)+'s '+dirName(v.wdir)}</small></td><td class="${windCls}">${v.wind==null?'–':Math.round(v.wind)+' kt '+dirName(v.dir)}<br><small>${v.gust==null?'':'gusts '+Math.round(v.gust)}</small></td><td>${v.rain==null?'–':v.rain+'%'}</td></tr>`;}).join('');
+    return `<tr><td>${esc(r.wp.name)}<br><small style="color:var(--soft)">${Math.round(RT.cum[RT.wp.indexOf(r.wp)])} nm${v.sst!=null||v.air!=null?'<br>Water '+(v.sst==null?'–':Math.round(v.sst)+'°')+' · Air '+(v.air==null?'–':Math.round(v.air)+'°'):''}</small></td><td>${fmtT(r.t)}</td><td class="${cls(v.wave,MY.seasFt-1,MY.seasFt)}">${v.wave==null?'–':v.wave.toFixed(1)+' ft'}<br><small>${v.per==null?'':v.per.toFixed(0)+'s '+dirName(v.wdir)}</small></td><td class="${windCls}">${v.wind==null?'–':Math.round(v.wind)+' kt '+dirName(v.dir)}<br><small>${v.gust==null?'':'gusts '+Math.round(v.gust)}</small></td><td>${v.rain==null?'–':v.rain+'%'}</td></tr>`;}).join('');
 }
 function chop(w){if(w==null)return '–';if(w<10)return 'under 1 ft';if(w<15)return '1–2 ft';if(w<20)return '2–3 ft';return '3+ ft, sloppy';}
 function renderInside(o){
