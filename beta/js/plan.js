@@ -6,7 +6,7 @@ function renderDays(){
   dayList().forEach(d=>{const b=document.createElement('button');b.textContent=fmtDay(etTime(d,12));if(d===DAY)b.className='on';b.onclick=()=>{DAY=d;try{localStorage.setItem('cx:beta:crossDay',d)}catch(e){};render();};box.appendChild(b);});
 }
 // The chosen departure: saved on this device for its date.
-let LASTSEL=null;
+let LASTSEL=null, FUELNOW=null;
 const DEPKEY='cx:beta:crossDep';
 function savedDep(){try{const v=JSON.parse(localStorage.getItem(DEPKEY)||'null');if(v&&v.day&&v.ms&&!!v.home===HOME)return v;}catch(e){}return null;}
 function saveDep(ms,actual){const v={day:etDate(new Date(ms)),ms,home:HOME,actual:!!actual};try{localStorage.setItem(DEPKEY,JSON.stringify(v));}catch(e){}}
@@ -160,7 +160,12 @@ async function renderTFF(o){
   LASTSEL=o;
   const arr=o?o.rows[o.rows.length-1].t:null;
   const dist=RT.totalNm, hrs=dist/MY.cruiseKt;
-  const fu=MY.fuel(dist), fuelLo=fu.lo, fuelHi=fu.hi, tank=MY.tankGal;
+  // Row 13: a fixed allowance for the worst forecast seas on this run (RJ, Nov 27):
+  // under 2 ft 0%, 2 to 3 ft +5%, 3 to 4 ft +10%, over 4 ft +15%. Planning numbers.
+  const seaPct=!o||o.level<0?0:o.worstWave<2?0:o.worstWave<3?5:o.worstWave<=4?10:15;
+  const fu=MY.fuel(dist), tank=MY.tankGal;
+  const fuelLo=Math.round(fu.lo*(1+seaPct/100)), fuelHi=Math.round(fu.hi*(1+seaPct/100));
+  FUELNOW={lo:fuelLo,hi:fuelHi};
   const di=FC.daily.time.indexOf(DAY);
   const sunrise=di>=0?new Date(etMs(FC.daily.sunrise[di])):null;
   let tideTxt='–',tideNote='';
@@ -181,10 +186,21 @@ async function renderTFF(o){
     <div><span>Distance (${esc(RT.orig)} → ${esc(RT.dest)})</span><b>${Math.round(dist)} nm</b></div>
     <div><span>Run time at ${MY.cruiseKt} kt</span><b>${Math.floor(hrs)}h ${Math.round((hrs%1)*60)}m</b></div>
     <div><span>Arrive ${esc(RT.dest)}</span><b>${arr?fmtT(arr):'–'}</b></div>
-    <div style="grid-column:1/-1"><span>Fuel needed (${tank} gal tank${fu.estimate?', estimated burn':''})</span><b>${fuelLo}–${fuelHi} gal of ${tank} · ${tank-fuelHi<0?'more than your tank':'reserve left '+(tank-fuelHi)+'–'+(tank-fuelLo)+' gal'}</b></div>
+    <div style="grid-column:1/-1"><span>Fuel needed (${tank} gal tank${fu.estimate?', estimated burn':''})</span><b>${fuelLo}–${fuelHi} gal of ${tank} · ${tank-fuelHi<0?'more than your tank':'reserve left '+(tank-fuelHi)+'–'+(tank-fuelLo)+' gal'}</b><span style="margin-top:2px">${seaPct?'Includes +'+seaPct+'% for the forecast seas (worst '+o.worstWave.toFixed(1)+' ft)':o&&o.level>=0?'No allowance added: forecast seas under 2 ft':'Before any allowance for the seas'}</span></div>
     <div><span>Sunrise / first light</span><b>${sunrise?fmtT(sunrise)+' / ~'+fmtT(new Date(sunrise.getTime()-25*60e3)):'–'}</b></div>
     ${RT.abaco?`<div><span>Palm Beach tides</span><b style="font-size:14px">${tideTxt}</b></div>`:''}
     <div style="grid-column:1/-1"><span>${RT.abaco?'Green Turtle':esc(RT.dest)} tide (model, rough)</span><b style="font-size:14px">${gt}</b></div>`;
   $('tideNote').textContent=RT.abaco?tideNote+'Green Turtle tide is from an ocean model, fine for timing but not for depth. Check your tide tables for skinny water.'
     :RT.dest+' tide is from an ocean model, fine for timing but not for depth. Check your tide tables, especially at the inlets and in skinny water.';
+}
+
+// Link to the float plan page (row 13) with the chosen departure, arrival and fuel.
+function floatPlanHref(){
+  const p=new URLSearchParams();
+  if(HOME)p.set('trip','home');
+  const o=LASTSEL;
+  if(o&&o.dep){p.set('dep',o.dep.getTime());if(o.level>=0)p.set('arr',o.rows[o.rows.length-1].t.getTime());}
+  if(FUELNOW)p.set('fuel',FUELNOW.lo+'-'+FUELNOW.hi);
+  const q=p.toString();
+  return 'float-plan.html'+(q?'?'+q:'');
 }

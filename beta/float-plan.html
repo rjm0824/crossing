@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Crossing">
+<meta name="theme-color" content="#0b1d2c"><link rel="apple-touch-icon" href="/crossing/apple-touch-icon.png?v=1"><link rel="icon" type="image/png" href="/crossing/favicon.png?v=1">
+<title>Float plan · Crossing</title>
+<link rel="stylesheet" href="css/app.css?v=20261128b">
+<link rel="stylesheet" href="css/frame.css?v=20261205">
+<style>
+/* Float plan (row 13): reads like a form on screen, prints as a plain black-on-white page. */
+.fp dl{margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:0}
+.fp dl div{display:grid;grid-template-columns:minmax(110px,40%) 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.fp dt{color:var(--soft);font-size:14px}
+.fp dd{margin:0;font-size:15px;font-weight:600;overflow-wrap:anywhere}
+.fp ol{margin:6px 0 0;padding-left:22px;font-size:14px}
+.fp ol li{padding:3px 0}
+.fp .lede{font-size:16px;font-weight:700;margin:0 0 6px}
+.fp textarea,.fp input[type=text]{width:100%;font:16px/1.4 inherit;color:var(--ink);background:#0e2333;border:1px solid var(--line);border-radius:10px;padding:10px;min-height:48px}
+.fp textarea{min-height:84px;resize:vertical}
+.fp label{display:block;margin:0 0 12px}
+.fp label span{display:block;font-size:14px;color:var(--soft);margin-bottom:4px}
+.fp .printonly{display:none}
+.fp .emerg{font-weight:700}
+@media print{
+  :root{--ink:#000;--soft:#333;--line:#bbb;--panel:#fff;--bg:#fff}
+  html,body{background:#fff!important;color:#000}
+  .preview,.tabbar,.noprint,.ftop.fback{display:none!important}
+  body.framed{padding-bottom:0!important}
+  .card{border:1px solid #bbb;break-inside:avoid;background:#fff}
+  .fp textarea,.fp input[type=text],.fp label{display:none}
+  .fp .printonly{display:block;white-space:pre-wrap;font-weight:600;padding:4px 0 8px}
+}
+</style>
+</head>
+<body data-tab="plan">
+<div class="preview" id="previewBar">BETA · trying new features, not the crossing copy</div>
+<div class="ftop fback"><a class="back" id="fpBack" href="index.html#captain">‹ Plan</a></div>
+<div class="ftop" style="padding-top:0"><h1>Float plan</h1></div>
+<div class="fintro noprint">Leave a copy with someone ashore. Save it as a PDF: Share › Print › Save to Files.</div>
+<div class="nfn"><b>Planning aid, not for navigation.</b> The captain decides.</div>
+<main class="fp">
+<section class="card">
+  <p class="lede" id="fpDir"></p>
+  <dl id="fpTrip"></dl>
+  <h2 style="margin-top:12px">Route points</h2>
+  <ol id="fpPoints"></ol>
+</section>
+<section class="card">
+  <h2>Boat</h2>
+  <dl id="fpBoat"></dl>
+</section>
+<section class="card">
+  <h2>People</h2>
+  <label><span>Captain</span><input type="text" id="fpCaptain" autocomplete="off" placeholder="Captain's name"></label>
+  <div class="printonly"><b>Captain:</b> <span id="fpCaptainPrint"></span></div>
+  <label><span>People aboard</span><textarea id="fpAboard" placeholder="Names of everyone aboard"></textarea></label>
+  <div class="printonly"><b>People aboard:</b> <span id="fpAboardPrint"></span></div>
+  <dl><div><dt>Following the trip</dt><dd id="fpWho"></dd></div></dl>
+  <p class="note noprint">Captain, people aboard and notes are saved on this device only.</p>
+</section>
+<section class="card">
+  <h2>Notes</h2>
+  <label><span>Anything else (other gear, planned stops)</span><textarea id="fpNotes" placeholder="Optional"></textarea></label>
+  <div class="printonly"><span id="fpNotesPrint"></span></div>
+  <p class="emerg">In an emergency: VHF channel 16, or call the US Coast Guard.</p>
+  <p class="note">This app and its family page cannot call for help. <span id="fpMade"></span> with the Crossing app (beta test copy).</p>
+</section>
+<button class="btn primary fwide noprint" id="fpPrint" type="button">Print or save as PDF</button>
+</main>
+<script src="js/settings.js?v=20261130"></script>
+<script src="js/routes.js?v=20261127d"></script>
+<script src="js/helpers.js?v=20261120"></script>
+<script src="js/mysetup.js?v=20261128a"></script>
+<script src="js/active-route.js?v=20261127b"></script>
+<script src="js/floatplan.js?v=20261128a"></script>
+<script src="js/frame.js?v=20261202"></script>
+</body>
+</html>
