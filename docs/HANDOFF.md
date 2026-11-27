@@ -2,6 +2,31 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
+## Update: Nov 26, 2026, late night: beta opens with no signal (row 17) in beta
+
+RJ chose **B** (saved pages plus the last forecast).
+*   **`beta/sw.js`** (service worker), registered by `beta/js/offline.js` on
+    beta's captain pages (not `family.html` or the test pages). Scope is
+    `/crossing/beta/` only, so `/next/` and the live page are out of reach.
+    Network first with a 4-second fallback to the saved copy, so testing
+    always gets the newest version with signal. Saves beta's pages,
+    scripts, styles, icons and Leaflet; never data (forecast, NWS, tracker,
+    tiles, radar). Undo: delete `sw.js`; phones drop the saved copy at
+    their next check with signal.
+*   **Every change to beta must bump `VERSION` in `beta/sw.js`** and list any
+    new page, script or style in `FILES`; `/pr-check` fails otherwise.
+*   **Saved forecast** (`forecast.js`): every good forecast is kept in
+    `cx:beta:lastfc` (three newest route/direction pairs). With no signal,
+    the Plan page only (`FC_USE_SAVED`) uses one under **36 hours** old for
+    the same route and direction, with an amber "No signal. This is the
+    forecast saved on …" box and "Saved forecast from …" at the top.
+*   Menu shows "Saved for no signal: version …" and **Refresh saved copy**.
+*   Tested here with the browser switched offline: every beta page opens;
+    a 40-hour-old forecast is refused; back online clears the warning;
+    `/next/` is not controlled. Needs RJ's Airplane Mode test on the iPhone
+    and iPad. `docs/promote-plan.md`: the saved copy moves to `next/` with
+    "beta replaces next". `privacy.html` updated.
+
 ## Update: Nov 26, 2026, late night: Share my setup and backup (row 15) in beta
 
 *   **Menu → Share or back up** (`beta/share.html`, `beta/js/share.js`). Both

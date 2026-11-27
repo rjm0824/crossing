@@ -59,6 +59,22 @@ if printf '%s\n' "$changed" | grep -q '^tracker-service/'; then
   else echo "NOTE  tracker-service changed: run npm ci and npm test in tracker-service/"; fi
 fi
 
+# 4b. Beta's saved copy for no signal (row 17): every beta page, script and
+# style is listed in beta/sw.js, and any change to beta bumps its VERSION so
+# phones replace the whole saved copy instead of mixing old and new files.
+if [ -f beta/sw.js ]; then
+  missing=""
+  for f in $(cd beta && ls *.html js/*.js css/*.css); do
+    case "$f" in family.html|tracker-test.html|trip-test.html|js/family.js) continue;; esac  # the followers' page and test pages are left alone
+    grep -q "'$f'" beta/sw.js || missing="$missing $f"
+  done
+  if [ -n "$missing" ]; then bad "beta/sw.js does not list:$missing (add them so beta opens with no signal)"; else pass "beta/sw.js lists every beta page, script and style"; fi
+  if printf '%s\n' "$changed" | grep -E '^beta/' | grep -vq '^beta/sw\.js$'; then
+    nowv=$(grep -o "^var VERSION = '[^']*'" beta/sw.js); oldv=$(git show "$base:beta/sw.js" 2>/dev/null | grep -o "^var VERSION = '[^']*'")
+    if [ -n "$oldv" ] && [ "$nowv" = "$oldv" ]; then bad "beta/ changed but VERSION in beta/sw.js did not (phones would keep a mixed saved copy)"; else pass "beta/sw.js VERSION is new for this change"; fi
+  fi
+fi
+
 # 5. Version tags: a changed next/ or beta/ js or css file should carry a new ?v= tag.
 for f in $(printf '%s\n' "$changed" | grep -E '^(next|beta)/(js|css)/'); do
   name=$(basename "$f"); d=${f%%/*}

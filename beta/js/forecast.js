@@ -6,12 +6,34 @@ async function loadForecast(){
   const lat=pts.map(p=>p.lat).join(','), lon=pts.map(p=>p.lon).join(',');
   const marineU=`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_direction,sea_level_height_msl,sea_surface_temperature&length_unit=imperial&timezone=${encodeURIComponent(TZ)}&forecast_days=5&cell_selection=sea`;
   const windU=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation_probability,weather_code,temperature_2m&daily=sunrise,sunset&wind_speed_unit=kn&temperature_unit=fahrenheit&timezone=${encodeURIComponent(TZ)}&forecast_days=5`;
-  const [m,w]=await Promise.all([getJSON(marineU),getJSON(windU)]);
+  // Row 17 (RJ chose B): the last forecast is kept on the device. With no
+  // signal, a saved one for the same route and direction, under 36 hours old,
+  // is used instead, and FC_SAVED_AT says when it was saved so the page can
+  // mark it. Only where the page allows it (FC_USE_SAVED; the Plan page).
+  const fcKey=(RT.id||'abaco')+(HOME?':home:':':over:')+lat+'/'+lon;
+  let m,w;FC_SAVED_AT=null;
+  try{[m,w]=await Promise.all([getJSON(marineU),getJSON(windU)]);saveForecast(fcKey,m,w);}
+  catch(e){const sv=FC_USE_SAVED?savedForecast(fcKey):null;if(!sv)throw e;m=sv.m;w=sv.w;FC_SAVED_AT=sv.at;}
   const mA=Array.isArray(m)?m:[m], wA=Array.isArray(w)?w:[w];
   const idx=a=>{const map={};a.hourly.time.forEach((t,i)=>map[t]=i);return map;};
   const all=pts.map((p,i)=>({p,m:mA[i],w:wA[i],mi:idx(mA[i]),wi:idx(wA[i])}));
   const n=RT.wp.length;
   FC={route:all.slice(0,n),inside:RT.abaco?all[n]:null,whale:RT.abaco?all[n+1]:null,daily:wA[0].daily};
+}
+// ---------- The saved forecast (row 17) ----------
+var FC_SAVED_AT=null, FC_USE_SAVED=false;
+const FC_SAVE_KEY='cx:beta:lastfc', FC_MAX_SAVED_MS=36*3600e3;
+function saveForecast(key,m,w){
+  try{const all=JSON.parse(localStorage.getItem(FC_SAVE_KEY)||'{}')||{};
+    all[key]={at:Date.now(),m,w};
+    // Keep the three newest (trip over, trip home, one more route).
+    Object.keys(all).sort((a,b)=>all[b].at-all[a].at).slice(3).forEach(k=>delete all[k]);
+    localStorage.setItem(FC_SAVE_KEY,JSON.stringify(all));}catch(e){}
+}
+function savedForecast(key){
+  try{const sv=(JSON.parse(localStorage.getItem(FC_SAVE_KEY)||'{}')||{})[key];
+    if(sv&&sv.at&&Date.now()-sv.at<=FC_MAX_SAVED_MS&&sv.m&&sv.w)return sv;}catch(e){}
+  return null;
 }
 function at(pt,key){ // forecast values at an hour key "YYYY-MM-DDTHH:00"
   const i=pt.mi[key], j=pt.wi[key];
