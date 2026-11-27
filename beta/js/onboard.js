@@ -125,6 +125,8 @@
           st.answers = []; saveAnswers(); go('safety');
         } }) : null,
         h('span', { class: 'small', text: 'About 2 minutes. Free while we test it with friends.' }),
+        // First open (sent here once by the Plan page): a way straight to the plan.
+        !started && /[?&]first=1/.test(location.search) ? h('a', { class: 'linkbtn', href: 'index.html#captain', style: 'color:#A9C3D3;align-self:center;min-height:44px;display:inline-flex;align-items:center', text: 'Skip for now, show me the plan' }) : null,
         planningAid()
       ])
     ])]);

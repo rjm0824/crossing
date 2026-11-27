@@ -2,6 +2,16 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
+## Update: Nov 26, 2026, late night: Setup on first open, in beta
+
+The row 8 leftover ("show Setup on first open"), built in beta at RJ's
+request: the Plan page in captain mode sends a phone with **no saved setup**
+(and no old My Boat record) to `setup.html?first=1` **once**
+(`cx:beta:setupOffered`), never for a saved-trip link or the plain Plan link.
+Setup's welcome then offers **"Skip for now, show me the plan"**; after that
+Plan opens as usual. Still open from the same list: make the onboarding chips
+general ("Goof n' Off", "Haile + Mom") before friends use it.
+
 ## Update: Nov 26, 2026, late night: beta opens with no signal (row 17) in beta
 
 RJ chose **B** (saved pages plus the last forecast).
