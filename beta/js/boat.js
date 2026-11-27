@@ -1,8 +1,9 @@
 // ---------- My Boat (profile only, MVP row 7) ----------
-// Saved on this device only (cx:beta:boat). No ID numbers (RJ, Nov 26):
-// no hull ID, no registration number. Not sent anywhere.
+// Saved on this device only, in the boat part of the saved setup
+// (cx:beta:setup, see setup.js; moved there in row 8, RJ Nov 27). The old
+// cx:beta:boat is copied in once and left as it was. No ID numbers (RJ,
+// Nov 26): no hull ID, no registration number. Not sent anywhere.
 (function () {
-  var KEY = 'cx:beta:boat';
   function $(id) { return document.getElementById(id); }
   var FIELDS = [
     { id: 'name',   label: 'Boat name',          max: 40, ph: "Goof n' Off" },
@@ -16,8 +17,8 @@
   var DEFAULTS = { name: "Goof n' Off" };
 
   function load() {
-    try { var v = JSON.parse(localStorage.getItem(KEY) || 'null'); if (v && typeof v === 'object') return v; } catch (e) {}
-    return null;
+    var s = window.CXSetup.load();
+    return s && s.boat && Object.keys(s.boat).length ? s.boat : null;
   }
   function clean(f, v) {
     v = String(v == null ? '' : v).replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, f.max);
@@ -51,9 +52,7 @@
     });
     if (bad) { status(bad.label + ': enter a number from 10 to 200.', 'wait'); $('b_' + bad.id).focus(); return; }
     if (!out.name) { status('Add a boat name first.', 'wait'); $('b_name').focus(); return; }
-    out.savedAt = Date.now();
-    try { localStorage.setItem(KEY, JSON.stringify(out)); }
-    catch (err) { status('Couldn\'t save on this device. Check that private browsing is off.', 'wait'); return; }
+    if (!window.CXSetup.save({ boat: out })) { status('Couldn\'t save on this device. Check that private browsing is off.', 'wait'); return; }
     $('boatSave').disabled = true;
     status('Saved on this device.', 'good');
   });

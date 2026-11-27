@@ -24,13 +24,18 @@ const hourKey = d => etKey(new Date(Math.round(d.getTime()/3600e3)*3600e3));
 function scoreRun(dep){
   const rows=[],flags=[];let worstWave=0,level=0; // 0 go,1 maybe,2 no
   FC.route.forEach((pt,i)=>{
-    const t=new Date(dep.getTime()+cum[i]/CRUISE_KT*3600e3);
+    // Limits come from the saved setup (mysetup.js); with none they are today's 4 ft and 15 kt.
+    const t=new Date(dep.getTime()+cum[i]/MY.cruiseKt*3600e3);
     const v=at(pt,hourKey(t));rows.push({wp:WP[i],t,v});
     if(v.wave!=null){worstWave=Math.max(worstWave,v.wave);
-      if(v.wave>4)level=Math.max(level,2);else if(v.wave>=3)level=Math.max(level,1);}
-    if((WP[i].ocean||WP[i].id==='inlet')&&isNorthish(v.dir)&&v.wind!=null){
-      if(v.wind>=15){level=2;flags.push(`North wind ${Math.round(v.wind)} kt against the Gulf Stream at ${WP[i].name}`);}
-      else if(v.wind>=10){level=Math.max(level,1);flags.push(`${dirName(v.dir)} ${Math.round(v.wind)} kt in the Stream at ${WP[i].name}: short, steep seas likely`);} }
+      if(v.wave>MY.seasFt){level=Math.max(level,2);if(MY.windRule)flags.push(`Seas ${v.wave.toFixed(1)} ft at ${WP[i].name}, over your ${MY.seasFt} ft limit`);}
+      else if(v.wave>=MY.seasFt-1)level=Math.max(level,1);}
+    const inStream=(WP[i].ocean||WP[i].id==='inlet')&&isNorthish(v.dir);
+    if(MY.noNorth&&inStream&&v.wind!=null){
+      if(v.wind>=MY.windKt){level=2;flags.push(`North wind ${Math.round(v.wind)} kt against the Gulf Stream at ${WP[i].name}`);}
+      else if(v.wind>=MY.windKt-5){level=Math.max(level,1);flags.push(`${dirName(v.dir)} ${Math.round(v.wind)} kt in the Stream at ${WP[i].name}: short, steep seas likely`);} }
+    // Wind over the max from other directions: CROSSABLE, not NO-GO (RJ, Nov 27).
+    else if(MY.windRule&&v.wind!=null&&v.wind>MY.windKt){level=Math.max(level,1);flags.push(`Wind ${Math.round(v.wind)} kt ${dirName(v.dir)} at ${WP[i].name}, over your ${MY.windKt} kt limit`);}
     if(v.code!=null&&v.code>=95){level=Math.max(level,1);flags.push(`Thunderstorms possible near ${WP[i].name} around ${fmtT(t)}`);}
     else if(v.rain!=null&&v.rain>=60)flags.push(`Rain likely (${v.rain}%) near ${WP[i].name}`);
     if(v.gust!=null&&v.gust>=25){level=Math.max(level,1);flags.push(`Gusts to ${Math.round(v.gust)} kt at ${WP[i].name}`);}
