@@ -30,7 +30,7 @@
 
   // ---------- The form ----------
   var editing = null;   // trip being edited, or {} for a new one
-  function openForm(t) {
+  function openForm(t, copyFrom) {
     editing = t || {};
     var routes = readyRoutes(setup);
     var sel = $('fRoute'); sel.innerHTML = '';
@@ -40,10 +40,15 @@
     $('fName').value = t ? t.name : '';
     $('fDate').min = MyTrips.today();
     $('fDate').value = t ? t.date : MyTrips.addDays(MyTrips.today(), 1);
-    $('fFollowers').value = (t ? t.followers : setupFollowers).join(', ');
-    setDir(t ? t.home : false);
+    $('fFollowers').value = (t ? t.followers : copyFrom && copyFrom.followers.length ? copyFrom.followers : setupFollowers).join(', ');
+    setDir(t ? t.home : copyFrom ? copyFrom.home : false);
+    // Duplicate as new (row 14b): same route, direction, name and followers; pick a new date.
+    if (copyFrom) {
+      sel.value = routeById(copyFrom.route, setup).id; setDir(copyFrom.home);
+      $('fName').value = copyFrom.name || ''; $('fDate').value = '';
+    }
     $('fDelete').hidden = !t;
-    $('fTitle').textContent = t ? 'Edit trip' : 'New trip';
+    $('fTitle').textContent = t ? 'Edit trip' : copyFrom ? 'Duplicate as new: pick a date' : 'New trip';
     result('');
     $('tripForm').hidden = false; $('newBtn').hidden = true;
     $('tripForm').scrollIntoView({ block: 'start' });
@@ -91,6 +96,7 @@
     else status.textContent = 'Loading the forecast…';
     var buttons = [];
     if (st === 'full') buttons.push(h('a', { class: 'btn primary', href: MyTrips.planHref(t), text: 'Plan this trip' }));
+    if (!past) buttons.push(h('button', { type: 'button', class: 'btn', text: 'Add to calendar', onclick: function () { addToCalendar(t, r); } }));
     buttons.push(h('button', { type: 'button', class: 'btn', text: past ? 'Delete' : 'Edit', onclick: function () {
       if (!past) { openForm(t); return; }
       MyTrips.remove(t.id); render();
@@ -113,6 +119,7 @@
     $('earlierHead').hidden = !old.length;
     old.forEach(function (t) { ob.appendChild(card(t, true)); });
     loadOutlooks(up.filter(function (t) { var s = MyTrips.stage(t); return s === 'full' || s === 'outlook'; }));
+    renderPast();
   }
 
   // ---------- What the forecast says (ranges only; no advice) ----------
@@ -160,6 +167,86 @@
         el.appendChild(document.createTextNode(' ' + line + (full ? ' Plan this trip for the GO / NO-GO answer and departure times.' : '')));
       }).catch(function () { if (el.isConnected) el.textContent = 'Couldn’t load the forecast. Check your signal and open this page again.'; });
     });
+  }
+
+  // ---------- Add to calendar (row 14b) ----------
+  // An all-day entry on the trip's date with a reminder at 6 PM the evening
+  // before. Uses calendar.js (the same file maker as the Live screen's Remind me).
+  function addToCalendar(t, r) {
+    var C = typeof CalendarFile !== 'undefined' ? CalendarFile : null;
+    if (!C) return;
+    var d = t.date.replace(/-/g, ''), d2 = MyTrips.addDays(t.date, 1).replace(/-/g, '');
+    var title = 'Crossing: ' + (t.name || ((t.home ? 'Trip home' : 'Trip over') + ', ' + dirLabel(r, t.home)));
+    var link = location.origin + location.pathname.replace(/[^/]*$/, '') + MyTrips.planHref(t);
+    var note = 'Check the forecast and plan the departure. Planning aid, not for navigation.\n' + link;
+    var text = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Crossing beta//My Trips//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+      'BEGIN:VEVENT', 'UID:crossing-mytrip-' + t.id + '@rjm0824.github.io', 'DTSTAMP:' + C.utc(new Date()),
+      'DTSTART;VALUE=DATE:' + d, 'DTEND;VALUE=DATE:' + d2, 'SUMMARY:' + C.esc(title), 'DESCRIPTION:' + C.esc(note), 'URL:' + link,
+      'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + C.esc(title), 'TRIGGER:-PT6H', 'END:VALARM',
+      'END:VEVENT', 'END:VCALENDAR'].map(C.fold).join('\r\n') + '\r\n';
+    C.openCalendarFile(text);
+  }
+
+  // ---------- Past trips (row 14b) ----------
+  function dur(min) { var hh = Math.floor(min / 60), mm = min % 60; return (hh ? hh + ' h ' : '') + mm + ' min'; }
+  var HOW = { arrived: 'Ended by itself on arrival', home: 'Ended by itself at the home port', stopped: 'You stopped sharing' };
+  function renderPast() {
+    var list = MyTrips.loadPast(), box = $('past'); box.innerHTML = '';
+    $('pastHead').hidden = !list.length;
+    list.forEach(function (p) {
+      var r = routeById(p.route, setup);
+      var when = new Date(p.startedAt).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: TZ });
+      var stats = p.positions > 1
+        ? dur(p.durationMin) + ' \u00b7 ' + p.distanceNm + ' nm shared' + (p.avgKt ? ' \u00b7 average ' + p.avgKt + ' kt' : '') + (p.topKt ? ' \u00b7 top ' + p.topKt + ' kt' : '')
+        : dur(p.durationMin) + ' \u00b7 no positions were shared on this trip';
+      var fuelIn = h('input', { type: 'text', inputmode: 'decimal', maxlength: '5', placeholder: 'gal', 'aria-label': 'Fuel used, gallons', class: 'fuelin', value: p.fuelGal == null ? '' : String(p.fuelGal) });
+      var fuelMsg = h('span', { class: 'note', style: 'margin:0' });
+      var showFuel = function () {
+        fuelMsg.textContent = p.fuelGal == null ? 'Optional. From your gauge or the fuel dock.'
+          : 'Saved. About ' + Math.round(p.fuelGal / Math.max(p.durationMin / 60, 0.1)) + ' gal an hour over the whole trip.';
+      };
+      showFuel();
+      var mapBox = h('div', { class: 'pmap', hidden: true });
+      var del = h('button', { type: 'button', class: 'btn', text: 'Delete' });
+      del.onclick = function () {
+        if (!del.dataset.sure) { del.dataset.sure = '1'; del.textContent = 'Tap again to delete'; return; }
+        MyTrips.removePast(p.id); renderPast();
+      };
+      var card = h('section', { class: 'card trip pasttrip' }, [
+        h('div', { class: 'thead' }, [h('b', { text: p.name || dirLabel(r, p.home) }), h('span', { class: 'tdir', text: p.home ? 'Trip home' : 'Trip over' })]),
+        h('div', { class: 'twhen', text: when }),
+        p.name ? h('div', { class: 'troute', text: dirLabel(r, p.home) }) : null,
+        h('div', { class: 'tstatus', text: stats }),
+        h('div', { class: 'troute', text: (HOW[p.endedHow] || 'Ended') + '.' }),
+        h('label', { class: 'fuelrow' }, [h('span', { text: 'Fuel used' }), fuelIn,
+          h('button', { type: 'button', class: 'btn', text: 'Save', onclick: function () {
+            var v = fuelIn.value.trim(), n = v === '' ? null : Number(v);
+            if (n != null && !(isFinite(n) && n > 0 && n <= 5000)) { fuelMsg.textContent = 'Enter gallons, for example 160.'; return; }
+            p.fuelGal = n == null ? null : Math.round(n * 10) / 10;
+            MyTrips.updatePast(p.id, { fuelGal: p.fuelGal }); showFuel();
+          } })]),
+        fuelMsg,
+        mapBox,
+        h('div', { class: 'track', style: 'margin-top:10px' }, [
+          p.track && p.track.length > 1 ? h('button', { type: 'button', class: 'btn', text: 'View track', onclick: function (e) { toggleMap(p, mapBox, e.currentTarget); } }) : null,
+          h('button', { type: 'button', class: 'btn', text: 'Duplicate as new', onclick: function () { openForm(null, p); } }),
+          del
+        ])
+      ]);
+      box.appendChild(card);
+    });
+  }
+  function toggleMap(p, box, btn) {
+    if (!box.hidden) { box.hidden = true; btn.textContent = 'View track'; return; }
+    box.hidden = false; btn.textContent = 'Hide track';
+    if (box._map || typeof L === 'undefined') { if (box._map) box._map.invalidateSize(); else box.textContent = 'The map needs a signal to load.'; return; }
+    var map = L.map(box, { zoomControl: true, attributionControl: true });
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}', { maxZoom: 15, maxNativeZoom: 13, attribution: 'Tiles \u00a9 Esri, GEBCO' }).addTo(map);
+    var line = L.polyline(p.track, { color: '#5cc8ff', weight: 3 }).addTo(map);
+    L.circleMarker(p.track[0], { radius: 6, color: '#fff', weight: 2, fillColor: '#2fbf71', fillOpacity: 1 }).addTo(map).bindTooltip('First shared position');
+    L.circleMarker(p.track[p.track.length - 1], { radius: 6, color: '#fff', weight: 2, fillColor: '#f2b33d', fillOpacity: 1 }).addTo(map).bindTooltip('Last position');
+    map.fitBounds(line.getBounds(), { padding: [16, 16] });
+    box._map = map;
   }
 
   if (location.pathname.indexOf('/beta/') !== -1) { $('previewBar').style.display = 'block'; document.title = 'BETA · ' + document.title; }
