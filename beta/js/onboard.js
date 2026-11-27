@@ -42,6 +42,8 @@
     (kids || []).forEach(function (c) { if (c != null) el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
     return el;
   }
+  // A friend's shared setup was just loaded (share.html, row 15): skip the questions.
+  function fromFriend() { var x = S.load() || {}; return x.prefilled === 'friend' && !x.doneAt; }
   function clip(s, n) { return String(s == null ? '' : s).replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n); }
   function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
   function go(screen) { if (!st.form && /^(boat|limits|route|mymap|followers|tracking)$/.test(screen)) startForm(); st.screen = screen; render(); window.scrollTo(0, 0); }
@@ -184,7 +186,7 @@
       ]),
       box,
       h('p', { class: 'ob-placeholder', text: 'Placeholder wording: to be reviewed by RJ’s attorney before launch. There is no Terms of use page yet.' })
-    ], h('button', { type: 'button', class: 'ob-next', id: 'obNext', disabled: !st.agree, text: 'Continue', onclick: function () { if (st.agree) go('tell'); } }));
+    ], h('button', { type: 'button', class: 'ob-next', id: 'obNext', disabled: !st.agree, text: 'Continue', onclick: function () { if (st.agree) go(fromFriend() ? 'boat' : 'tell'); } }));
   }
 
   function tell() {
@@ -337,7 +339,8 @@
     var body = [
       photoCard(),
       h('p', { class: 'ob-help', text: 'The photo is optional. No photo? Skip it; you can add one later in Menu \u2192 Setup.' }),
-      st.answers.length ? h('p', { class: 'ob-ok', text: 'Filled in from your answers. Check it over and change anything that’s wrong.' }) : null,
+      fromFriend() ? h('p', { class: 'ob-ok', text: 'Pre-filled from your friend’s setup. Check it over, add your boat’s name, and change anything that’s different.' })
+        : st.answers.length ? h('p', { class: 'ob-ok', text: 'Filled in from your answers. Check it over and change anything that’s wrong.' }) : null,
       h('div', { class: 'ob-card' }, [
         field('name', 'Boat name', f.name, { max: 40, ph: "e.g. Goof n' Off" }),
         field('type', 'Type of boat', f.type, { max: 40, ph: 'e.g. Center console', extra: typeChips }),

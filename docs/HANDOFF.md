@@ -2,6 +2,26 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
+## Update: Nov 26, 2026, late night: Share my setup and backup (row 15) in beta
+
+*   **Menu → Share or back up** (`beta/share.html`, `beta/js/share.js`). Both
+    links point to that page with the data after `#` (JSON, UTF-8,
+    base64url; `#s=` share, `#b=` backup; version 1). Nothing goes to a server.
+*   **Share:** boat type, length, engines, speed, tank, burn, limits, route
+    (and own route points). **Backup:** also boat name, My Boat details,
+    papers link, followers' first names (no phones), settings, upcoming
+    trips. **Never:** invite code, trip keys, photo, home port, past trips.
+*   **Opening a link:** every value checked against the same ranges as the
+    forms; anything wrong is left out and listed; review first, nothing
+    saved until **Use these**. A friend's setup keeps the friend's own boat
+    name, followers and trips, sets `prefilled: 'friend'`, and onboarding
+    then goes from the safety box straight to "Your boat" marked
+    "Pre-filled from your friend's setup" (questions skipped, CUJ 2). A
+    backup restore replaces boat, limits, route and followers (keeping phone
+    numbers already on the device for the same names), merges trips and
+    settings.
+*   `privacy.html` describes both links.
+
 ## Update: Nov 26, 2026, late night: past trips (row 14b) in beta
 
 *   **Past trips** (`beta/js/mytrips.js`, `capture()`): when a real (not

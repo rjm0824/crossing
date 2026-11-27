@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Crossing">
+<meta name="theme-color" content="#0b1d2c"><link rel="apple-touch-icon" href="/crossing/apple-touch-icon.png?v=1"><link rel="icon" type="image/png" href="/crossing/favicon.png?v=1">
+<meta name="referrer" content="no-referrer">
+<title>Share or back up · Crossing</title>
+<link rel="stylesheet" href="css/app.css?v=20261128e">
+<link rel="stylesheet" href="css/frame.css?v=20261205">
+<style>
+/* Share my setup / Back up my setup (row 15). */
+.rv dl{margin:0}
+.rv dl div{display:grid;grid-template-columns:minmax(100px,38%) 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.rv dt{color:var(--soft);font-size:14px}
+.rv dd{margin:0;font-size:15px;font-weight:600;overflow-wrap:anywhere}
+.rv textarea{width:100%;min-height:84px;font:13px/1.35 ui-monospace,monospace;color:var(--ink);background:#0e2333;border:1px solid var(--line);border-radius:10px;padding:10px;word-break:break-all}
+.rv .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.rv .row .btn{flex:1 1 140px;min-height:48px;font-size:16px;display:inline-flex;align-items:center;justify-content:center}
+.rv .warn{color:var(--maybe);font-size:14px;font-weight:600}
+.rv .big{display:block;text-align:left;width:100%;min-height:64px;padding:12px 14px;margin:0 0 10px;border-radius:12px;border:1px solid var(--line);background:#0e2333;color:var(--ink);font-size:16px}
+.rv .big b{display:block;font-size:17px}
+.rv .big small{display:block;color:var(--soft);font-size:13px;margin-top:2px}
+</style>
+</head>
+<body data-tab="menu">
+<div class="preview" id="previewBar">BETA · trying new features, not the crossing copy</div>
+<div class="ftop fback"><a class="back" href="menu.html" data-keep-trip>‹ Menu</a></div>
+<div class="ftop" style="padding-top:0"><h1>Share or back up</h1></div>
+<div class="nfn"><b>Planning aid, not for navigation.</b> The captain decides.</div>
+<main class="rv">
+<div id="makeBox">
+  <p class="fintro" style="padding:0 4px 8px">Two kinds of link. Nothing is sent to us: everything is in the link itself.</p>
+  <button type="button" class="big" id="shareBtn"><b>Share my setup</b><small>For a friend with a boat like yours: type, numbers, limits and route. No names, followers or trips.</small></button>
+  <button type="button" class="big" id="backupBtn"><b>Back up my setup</b><small>For yourself: everything above plus boat name, followers and upcoming trips. Moves your setup to a new phone or the iPad.</small></button>
+  <section class="card" id="linkBox" hidden>
+    <h2 id="linkTitle"></h2>
+    <p class="note" id="linkWhat" style="margin-top:0"></p>
+    <dl id="linkList"></dl>
+    <textarea id="linkText" readonly aria-label="The link"></textarea>
+    <div class="row"><button class="btn primary" type="button" id="linkSend">Send it…</button><button class="btn" type="button" id="linkCopy">Copy link</button></div>
+    <div class="result good" id="linkMsg" aria-live="polite"></div>
+  </section>
+</div>
+<section class="card" id="openBox" hidden>
+  <h2 id="openTitle"></h2>
+  <p class="note" id="openWhat" style="margin-top:0"></p>
+  <dl id="openList"></dl>
+  <p class="warn" id="openDropped"></p>
+  <div class="row"><button class="btn primary" type="button" id="openUse">Use these</button><button class="btn" type="button" id="openCancel">Cancel</button></div>
+  <div id="openMsg" aria-live="polite"></div>
+</section>
+</main>
+<script src="js/settings.js?v=20261130"></script>
+<script src="js/routes.js?v=20261127d"></script>
+<script src="js/helpers.js?v=20261120"></script>
+<script src="js/setup.js?v=20261127e"></script>
+<script src="js/mytrips.js?v=20261128c"></script>
+<script src="js/share.js?v=20261128a"></script>
+<script src="js/frame.js?v=20261128a"></script>
+</body>
+</html>
