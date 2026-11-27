@@ -1,0 +1,17 @@
+/* Crossing log (test kit). Uses the light look from app.css (.tp). */
+.lgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.lgrid button{min-height:64px;border-radius:14px;border:1px solid #B9C8D3;background:#fff;color:var(--ink);font-size:16px;font-weight:700;padding:8px 10px;cursor:pointer;line-height:1.2}
+.lgrid button:active{background:#E6F1F6}
+.lgrid button.flash{background:#DDF1E4;border-color:#9FD8B4;color:var(--go)}
+.lnote{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.lrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.lrow .bigbtn{width:auto;min-width:76px}
+.lrow2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tp ul.log li{display:flex;align-items:flex-start;gap:10px}
+.tp ul.log li .lt{flex:0 0 auto;min-width:76px;font-weight:700;font-variant-numeric:tabular-nums}
+.tp ul.log li .lw{flex:1;min-width:0;overflow-wrap:anywhere}
+.tp ul.log li button{flex:0 0 auto;width:44px;height:44px;margin:-10px -6px -10px 0;border:0;background:transparent;color:var(--soft);font-size:22px;cursor:pointer}
+.tp .dialog input{width:100%;font-size:22px;padding:12px;border-radius:10px;border:1px solid #B9C8D3}
+@media (min-width:700px){.lgrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.tp .ftop.fback{max-width:640px;margin:0 auto;padding:10px 16px 0}
+.lrow2{display:flex;gap:10px}.lrow2>*{flex:1}
