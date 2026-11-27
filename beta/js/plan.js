@@ -84,7 +84,7 @@ function sunFor(day){
 }
 // ---------- The written summary (row 12) ----------
 // Fixed rules from the forecast numbers; no AI. It only describes conditions:
-// never advice, never "go" or "safe" (house rules). The answer card and the
+// never advice and none of the wording CLAUDE.md rules out. The answer card and the
 // captain make the call.
 const DIRWORD=d=>['north','northeast','east','southeast','south','southwest','west','northwest'][Math.round(d/45)%8];
 function briefText(o){

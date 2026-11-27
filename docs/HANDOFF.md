@@ -11,7 +11,7 @@ Everything a new build session needs, pulled from the planning chats. Decisions 
 *   **Written summary** under the tiles (`briefText` in `beta/js/plan.js`):
     fixed rules, no AI, describes conditions only (seas range and where they
     peak, wind range and gusts, water and air, rain or thunderstorms). Never
-    advice, never "go" or "safe".
+    advice, none of the wording CLAUDE.md rules out.
 *   **Best day this week** card: the best morning departure for each of the
     4 days, scored like the answer card; tap a day to plan it.
 *   **Hour by hour:** "Water 79° · Air 77°" under each point.
