@@ -21,11 +21,13 @@ window.addEventListener('hashchange',()=>location.reload());
   // Start trip & share with family: opens the Live page, keeping the direction.
   try{const tr=JSON.parse(localStorage.getItem('cx:beta:trip')||'null');$('liveBtn').href='live.html'+(HOME?'?trip=home':'');
     if(tr&&tr.status==='underway')$('liveBtn').textContent='Back to your trip';}catch(e){}
-  try{await loadForecast();$('upd').textContent='Updated '+fmtT(new Date());render();}
+  // Row 13 part 2: the models and US marine warnings load after the main forecast and never hold it up.
+  const extras=()=>Promise.allSettled([loadModels(),loadAlerts()]).then(()=>{if(FC)render();});
+  try{await loadForecast();$('upd').textContent='Updated '+fmtT(new Date());render();extras();}
   catch(e){$('upd').textContent='Forecast failed to load';$('call').innerHTML='<div class="badge na">Offline</div><div class="why">Couldn\'t reach the forecast service. Pull to refresh, or use the source links below.</div>';}
   // Move the tide "now" marker every minute.
   setInterval(()=>{if(FC)renderTFF(LASTSEL);},60e3);
-  setInterval(async()=>{try{await loadForecast();$('upd').textContent='Updated '+fmtT(new Date());render();}catch(e){}},30*60e3);
+  setInterval(async()=>{try{await loadForecast();$('upd').textContent='Updated '+fmtT(new Date());render();extras();}catch(e){}},30*60e3);
 })();
 
 // Get ready (the go-day checklist; captain mode only; ticks saved on this device).

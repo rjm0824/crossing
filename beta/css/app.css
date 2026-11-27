@@ -165,3 +165,12 @@ header{flex-wrap:wrap}
 .bestday em{display:block;font-style:normal;color:var(--accent);font-weight:700}
 .bestday .lv{font-size:12px;font-weight:800;letter-spacing:.4px;border-radius:999px;padding:2px 8px;color:#06131c}
 .bestday .lv.go{background:var(--go)}.bestday .lv.maybe{background:var(--maybe)}.bestday .lv.no{background:var(--no);color:#fff}
+/* Row 13 part 2: US marine warnings on the answer card; the forecast models line. */
+.warnings{list-style:none;margin:10px 0 0;padding:0;font-size:13px;color:var(--soft)}
+.warnings:empty{display:none}
+.warnings li{padding:2px 0}
+.warnings li.ok{color:var(--go);font-weight:600}
+.warnings li.warn{color:var(--maybe);font-weight:700}
+.warnings.has{background:rgba(242,179,61,.1);border:1px solid var(--maybe);border-radius:10px;padding:8px 10px}
+.note.models{font-size:13px;color:var(--ink)}
+.note.models:empty{display:none}

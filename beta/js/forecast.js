@@ -16,7 +16,7 @@ async function loadForecast(){
 function at(pt,key){ // forecast values at an hour key "YYYY-MM-DDTHH:00"
   const i=pt.mi[key], j=pt.wi[key];
   const g=(o,k,ix)=>ix==null||!o.hourly[k]?null:o.hourly[k][ix];
-  // Row 12: water and air temperature in °F (RJ, Nov 27: °F only). The marine
+  // Row 12: water and air temperature in °F (RJ, Nov 26: °F only). The marine
   // service may answer in °C; convert when its units say so.
   const sstC=pt.m.hourly_units&&/C/.test(pt.m.hourly_units.sea_surface_temperature||'');
   const sst=g(pt.m,'sea_surface_temperature',i);

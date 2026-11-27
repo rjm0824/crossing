@@ -2,9 +2,40 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
-## Update: Nov 27, 2026, night: Plan page row 13, part 1, in beta
+## Update: Nov 26, 2026, late night: Plan page row 13, part 2, in beta
 
-RJ split row 13 (Nov 27): **part 1** (no new services) now; **part 2**
+**Network (RJ approved):** the "crossing" cloud environment now allows
+`open-meteo.com`, `api.open-meteo.com`, `marine-api.open-meteo.com`,
+`api.weather.gov` and `www.weather.gov`, so builds can test against the real
+forecast. (Map tiles and radar are still blocked here.)
+
+**Checked against the live services (Nov 26, evening Eastern):**
+*   Open-Meteo wave models `ecmwf_wam025`, `ncep_gfswave016` and
+    `meteofrance_wave` cover every Abaco route point for 5 days; with
+    `models=` the answer has `wave_height_<model>` per point.
+    `sea_surface_temperature` arrives in °C (row 12 converts it).
+*   NWS marine zones: **AMZ650** Jupiter Inlet to Deerfield Beach out 20 nm,
+    **AMZ670** the same from 20 to 60 nm; AMZ555/AMZ575 north of Jupiter;
+    AMZ651/AMZ671 south of Deerfield. `api.weather.gov/alerts/active?zone=`
+    answers browsers (CORS `*`), no key.
+
+**Built (`beta/js/warnings.js`):** a "Forecast models" line in Hour by hour
+(each model's worst seas on the run; "they agree (within 1 ft)" or "they
+differ by X ft"), and US marine warnings on the answer card for alerts that
+overlap the run ("✓ No US marine warnings…" or "⚠ Small Craft Advisory
+until …"), always with "The Bahamas side is not covered"; a failed check says
+so. Neither changes the answer. The fuel allowance band now follows the
+seas figure shown (one decimal). `privacy.html` names the NWS.
+
+**Date correction:** tonight's notes and pull requests (#36 to #40) were
+dated Nov 27 by mistake (the cloud machine's clock is UTC); it was Thu Nov 26
+in Florida. Headings above, CLAUDE.md, the promote plan, the feature map and
+the privacy page date are corrected. Commit messages and closed PR text keep
+the wrong date.
+
+## Update: Nov 26, 2026, night: Plan page row 13, part 1, in beta
+
+RJ split row 13 (Nov 26): **part 1** (no new services) now; **part 2**
 (forecast models agree, NWS marine warnings) next session, after this
 workspace is allowed to reach `open-meteo.com` and `weather.gov` so the
 model names and the marine zones for Palm Beach can be checked against
@@ -22,7 +53,7 @@ real answers (both hosts were blocked here, so nothing was guessed).
     only "VHF channel 16, or call the US Coast Guard" until
     `docs/overdue-numbers.md` is confirmed. `privacy.html` updated.
 
-## Update: Nov 27, 2026, late evening: Plan page row 12 in beta
+## Update: Nov 26, 2026, late evening: Plan page row 12 in beta
 
 *   **Water · Air · Sunrise tiles** after Seas · Wind · Arrive (°F only, RJ).
     Open-Meteo now also returns `sea_surface_temperature` (marine; converted
@@ -39,7 +70,7 @@ real answers (both hosts were blocked here, so nothing was guessed).
 Row 13 (models agreeing, marine warnings, fuel for sea state, float plan
 page) is next on the Plan page.
 
-## Update: Nov 27, 2026, evening: Plan page part A (row 11) and papers link, in beta
+## Update: Nov 26, 2026, evening: Plan page part A (row 11) and papers link, in beta
 
 **Crossing-day card** (https://claude.ai/artifact/2BNtygYUVDFkJmzBJnWBm1)
 updated: Saturday's crossing log and bottom-bar checks, the heads-up text
@@ -67,7 +98,7 @@ at the dock.
 
 Water and air temperatures, the brief and best day are row 12.
 
-## Update: Nov 27, 2026: second preview copy `/beta/`; `next/` frozen for the crossing
+## Update: Nov 26, 2026, evening: second preview copy `/beta/`; `next/` frozen for the crossing
 
 **Why (RJ):** keep building and trying features before the crossing home
 (Nov 29 to 30) without touching `/next/`, which the helm iPad runs.
@@ -95,7 +126,7 @@ Water and air temperatures, the brief and best day are row 12.
 *   `docs/promote-plan.md`: after the crossing, beta replaces next first (its
     own pull request and tests), then next goes live later as planned.
 
-**#29 and #31:** closed Nov 27 on RJ's OK after #36 merged (their work now
+**#29 and #31:** closed Nov 26 on RJ's OK after #36 merged (their work now
 lives in beta). Their branches are kept for history.
 
 **After the crossing:** RJ lifts the freeze (`FREEZE_NEXT=0`), then the
