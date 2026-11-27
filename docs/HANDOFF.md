@@ -2,6 +2,23 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
+## Update: Nov 27, 2026, late evening: Plan page row 12 in beta
+
+*   **Water · Air · Sunrise tiles** after Seas · Wind · Arrive (°F only, RJ).
+    Open-Meteo now also returns `sea_surface_temperature` (marine; converted
+    to °F when it answers in °C) and `temperature_2m` (°F). Same service, no
+    new data about the user.
+*   **Written summary** under the tiles (`briefText` in `beta/js/plan.js`):
+    fixed rules, no AI, describes conditions only (seas range and where they
+    peak, wind range and gusts, water and air, rain or thunderstorms). Never
+    advice, none of the wording CLAUDE.md rules out.
+*   **Best day this week** card: the best morning departure for each of the
+    4 days, scored like the answer card; tap a day to plan it.
+*   **Hour by hour:** "Water 79° · Air 77°" under each point.
+
+Row 13 (models agreeing, marine warnings, fuel for sea state, float plan
+page) is next on the Plan page.
+
 ## Update: Nov 27, 2026, evening: Plan page part A (row 11) and papers link, in beta
 
 **Crossing-day card** (https://claude.ai/artifact/2BNtygYUVDFkJmzBJnWBm1)

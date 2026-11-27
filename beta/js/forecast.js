@@ -4,8 +4,8 @@ async function getJSON(u){const r=await fetch(u);if(!r.ok)throw new Error(r.stat
 async function loadForecast(){
   const pts=[...RT.wp,...(RT.abaco?[INSIDE,WHALE]:[])];   // RT: active-route.js (row 9)
   const lat=pts.map(p=>p.lat).join(','), lon=pts.map(p=>p.lon).join(',');
-  const marineU=`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_direction,sea_level_height_msl&length_unit=imperial&timezone=${encodeURIComponent(TZ)}&forecast_days=5&cell_selection=sea`;
-  const windU=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation_probability,weather_code&daily=sunrise,sunset&wind_speed_unit=kn&timezone=${encodeURIComponent(TZ)}&forecast_days=5`;
+  const marineU=`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_direction,sea_level_height_msl,sea_surface_temperature&length_unit=imperial&timezone=${encodeURIComponent(TZ)}&forecast_days=5&cell_selection=sea`;
+  const windU=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation_probability,weather_code,temperature_2m&daily=sunrise,sunset&wind_speed_unit=kn&temperature_unit=fahrenheit&timezone=${encodeURIComponent(TZ)}&forecast_days=5`;
   const [m,w]=await Promise.all([getJSON(marineU),getJSON(windU)]);
   const mA=Array.isArray(m)?m:[m], wA=Array.isArray(w)?w:[w];
   const idx=a=>{const map={};a.hourly.time.forEach((t,i)=>map[t]=i);return map;};
@@ -16,7 +16,12 @@ async function loadForecast(){
 function at(pt,key){ // forecast values at an hour key "YYYY-MM-DDTHH:00"
   const i=pt.mi[key], j=pt.wi[key];
   const g=(o,k,ix)=>ix==null||!o.hourly[k]?null:o.hourly[k][ix];
-  return {wave:g(pt.m,'wave_height',i),per:g(pt.m,'wave_period',i),wdir:g(pt.m,'wave_direction',i),swell:g(pt.m,'swell_wave_height',i),sdir:g(pt.m,'swell_wave_direction',i),sea:g(pt.m,'sea_level_height_msl',i),
+  // Row 12: water and air temperature in °F (RJ, Nov 27: °F only). The marine
+  // service may answer in °C; convert when its units say so.
+  const sstC=pt.m.hourly_units&&/C/.test(pt.m.hourly_units.sea_surface_temperature||'');
+  const sst=g(pt.m,'sea_surface_temperature',i);
+  return {sst:sst==null?null:sstC?sst*9/5+32:sst,air:g(pt.w,'temperature_2m',j),
+          wave:g(pt.m,'wave_height',i),per:g(pt.m,'wave_period',i),wdir:g(pt.m,'wave_direction',i),swell:g(pt.m,'swell_wave_height',i),sdir:g(pt.m,'swell_wave_direction',i),sea:g(pt.m,'sea_level_height_msl',i),
           wind:g(pt.w,'wind_speed_10m',j),dir:g(pt.w,'wind_direction_10m',j),gust:g(pt.w,'wind_gusts_10m',j),rain:g(pt.w,'precipitation_probability',j),code:g(pt.w,'weather_code',j)};
 }
 const hourKey = d => etKey(new Date(Math.round(d.getTime()/3600e3)*3600e3));
