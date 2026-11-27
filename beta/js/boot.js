@@ -1,6 +1,15 @@
 // ---------- Boot ----------
 window.addEventListener('hashchange',()=>location.reload());
 (async function(){
+  // First open with no setup (row 8, held until after the crossing; built in
+  // beta Nov 26): captain mode only, once per device, never for a saved trip.
+  // After that the Plan page opens as usual, even if Setup was skipped.
+  try{
+    if(IS_CAPTAIN&&!TRIP_PLAN&&!localStorage.getItem('cx:beta:setup')&&!localStorage.getItem('cx:beta:boat')&&!localStorage.getItem('cx:beta:setupOffered')){
+      localStorage.setItem('cx:beta:setupOffered',String(Date.now()));
+      location.replace('setup.html?first=1');return;
+    }
+  }catch(e){}
   const days=dayList();
   let saved=null;try{saved=localStorage.getItem('cx:beta:crossDay');}catch(e){}
   DAY=days.includes(saved)?saved:days[0];

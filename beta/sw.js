@@ -13,7 +13,7 @@
 // checks that every beta page, script and style is listed below.
 // Undo: delete this file. The phone drops the saved copy the next time it
 // checks with signal (the browser removes a worker whose file is gone).
-var VERSION = '2026-11-26-r17b';
+var VERSION = '2026-11-26-setup1';
 var CACHE = 'cx-beta-app-' + VERSION;
 var LEAFLET = ['https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
                'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'];
