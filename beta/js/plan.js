@@ -51,7 +51,7 @@ function showCall(o,isBest){
 }
 // Seas · Wind · Arrive for the chosen departure (Plan page part A, row 11): the
 // worst seas and the strongest wind along the route, and the arrival time.
-function clearTiles(){$('tiles').innerHTML='';$('brief').textContent='';}
+function clearTiles(){$('tiles').innerHTML='';$('brief').textContent='';if(typeof renderAlerts==='function')renderAlerts(null);if($('models'))$('models').textContent='';}
 function renderTiles(o,arr){
   const has=k=>o.rows.filter(r=>r.v[k]!=null);
   const ws=has('wave'),wd=has('wind');
@@ -67,6 +67,8 @@ function renderTiles(o,arr){
     tile('Air',range(o.rows,'air','°F'),'while underway')+
     tile('Sunrise',sun?fmtT(sun.rise):'–',sun?'sunset '+fmtT(sun.set):'');
   $('brief').textContent=briefText(o);
+  // Row 13 part 2 (warnings.js): US marine warnings and the forecast models for this run.
+  if(typeof renderAlerts==='function'){renderAlerts(o);renderModels(o);}
 }
 // Low to high along the run, rounded: "79°F" or "75–81°F".
 function range(rows,k,unit){
@@ -160,9 +162,10 @@ async function renderTFF(o){
   LASTSEL=o;
   const arr=o?o.rows[o.rows.length-1].t:null;
   const dist=RT.totalNm, hrs=dist/MY.cruiseKt;
-  // Row 13: a fixed allowance for the worst forecast seas on this run (RJ, Nov 27):
+  // Row 13: a fixed allowance for the worst forecast seas on this run (RJ, Nov 26):
   // under 2 ft 0%, 2 to 3 ft +5%, 3 to 4 ft +10%, over 4 ft +15%. Planning numbers.
-  const seaPct=!o||o.level<0?0:o.worstWave<2?0:o.worstWave<3?5:o.worstWave<=4?10:15;
+  const ww=o&&o.level>=0?Math.round(o.worstWave*10)/10:null;   // the band follows the number shown (one decimal)
+  const seaPct=ww==null?0:ww<2?0:ww<3?5:ww<=4?10:15;
   const fu=MY.fuel(dist), tank=MY.tankGal;
   const fuelLo=Math.round(fu.lo*(1+seaPct/100)), fuelHi=Math.round(fu.hi*(1+seaPct/100));
   FUELNOW={lo:fuelLo,hi:fuelHi};

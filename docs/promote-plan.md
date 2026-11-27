@@ -1,13 +1,13 @@
 # Promote plan: moving the preview to the live page
 
-**Status:** plan only, written Nov 26, 2026; beta step added Nov 27. Nothing here is started. Promote
+**Status:** plan only, written Nov 26, 2026; beta step added Nov 26 (evening). Nothing here is started. Promote
 is the pull request that makes `rjm0824.github.io/crossing/` show what
 `/crossing/next/` shows today. It happens once, with RJ's approval, after the
 conditions below are met. Planning aid, not for navigation.
 
-## First, after the crossing: beta replaces next (added Nov 27)
+## First, after the crossing: beta replaces next (added Nov 26)
 
-Since Nov 27 there are two preview copies: `/next/` (amber PREVIEW banner,
+Since Nov 26 there are two preview copies: `/next/` (amber PREVIEW banner,
 frozen: it is what the helm iPad runs for the crossing home) and `/beta/`
 (violet BETA banner, where new features are built and tried, starting with
 onboarding #29 and routes #31). After the crossing, promoting happens in two
