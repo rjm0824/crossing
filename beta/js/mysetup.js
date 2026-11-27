@@ -3,6 +3,9 @@
 // settings.js. settings.js itself is not changed: the Live screen reads it and
 // is in a code freeze until after the crossing (RJ, Nov 26). Loaded by the Plan
 // page and the Setup page only, after settings.js.
+// A saved trip opened from My Trips (row 14a): index.html?t=<id> plans that
+// trip's route and followers. mytrips.js is loaded only on pages that use it.
+const TRIP_PLAN = (typeof MyTrips !== 'undefined') ? MyTrips.get(new URLSearchParams(location.search).get('t') || '') : null;
 function readMySetup() {
   let s = null;
   try { s = JSON.parse(localStorage.getItem('cx:beta:setup') || 'null'); } catch (e) {}
@@ -21,11 +24,11 @@ function readMySetup() {
     windRule: !!L,                                    // any wind over the max is CROSSABLE, once limits are saved
     // The chosen route (routes.js; row 9). Only Abaco is ready, so the Plan page's
     // points don't change yet; switching them comes with the Bimini presets.
-    route: (typeof routeById === 'function') ? routeById(s && s.route && s.route.id, s) : null,
+    route: (typeof routeById === 'function') ? routeById(TRIP_PLAN ? TRIP_PLAN.route : (s && s.route && s.route.id), s) : null,
     // Plan page part A (row 11): the boat's name, the followers' first names
     // and the link to the captain's own papers folder (My Boat; https only).
     boatName: (typeof b.name === 'string' && b.name.trim()) ? b.name.trim().slice(0, 40) : "Goof n' Off",
-    followers: (s && Array.isArray(s.followers) ? s.followers : [])
+    followers: TRIP_PLAN ? TRIP_PLAN.followers.slice() : (s && Array.isArray(s.followers) ? s.followers : [])
       .map(f => String((f && f.name) || '').trim().slice(0, 40)).filter(Boolean),
     papers: (typeof b.papers === 'string' && /^https:\/\/[^\s"'<>]+$/.test(b.papers)) ? b.papers : null
   };

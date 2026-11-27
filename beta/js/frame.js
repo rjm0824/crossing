@@ -14,10 +14,11 @@
   try { var tr = JSON.parse(localStorage.getItem('cx:beta:trip') || 'null'); underway = !!(tr && tr.status === 'underway'); } catch (e) {}
 
   // Tabs appear here only once their screen exists (no dead buttons).
-  // My Trips joins in MVP row 14.
+  // My Trips joined in MVP row 14a (beta, Nov 26), in the mockup's order.
   var tabs = [
     { id: 'plan', label: 'Plan', ic: '⚓', href: 'index.html' + q + '#captain' },
     { id: 'live', label: 'Live', ic: '◉', href: 'live.html' + q, dot: underway },
+    { id: 'mytrips', label: 'My Trips', ic: '▤', href: 'mytrips.html' + q },
     { id: 'family', label: 'Family', ic: '♥', href: 'family-tab.html' + q },
     { id: 'menu', label: 'Menu', ic: '☰', href: 'menu.html' + q }
   ];

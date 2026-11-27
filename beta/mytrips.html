@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Crossing">
+<meta name="theme-color" content="#0b1d2c"><link rel="apple-touch-icon" href="/crossing/apple-touch-icon.png?v=1"><link rel="icon" type="image/png" href="/crossing/favicon.png?v=1">
+<title>My Trips · Crossing</title>
+<link rel="stylesheet" href="css/app.css?v=20261128e">
+<link rel="stylesheet" href="css/frame.css?v=20261205">
+<style>
+/* My Trips (row 14a). */
+.trip .thead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.trip .thead b{font-size:17px;min-width:0;overflow-wrap:anywhere}
+.trip .tdir{flex:none;font-size:12px;color:var(--soft);text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+.trip .twhen{font-size:15px;font-weight:600;margin-top:4px}
+.trip .troute{font-size:13px;color:var(--soft);margin-top:2px;overflow-wrap:anywhere}
+.trip .tstatus{font-size:14px;margin-top:8px;line-height:1.4}
+.trip .tready{color:var(--go)}.trip .toutlook{color:var(--maybe)}
+.trip.past{opacity:.75}
+.trip .btn{min-height:44px;display:inline-flex;align-items:center}
+#tripForm label{display:block;margin:0 0 12px}
+#tripForm label>span{display:block;font-size:14px;color:var(--soft);margin-bottom:4px}
+#tripForm input,#tripForm select{width:100%;min-height:48px;font-size:16px;color:var(--ink);background:#0e2333;border:1px solid var(--line);border-radius:10px;padding:10px}
+#tripForm .dir{display:grid;gap:8px}
+#tripForm .dir button{min-height:48px;text-align:left;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#0e2333;color:var(--ink);font-size:15px}
+#tripForm .dir button.on{border-color:var(--accent);outline:2px solid var(--accent);font-weight:700}
+#tripForm .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+#tripForm .row .btn{min-height:48px;flex:1 1 120px;font-size:16px}
+.sechead{font-size:15px;margin:18px 4px 4px;color:var(--soft);font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+</style>
+</head>
+<body data-tab="mytrips">
+<div class="preview" id="previewBar">BETA · trying new features, not the crossing copy</div>
+<div class="ftop"><h1>My Trips</h1></div>
+<div class="fintro">Trips you plan ahead. Saved on this device only.</div>
+<div class="nfn"><b>Planning aid, not for navigation.</b> The captain decides.</div>
+<main>
+<button class="btn primary fwide" id="newBtn" type="button">+ New trip</button>
+<form class="card" id="tripForm" hidden novalidate>
+  <h2 id="fTitle">New trip</h2>
+  <label><span>Route</span><select id="fRoute"></select></label>
+  <div class="dir" role="group" aria-label="Direction"><button type="button" id="fOver"></button><button type="button" id="fHome"></button></div>
+  <label style="margin-top:12px"><span>Date</span><input type="date" id="fDate" required></label>
+  <label><span>Name (optional)</span><input type="text" id="fName" maxlength="40" placeholder="e.g. Thanksgiving home" autocomplete="off"></label>
+  <label><span>Followers (first names, separated by commas)</span><input type="text" id="fFollowers" maxlength="300" autocomplete="off" placeholder="e.g. Haile, Mom"></label>
+  <div class="result" id="fResult" aria-live="polite"></div>
+  <div class="row">
+    <button class="btn primary" type="submit">Save trip</button>
+    <button class="btn" type="button" id="fCancel">Cancel</button>
+  </div>
+  <div class="row"><button class="btn" type="button" id="fDelete" hidden>Delete trip</button></div>
+</form>
+<h2 class="sechead">Upcoming</h2>
+<div id="upcoming"></div>
+<h2 class="sechead" id="earlierHead" hidden>Date passed</h2>
+<div id="earlier"></div>
+<p class="note">Past trips with their track, fuel used and Duplicate as new come in the next step.</p>
+</main>
+<script src="js/settings.js?v=20261130"></script>
+<script src="js/routes.js?v=20261127d"></script>
+<script src="js/helpers.js?v=20261120"></script>
+<script src="js/forecast.js?v=20261128d"></script>
+<script src="js/mytrips.js?v=20261128a"></script>
+<script src="js/mytrips-page.js?v=20261128a"></script>
+<script src="js/frame.js?v=20261128a"></script>
+</body>
+</html>

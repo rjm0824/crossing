@@ -201,6 +201,7 @@ async function renderTFF(o){
 function floatPlanHref(){
   const p=new URLSearchParams();
   if(HOME)p.set('trip','home');
+  if(TRIP_PLAN)p.set('t',TRIP_PLAN.id);   // a saved trip's route and followers (row 14a)
   const o=LASTSEL;
   if(o&&o.dep){p.set('dep',o.dep.getTime());if(o.level>=0)p.set('arr',o.rows[o.rows.length-1].t.getTime());}
   if(FUELNOW)p.set('fuel',FUELNOW.lo+'-'+FUELNOW.hi);

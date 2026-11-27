@@ -2,6 +2,29 @@
 
 Everything a new build session needs, pulled from the planning chats. Decisions here are RJ's unless marked as a recommendation. The Google project doc ("Crossing App — Project Doc (shared)") has the full dated history.
 
+## Update: Nov 26, 2026, late night: My Trips (row 14a) in beta
+
+RJ split row 14: **14a** (upcoming trips) now; **14b** (past trips from the
+Live screen's saved trip and trail, fuel used, View track, Duplicate as new,
+Add to calendar) next. RJ kept the sea-allowance table (0/5/10/15%).
+
+*   **My Trips tab** (`beta/mytrips.html`, `beta/js/mytrips.js`,
+    `beta/js/mytrips-page.js`); the bottom bar now has five tabs in the
+    mockup's order (Plan · Live · My Trips · Family · Menu), on every page
+    including Live.
+*   **Trips** saved on the device only in `cx:beta:mytrips` (not the Live
+    screen's `cx:beta:trip`): name, route, direction, date, followers' first
+    names. + New trip, Edit, Delete (tap twice).
+*   **States** (forecast reach checked Nov 26: sea data about 9 days ahead):
+    0 to 3 days out "Forecast ready" with the seas and wind range and
+    **Plan this trip**; 4 to 8 days "Early outlook. Could still change." with
+    the range only; further out "Forecast opens [date − 8 days]". Ranges are
+    6 AM to 3 PM along the route; no advice.
+*   **Plan page:** `index.html?t=<id>` plans that trip (route, direction,
+    day, followers; a "Planning" card); without it, a **Next trip** card.
+    The Float plan button carries the trip.
+*   `privacy.html`: one line for saved trips.
+
 ## Update: Nov 26, 2026, late night: Plan page row 13, part 2, in beta
 
 **Network (RJ approved):** the "crossing" cloud environment now allows
