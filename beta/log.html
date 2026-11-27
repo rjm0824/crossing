@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" class="tp-html">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Crossing">
+<meta name="theme-color" content="#F3F6F8"><link rel="apple-touch-icon" href="/crossing/apple-touch-icon.png?v=1"><link rel="icon" type="image/png" href="/crossing/favicon.png?v=1">
+<title>Crossing log · Crossing</title>
+<link rel="stylesheet" href="css/app.css?v=20261130">
+<link rel="stylesheet" href="css/frame.css?v=20261205">
+<link rel="stylesheet" href="css/log.css?v=20261127b">
+</head>
+<body class="tp" data-tab="menu">
+<!-- Crossing log (test kit, Nov 27): times and notes for the Dec 1 debrief.
+     Saved on this device only (cx:beta:crosslog). No location. Separate from the Live screen. -->
+<div class="preview" id="previewBar">BETA · trying new features, not the crossing copy</div>
+<div class="ftop fback"><a class="back" href="menu.html" data-keep-trip>‹ Menu</a></div>
+<header><h1>Crossing log</h1></header>
+<main>
+  <p class="note">Use this on your <b>iPhone</b>, not the helm iPad: the Live screen must stay in front on the iPad, or Safari can pause tracking.</p>
+  <section class="card">
+    <h2>Tap to note the time</h2>
+    <div class="lgrid" id="logBtns"></div>
+    <form class="lnote" id="noteForm">
+      <label for="noteText" class="small">Note (seas, what family saw, anything)</label>
+      <div class="lrow"><input type="text" id="noteText" maxlength="200" autocomplete="off" placeholder="e.g. Stream 4–5 ft, short; plan said 3"><button type="submit" class="bigbtn" id="noteAdd">Add</button></div>
+    </form>
+    <div class="result" id="logResult" aria-live="polite"></div>
+  </section>
+  <section class="card">
+    <h2>Log <span id="logCount"></span></h2>
+    <ul class="log" id="logList"></ul>
+    <p class="small" id="logEmpty">Nothing yet. Each tap adds the time and what happened.</p>
+    <div class="lrow2"><button type="button" class="bigbtn plain" id="logCopy">Copy all</button><button type="button" class="bigbtn plain" id="logShare">Share</button></div>
+    <p class="small">Saved on this phone only. No location is recorded; the tracker already has where you were.</p>
+    <button type="button" class="bigbtn stop" id="logClear">Clear log</button>
+  </section>
+  <div class="nfn"><b>Planning aid, not for navigation.</b> The captain decides.</div>
+</main>
+<div class="dialog" id="battDlg" hidden><div role="dialog" aria-modal="true" aria-labelledby="battTitle">
+  <b id="battTitle">Battery % on the iPad</b>
+  <input type="text" id="battNum" inputmode="numeric" pattern="[0-9]*" maxlength="3" placeholder="e.g. 82" autocomplete="off">
+  <div class="result" id="battMsg" aria-live="polite"></div>
+  <div class="lrow2"><button type="button" class="bigbtn plain" id="battCancel">Cancel</button><button type="button" class="bigbtn" id="battSave">Save</button></div>
+</div></div>
+<script src="js/log.js?v=20261127a"></script>
+<script src="js/frame.js?v=20261202"></script>
+</body>
+</html>

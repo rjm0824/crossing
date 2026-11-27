@@ -1,0 +1,56 @@
+/* App frame (MVP row 7): bottom bar and the small Menu pages.
+   Kept apart from app.css so the Live and family pages (code freeze) never change. */
+body.framed{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:1500;display:flex;background:#0a1824;border-top:1px solid var(--line);padding:0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.tabbar a{flex:1;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--soft);text-decoration:none;font-size:13px;font-weight:500;border-top:3px solid transparent;-webkit-tap-highlight-color:transparent}
+.tabbar a .ic{font-size:19px;line-height:1}
+.tabbar a.on{color:var(--accent);font-weight:700;border-top-color:var(--accent)}
+.tabbar a .live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--go);margin-left:4px;vertical-align:1px}
+body.mapfull .tabbar{display:none}
+
+/* Menu-style pages */
+.ftop{padding:14px 16px 4px;display:flex;align-items:center;gap:10px}
+.ftop h1{font-size:22px;margin:0}
+.ftop .back{color:var(--accent);text-decoration:none;font-size:16px;min-height:44px;display:flex;align-items:center;padding-right:6px}
+.fintro{color:var(--soft);font-size:14px;padding:0 16px 6px}
+.flist{list-style:none;margin:0;padding:0}
+.flist li+li{border-top:1px solid var(--line)}
+.flist a,.flist .row{display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 4px;color:var(--ink);text-decoration:none}
+.flist .txt{flex:1}
+.flist .txt b{display:block;font-size:16px}
+.flist .txt small{display:block;color:var(--soft);font-size:13px;margin-top:2px}
+.flist .chev{color:var(--soft);font-size:20px}
+
+/* Family tab */
+[hidden]{display:none!important}
+.fbig{font-size:17px;margin:4px 0 10px}
+.fwide{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;font-size:16px;text-align:center;line-height:1.25;margin-top:10px}
+.frow{display:flex;gap:8px}.frow .fwide{flex:1}
+.flink{font:13px/1.4 ui-monospace,Menlo,monospace;color:var(--soft);background:#0e2333;border:1px solid var(--line);border-radius:10px;padding:10px;word-break:break-all;-webkit-user-select:all;user-select:all}
+.fstate{display:inline-block;font-size:13px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--soft);background:#0e2333;border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+.fstate.on{color:#04121c;background:var(--go);border-color:var(--go)}
+.fsee{margin:0;padding-left:20px;font-size:15px}.fsee li{margin:6px 0}
+.result{font-size:14px;font-weight:600;margin-top:10px}.result:empty{display:none}
+.result.good{color:var(--go)}.result.wait{color:var(--maybe)}
+
+/* My Boat form */
+.ffield{display:block;margin:0 0 12px}
+.ffield span{display:block;font-size:14px;color:var(--soft);margin-bottom:4px}
+.ffield input{width:100%;min-height:48px;font-size:16px;color:var(--ink);background:#0e2333;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.ffield input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.btn:disabled{opacity:.55}
+
+/* Safety checklist: the whole row is the tap target */
+.ftop.fback{padding-bottom:0}
+.chk .chkrow{display:flex;gap:12px;align-items:flex-start;width:100%;min-height:44px;cursor:pointer}
+.chk .chkrow input{margin-top:2px}
+.chk .chkrow b{font-size:16px}
+
+/* Settings: big segmented choices */
+.fwarn{background:#3a2a08;border:1px solid var(--maybe);color:#ffe2a6;border-radius:12px;padding:10px 12px;margin:10px 0 0;font-size:14px}
+.fwarn b{color:#fff}
+.pgroup+.pgroup{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.ptitle{font-size:16px;font-weight:700;margin-bottom:8px}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;min-height:48px;font-size:15px;color:var(--ink);background:#0e2333;border:1px solid var(--line);border-radius:10px;padding:6px 4px}
+.seg button.on{background:var(--accent);border-color:var(--accent);color:#04121c;font-weight:700}

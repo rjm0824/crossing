@@ -30,12 +30,18 @@ jobs:
       - name: Every preview script loads
         run: for f in next/js/*.js; do node --check "$f"; done
 
+      - name: Trip maths, queue and reminder checks (beta/)
+        run: node --test beta/test/trip.test.js
+
+      - name: Every beta script loads
+        run: for f in beta/js/*.js; do node --check "$f"; done
+
       - name: Tracker service checks
         working-directory: tracker-service
         run: |
           npm ci --no-audit --no-fund
           npm test
 
-      - name: Pull request checks (protected files, keys, wording, Planning aid line, version tags)
+      - name: Pull request checks (protected files, frozen next/, keys, wording, Planning aid line, version tags)
         if: github.event_name == 'pull_request'
         run: bash .claude/pr-check/check.sh

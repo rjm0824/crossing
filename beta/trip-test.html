@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>BETA · Trip checks</title>
+<link rel="icon" href="../favicon.png">
+<style>
+:root{--bg:#0b1d2c;--panel:#112a3e;--line:#1f4260;--ink:#e8f1f7;--soft:#9fb7c9;--go:#2fbf71;--maybe:#f2b33d;--no:#e5484d;--accent:#5cc8ff}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{padding:0 env(safe-area-inset-right) 40px env(safe-area-inset-left)}
+.preview{background:#6d28d9;color:#fff;font-weight:800;font-size:13px;letter-spacing:.6px;text-align:center;padding:calc(5px + env(safe-area-inset-top)) 10px 5px}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:8px 0 4px}
+.lead{color:var(--soft);margin:0 0 14px;font-size:15px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+#summary{font-weight:700;font-size:17px;margin:0 0 8px;min-height:1.4em}
+#summary.pass{color:var(--go)}#summary.fail{color:var(--no)}
+ol{list-style:none;margin:0;padding:0}
+li{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
+li:last-child{border-bottom:0}
+.tag{flex:0 0 auto;min-width:52px;text-align:center;font-weight:800;font-size:12px;letter-spacing:.5px;border-radius:999px;padding:3px 8px;margin-top:1px}
+.tag.pass{background:var(--go);color:#06131c}.tag.fail{background:var(--no);color:#fff}
+.detail{display:block;color:var(--soft);font-size:13px;margin-top:2px;word-break:break-word}
+.foot{color:var(--soft);font-size:13px;text-align:center;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="preview">BETA · trying new features, not the crossing copy</div>
+<main>
+  <h1>Trip checks</h1>
+  <p class="lead">Checks the maths behind the Live and family pages: distance left, the start gate, arrival, the family page states, the send queue and the reminder file. Nothing is sent anywhere. Every line should read PASS.</p>
+  <div class="card">
+    <p id="summary" role="status">Running…</p>
+    <ol id="list"></ol>
+  </div>
+  <p class="foot">Planning aid, not for navigation. The captain decides.</p>
+</main>
+<script src="js/trip-math.js?v=20261129"></script>
+<script src="js/queue.js?v=20261127"></script>
+<script src="js/calendar.js?v=20261128"></script>
+<script src="test/trip.test.js?v=20261129"></script>
+<script>
+(function () {
+  var list = document.getElementById('list'), summary = document.getElementById('summary');
+  var checks = window.TRIP_CHECKS || [], failed = 0;
+  if (!checks.length) { summary.textContent = 'FAIL · the checks did not load. Reload the page.'; summary.className = 'fail'; return; }
+  checks.forEach(function (c) {
+    var li = document.createElement('li'), tag = document.createElement('span'), text = document.createElement('span');
+    var error = null;
+    try { c.fn(); } catch (e) { error = e; failed++; }
+    tag.className = 'tag ' + (error ? 'fail' : 'pass');
+    tag.textContent = error ? 'FAIL' : 'PASS';
+    text.textContent = c.name;
+    if (error) {
+      var d = document.createElement('span');
+      d.className = 'detail';
+      d.textContent = String(error.message || error);
+      text.appendChild(d);
+    }
+    li.appendChild(tag); li.appendChild(text); list.appendChild(li);
+  });
+  summary.textContent = failed ? 'FAIL · ' + failed + ' of ' + checks.length + ' checks failed' : 'PASS · all ' + checks.length + ' checks passed';
+  summary.className = failed ? 'fail' : 'pass';
+})();
+</script>
+</body>
+</html>

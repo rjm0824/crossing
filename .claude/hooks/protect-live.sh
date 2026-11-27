@@ -4,6 +4,12 @@
 # repo root or anything under original/, and shell commands that write to
 # them. Changes to the live page go through a "promote" pull request that RJ
 # approves; a person can still edit these files by hand.
+#
+# Crossing freeze (RJ, Nov 27): next/ is what the helm iPad runs for the
+# crossing home (Nov 29 to 30), so it is protected too. New work goes in beta/.
+# To lift the freeze after the crossing (RJ's call), change the next line to
+# FREEZE_NEXT=0 in a pull request.
+FREEZE_NEXT=1
 # Exit 2 = block (the message goes back to Claude). Exit 0 = allow.
 input=$(cat)
 root="${CLAUDE_PROJECT_DIR:-$(pwd)}"
@@ -21,12 +27,15 @@ else
 fi
 
 block() {
-  echo "Blocked by the crossing repo guard: $1 is protected (the live page, or the archived first version in original/). Work in next/ instead; the live page changes only through a promote pull request RJ approves. Do not try another way round this." >&2
+  echo "Blocked by the crossing repo guard: $1 is protected (the live page, the archived first version in original/, or next/ while it is frozen for the crossing). Work in beta/ instead; the live page changes only through a promote pull request RJ approves, and next/ only after RJ lifts the freeze. Do not try another way round this." >&2
   exit 2
 }
 
-# A protected path as a word: index.html at the root (not next/index.html) or original/...
-P='(^|[[:space:]"'"'"'=(])(\./|'"$root"'/)?(index\.html|original/)'
+# Protected paths as a word: index.html at the root (not next/index.html),
+# original/..., and next/... while frozen.
+NAMES='index\.html|original/'
+[ "$FREEZE_NEXT" = "1" ] && NAMES="$NAMES|next/"
+P='(^|[[:space:]"'"'"'=(])(\./|'"$root"'/)?('"$NAMES"')'
 
 case "$tool" in
   Edit|Write|MultiEdit|NotebookEdit)
@@ -35,12 +44,13 @@ case "$tool" in
     p="${p//\/.\//\/}"
     [ "$p" = "$root/index.html" ] && block "index.html"
     case "$p" in "$root/original/"*) block "original/" ;; esac
+    if [ "$FREEZE_NEXT" = "1" ]; then case "$p" in "$root/next/"*) block "next/" ;; esac; fi
     ;;
   *)
     [ -z "$cmd" ] && exit 0
     # Redirected straight into a protected path: > index.html, >> ./original/x
-    if printf '%s' "$cmd" | grep -Eq '>>?[[:space:]]*["'"'"']?(\./|'"$root"'/)?(index\.html|original/)'; then
-      block "index.html or original/"
+    if printf '%s' "$cmd" | grep -Eq '>>?[[:space:]]*["'"'"']?(\./|'"$root"'/)?('"$NAMES"')'; then
+      block "index.html, original/ or next/"
     fi
     # Each simple command on its own (split at ; & | and new lines): does it start
     # with a writing command and name a protected path?
@@ -53,7 +63,7 @@ case "$tool" in
         exit 3
       fi
     done
-    [ $? -eq 3 ] && block "index.html or original/"
+    [ $? -eq 3 ] && block "index.html, original/ or next/"
     ;;
 esac
 exit 0

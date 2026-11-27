@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" class="tp-html">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Crossing">
+<meta name="theme-color" content="#F3F6F8">
+<link rel="apple-touch-icon" href="/crossing/apple-touch-icon.png?v=1"><link rel="icon" type="image/png" href="/crossing/favicon.png?v=1">
+<title>BETA · Crossing · Live · Goof n' Off</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="css/app.css?v=20261130">
+</head>
+<body class="tp" data-tab="live">
+<div class="preview">BETA · trying new features, not the crossing copy</div>
+<header>
+  <h1>⚓ Live · Goof n' Off</h1>
+  <span class="tag" id="practiceTag" hidden>PRACTICE</span>
+</header>
+<main>
+
+<!-- Ready screen: no trip in progress -->
+<section id="ready" hidden>
+  <div class="card">
+    <h2>Start a trip</h2>
+    <b id="rRoute"></b>
+    <div class="row"><span>Planned arrival</span><b id="rPlanned">–</b></div>
+    <div class="row">
+      <span>Overdue time</span>
+      <span class="stepper">
+        <button type="button" id="odMinus" aria-label="30 minutes earlier">−</button>
+        <b id="rOverdue">–</b>
+        <button type="button" id="odPlus" aria-label="30 minutes later">+</button>
+      </span>
+    </div>
+    <span class="small">If you are not in by the overdue time, the family page shows an overdue notice.</span>
+    <label class="switch"><input type="checkbox" id="hideStart" checked> Hide my start</label>
+    <span class="small" id="hideHelp"></span>
+    <div class="row"><span>Home port</span><b id="hpState">not set</b></div>
+    <span class="small" id="hpHelp"></span>
+    <button type="button" class="bigbtn plain" id="hpBtn">Set home port</button>
+    <div id="hpBox" hidden>
+      <span class="small">Move the map until the red crosshair is on where the boat is kept, then tap Save. Zoom in with + for accuracy. It is saved on this device only: never sent to the tracker and never in a link.</span>
+      <div class="hpWrap"><div id="hpMap" aria-label="Map for choosing the home port"></div><div class="hpCross" aria-hidden="true"></div></div>
+      <button type="button" class="bigbtn" id="hpSave">Save as home port</button>
+      <button type="button" class="bigbtn plain" id="hpRemove" hidden>Remove home port</button>
+      <button type="button" class="bigbtn plain" id="hpCancel">Cancel</button>
+    </div>
+    <div id="inviteBox" hidden>
+      <label for="invite"><b>Invite code</b></label>
+      <input type="password" id="invite" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <span class="small">Typed once on this device. It is in your password manager.</span>
+    </div>
+    <a href="#" id="inviteChange" class="small" hidden>Use a different invite code</a>
+    <button type="button" class="bigbtn" id="startBtn">Start trip</button>
+    <div class="result" id="startResult" role="status" aria-live="polite"></div>
+    <div class="small" id="startHelp" hidden></div>
+  </div>
+</section>
+
+<!-- Live screen: trip underway -->
+<section id="live" hidden>
+  <div class="note" id="awake" role="status">Keep this page open in front while sharing.</div>
+  <div class="alert" id="odAlert" hidden role="alert">
+    <span id="odAlertText"></span>
+    <button type="button" class="bigbtn danger odAdd">I'm fine, add 1 hour</button>
+    <div class="result odResult" aria-live="polite"></div>
+  </div>
+  <div class="sub" id="started"></div>
+  <div id="map" aria-label="Map of the route and the boat"></div>
+  <div class="card">
+    <div class="stats">
+      <div><span>Speed</span><b id="sSpeed">–</b><em id="sMotion" hidden></em></div>
+      <div><span>Left to go</span><b id="sLeft">–</b></div>
+      <div><span>Live arrival estimate</span><b id="sEta">–</b></div>
+      <div><span>Underway</span><b id="sUnder">–</b></div>
+    </div>
+    <span class="small" id="sAcc">Waiting for GPS…</span>
+  </div>
+  <div class="status" id="status" role="status" aria-live="polite"></div>
+  <button type="button" class="bigbtn go" id="okBtn">Send "All good" to family</button>
+  <div class="result" id="okResult" aria-live="polite"></div>
+  <div class="card">
+    <span>Sharing: <b style="color:var(--go)">on</b> · <span id="every">every 5 min</span></span>
+    <span id="odLine"></span>
+    <button type="button" class="bigbtn plain odAdd">I'm fine, add 1 hour</button>
+    <div class="result odResult" aria-live="polite"></div>
+    <span class="small" id="stopsAt"></span>
+    <button type="button" class="bigbtn" id="shareBtn">Send link to family</button>
+    <div class="result" id="shareResult" aria-live="polite"></div>
+    <textarea id="shareBox" class="linkbox" rows="5" readonly hidden aria-label="Message for family"></textarea>
+    <button type="button" class="bigbtn plain" id="copyBtn">Copy family link</button>
+    <div class="result" id="copyResult" aria-live="polite"></div>
+    <input type="text" id="linkBox" class="linkbox" readonly hidden aria-label="Family link">
+  </div>
+  <div class="card" id="logCard" hidden>
+    <h2>Check-ins and changes</h2>
+    <ul class="log" id="log"></ul>
+  </div>
+  <button type="button" class="bigbtn stop" id="stopBtn">Stop sharing now</button>
+</section>
+
+<!-- Ended screen -->
+<section id="ended" hidden>
+  <div class="card">
+    <h2>Trip ended</h2>
+    <b id="eHow"></b>
+    <span class="sub" id="eUnder"></span>
+  </div>
+  <div class="status" id="eStatus" role="status" aria-live="polite"></div>
+  <button type="button" class="bigbtn" id="newBtn" hidden>Start a new trip</button>
+  <button type="button" class="bigbtn stop" id="delBtn" hidden>Delete this trip from the tracker</button>
+  <div class="result" id="delResult" aria-live="polite"></div>
+</section>
+
+<div class="dialog" id="delDialog" hidden role="dialog" aria-modal="true" aria-labelledby="delQ">
+  <div>
+    <b id="delQ">Delete?</b>
+    <span>Your followers' link will stop working straight away.</span>
+    <button type="button" class="bigbtn danger" id="delYes">Delete</button>
+    <button type="button" class="bigbtn plain" id="delNo">Keep it</button>
+  </div>
+</div>
+
+<div class="dialog" id="stopDialog" hidden role="dialog" aria-modal="true" aria-labelledby="stopQ">
+  <div>
+    <b id="stopQ">Stop sharing?</b>
+    <span>Your followers will no longer see the boat. To share again you would start a new trip.</span>
+    <button type="button" class="bigbtn danger" id="stopYes">Stop sharing</button>
+    <button type="button" class="bigbtn plain" id="stopNo">Keep sharing</button>
+  </div>
+</div>
+
+</main>
+<p class="nfn"><b>Planning aid, not for navigation.</b> The captain decides.</p>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="js/settings.js?v=20261120"></script>
+<script src="js/helpers.js?v=20261120"></script>
+<script src="js/trip-math.js?v=20261129"></script>
+<script src="js/tracker-api.js?v=20261127"></script>
+<script src="js/queue.js?v=20261129"></script>
+<script src="js/tripmap.js?v=20261127"></script>
+<script src="js/live.js?v=20261130"></script>
+<script src="js/livemenu.js?v=20261126b"></script>
+<script src="js/frame.js?v=20261202"></script>
+</body>
+</html>
