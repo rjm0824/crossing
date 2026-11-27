@@ -24,7 +24,7 @@ function render(){
   const fromCaptain=!!(chosen&&chosen.captain);
   deps.style.display=fromCaptain?'none':'';
   $('depHow').textContent=fromCaptain?(chosen.actual?'This is the time the captain left.':'This is the departure time the captain picked.'):'Tap a time to see it; your pick is saved on this device. ★ marks the best departure.';
-  if(!opts.length){$('call').innerHTML='<div class="badge na">Past</div><div class="why">No departure windows left for this day. Pick another day.</div>';$('flags').innerHTML='';renderLegs(null);renderInside(null);renderTFF(null);return;}
+  if(!opts.length){$('tiles').innerHTML='';$('call').innerHTML='<div class="badge na">Past</div><div class="why">No departure windows left for this day. Pick another day.</div>';$('flags').innerHTML='';renderLegs(null);renderInside(null);renderTFF(null);return;}
   const valid=opts.filter(o=>o.level>=0&&!o.extra);
   const best=valid.length?valid.reduce((a,b)=>(b.level<a.level||(b.level===a.level&&b.worstWave<a.worstWave))?b:a):null;
   // Tapping a time saves it, unless the boat has already left (then a tap only previews).
@@ -37,15 +37,29 @@ function render(){
     d.innerHTML=`<b>${fmtT(o.dep)}</b>${o.level<0?'no data':(o.worstWave.toFixed(1)+' ft max')}${tag?'<span class="star">'+tag+'</span>':''}`;d.onclick=()=>select(o,d,true);deps.appendChild(d);if(o===best)bestEl=d;if(o===chosen)chosenEl=d;});
   if(chosen)select(chosen,chosenEl);
   else if(best)select(best,bestEl);
-  else{$('call').innerHTML='<div class="badge na">No data</div><div class="why">The forecast doesn\'t reach this day yet.</div>';$('flags').innerHTML='';renderLegs(null);renderInside(null);renderTFF(null);}
+  else{$('tiles').innerHTML='';$('call').innerHTML='<div class="badge na">No data</div><div class="why">The forecast doesn\'t reach this day yet.</div>';$('flags').innerHTML='';renderLegs(null);renderInside(null);renderTFF(null);}
 }
 function showCall(o,isBest){
   const t=o.rows,arr=t[t.length-1].t;
   const lead=o.actual?'Left at':o.captain?'Captain\'s departure':isBest?'Best departure':'Departure';
-  if(o.level<0){$('call').innerHTML=`<div class="badge na">No data</div><div class="why"><b>${lead} ${fmtT(o.dep)}</b>The forecast doesn't cover this time.</div>`;$('flags').innerHTML='';return;}
+  if(o.level<0){$('tiles').innerHTML='';$('call').innerHTML=`<div class="badge na">No data</div><div class="why"><b>${lead} ${fmtT(o.dep)}</b>The forecast doesn't cover this time.</div>`;$('flags').innerHTML='';return;}
   const txt=o.level===0?'Looks like a go':o.level===1?'Crossable, not comfortable':'Not today';
   $('call').innerHTML=`<div class="badge ${LV[o.level]}">${LVTXT[o.level]}</div><div class="why"><b>${txt}</b>${lead} <b style="display:inline;font-size:inherit">${fmtT(o.dep)}</b> · worst seas ${o.worstWave.toFixed(1)} ft · ${esc(RT.dest)} about ${fmtT(arr)}</div>`;
   $('flags').innerHTML=o.flags.map(f=>`<li>${esc(f)}</li>`).join('')||'<li>No wind-against-Stream, storm or gust flags.</li>';
+  renderTiles(o,arr);
+}
+// Seas · Wind · Arrive for the chosen departure (Plan page part A, row 11): the
+// worst seas and the strongest wind along the route, and the arrival time.
+function renderTiles(o,arr){
+  const has=k=>o.rows.filter(r=>r.v[k]!=null);
+  const ws=has('wave'),wd=has('wind');
+  const sea=ws.length?ws.reduce((a,b)=>b.v.wave>a.v.wave?b:a):null;
+  const win=wd.length?wd.reduce((a,b)=>b.v.wind>a.v.wind?b:a):null;
+  const tile=(l,v,sub)=>`<div><span>${l}</span><b>${v}</b><small>${sub}</small></div>`;
+  $('tiles').innerHTML=
+    tile('Seas',sea?sea.v.wave.toFixed(1)+' ft':'–',sea?'worst, at '+esc(sea.wp.name):'')+
+    tile('Wind',win?Math.round(win.v.wind)+' kt '+dirName(win.v.dir):'–',win?'strongest, at '+esc(win.wp.name):'')+
+    tile('Arrive',fmtT(arr),esc(RT.dest));
 }
 function cls(v,lo,hi){return v==null?'':v>hi?'n':v>=lo?'m':'g';}
 function renderLegs(o){
@@ -72,7 +86,6 @@ async function renderTFF(o){
   const arr=o?o.rows[o.rows.length-1].t:null;
   const dist=RT.totalNm, hrs=dist/MY.cruiseKt;
   const fu=MY.fuel(dist), fuelLo=fu.lo, fuelHi=fu.hi, tank=MY.tankGal;
-  const fuelLeft=tank-fuelHi<0?'more than your tank':`${tank-fuelHi}–${tank-fuelLo} left`;
   const di=FC.daily.time.indexOf(DAY);
   const sunrise=di>=0?new Date(etMs(FC.daily.sunrise[di])):null;
   let tideTxt='–',tideNote='';
@@ -93,7 +106,7 @@ async function renderTFF(o){
     <div><span>Distance (${esc(RT.orig)} → ${esc(RT.dest)})</span><b>${Math.round(dist)} nm</b></div>
     <div><span>Run time at ${MY.cruiseKt} kt</span><b>${Math.floor(hrs)}h ${Math.round((hrs%1)*60)}m</b></div>
     <div><span>Arrive ${esc(RT.dest)}</span><b>${arr?fmtT(arr):'–'}</b></div>
-    <div><span>Fuel (${tank} gal tank${fu.estimate?', estimated burn':''})</span><b>${fuelLo}–${fuelHi} gal · ${fuelLeft}</b></div>
+    <div style="grid-column:1/-1"><span>Fuel needed (${tank} gal tank${fu.estimate?', estimated burn':''})</span><b>${fuelLo}–${fuelHi} gal of ${tank} · ${tank-fuelHi<0?'more than your tank':'reserve left '+(tank-fuelHi)+'–'+(tank-fuelLo)+' gal'}</b></div>
     <div><span>Sunrise / first light</span><b>${sunrise?fmtT(sunrise)+' / ~'+fmtT(new Date(sunrise.getTime()-25*60e3)):'–'}</b></div>
     ${RT.abaco?`<div><span>Palm Beach tides</span><b style="font-size:14px">${tideTxt}</b></div>`:''}
     <div style="grid-column:1/-1"><span>${RT.abaco?'Green Turtle':esc(RT.dest)} tide (model, rough)</span><b style="font-size:14px">${gt}</b></div>`;
