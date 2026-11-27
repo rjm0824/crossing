@@ -18,7 +18,7 @@ separate pull requests, each tested by RJ before he merges it:
     `next/` and changes it back to the preview's own names: PREVIEW banner and
     titles, saved names `cx:next:` (and the day, departure and go-day names
     next/ uses today, so RJ's saved setup and trips carry over), photo store
-    `cx-next`, family links to `next/family.html`. `beta/` stays for the next
+    `cx-next`, family links to `next/family.html`. Beta's saved copy for no signal (`beta/sw.js`, row 17) comes along as `next/sw.js` with its own cache name (`cx-next-app-…`) and the saved forecast as `cx:next:lastfc`; `/pr-check`'s saved-copy checks then cover `next/` too. `beta/` stays for the next
     round of features. Tests: `/pr-check`, the automatic checks, the trip
     checks at iPhone and iPad sizes, and RJ's phone test on `/next/` after
     merging (saved setup still there, a practice run, the family link).

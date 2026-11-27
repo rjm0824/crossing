@@ -25,12 +25,22 @@ window.addEventListener('hashchange',()=>location.reload());
   try{const tr=JSON.parse(localStorage.getItem('cx:beta:trip')||'null');$('liveBtn').href='live.html'+(HOME?'?trip=home':'');
     if(tr&&tr.status==='underway')$('liveBtn').textContent='Back to your trip';}catch(e){}
   // Row 13 part 2: the models and US marine warnings load after the main forecast and never hold it up.
+  // Row 17: the Plan page may fall back to the saved forecast, always marked.
+  FC_USE_SAVED=true;
+  const stamp=()=>{
+    const st=$('stale');
+    if(!FC_SAVED_AT){st.hidden=true;$('upd').textContent='Updated '+fmtT(new Date());return;}
+    const hrs=Math.round((Date.now()-FC_SAVED_AT)/3600e3),when=fmtDay(new Date(FC_SAVED_AT))+', '+fmtT(new Date(FC_SAVED_AT));
+    $('upd').textContent='Saved forecast from '+when;
+    st.textContent='No signal. This is the forecast saved on '+when+(hrs>=1?' ('+hrs+(hrs===1?' hour':' hours')+' ago)':'')+'. It may be out of date: check again when you have signal.';
+    st.hidden=false;
+  };
   const extras=()=>Promise.allSettled([loadModels(),loadAlerts()]).then(()=>{if(FC)render();});
-  try{await loadForecast();$('upd').textContent='Updated '+fmtT(new Date());render();extras();}
+  try{await loadForecast();stamp();render();extras();}
   catch(e){$('upd').textContent='Forecast failed to load';$('call').innerHTML='<div class="badge na">Offline</div><div class="why">Couldn\'t reach the forecast service. Pull to refresh, or use the source links below.</div>';}
   // Move the tide "now" marker every minute.
   setInterval(()=>{if(FC)renderTFF(LASTSEL);},60e3);
-  setInterval(async()=>{try{await loadForecast();$('upd').textContent='Updated '+fmtT(new Date());render();extras();}catch(e){}},30*60e3);
+  setInterval(async()=>{try{await loadForecast();stamp();render();extras();}catch(e){}},30*60e3);
 })();
 
 // Get ready (the go-day checklist; captain mode only; ticks saved on this device).

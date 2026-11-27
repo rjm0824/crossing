@@ -180,3 +180,5 @@ header{flex-wrap:wrap}
 .tripcard .tc b{font-size:17px}
 .tripcard .tc span{color:var(--soft);font-size:14px}
 .tripcard .btn{min-height:44px;display:inline-flex;align-items:center}
+/* Row 17: the saved-forecast warning on the answer card. */
+.stale{background:rgba(242,179,61,.12);border:1px solid var(--maybe);color:var(--maybe);border-radius:10px;padding:8px 10px;margin:0 0 10px;font-size:14px;font-weight:700}
