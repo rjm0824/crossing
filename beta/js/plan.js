@@ -44,8 +44,8 @@ function showCall(o,isBest){
   const lead=o.actual?'Left at':o.captain?'Captain\'s departure':isBest?'Best departure':'Departure';
   if(o.level<0){$('call').innerHTML=`<div class="badge na">No data</div><div class="why"><b>${lead} ${fmtT(o.dep)}</b>The forecast doesn't cover this time.</div>`;$('flags').innerHTML='';return;}
   const txt=o.level===0?'Looks like a go':o.level===1?'Crossable, not comfortable':'Not today';
-  $('call').innerHTML=`<div class="badge ${LV[o.level]}">${LVTXT[o.level]}</div><div class="why"><b>${txt}</b>${lead} <b style="display:inline;font-size:inherit">${fmtT(o.dep)}</b> · worst seas ${o.worstWave.toFixed(1)} ft · ${DEST} about ${fmtT(arr)}</div>`;
-  $('flags').innerHTML=o.flags.map(f=>`<li>${f}</li>`).join('')||'<li>No wind-against-Stream, storm or gust flags.</li>';
+  $('call').innerHTML=`<div class="badge ${LV[o.level]}">${LVTXT[o.level]}</div><div class="why"><b>${txt}</b>${lead} <b style="display:inline;font-size:inherit">${fmtT(o.dep)}</b> · worst seas ${o.worstWave.toFixed(1)} ft · ${esc(RT.dest)} about ${fmtT(arr)}</div>`;
+  $('flags').innerHTML=o.flags.map(f=>`<li>${esc(f)}</li>`).join('')||'<li>No wind-against-Stream, storm or gust flags.</li>';
 }
 function cls(v,lo,hi){return v==null?'':v>hi?'n':v>=lo?'m':'g';}
 function renderLegs(o){
@@ -53,10 +53,11 @@ function renderLegs(o){
   if(!o){t.innerHTML='';return;}
   t.innerHTML='<tr><th>Point</th><th>Pass</th><th>Seas</th><th>Wind</th><th>Rain</th></tr>'+o.rows.map(r=>{const v=r.v;
     const windCls=(MY.noNorth&&isNorthish(v.dir)&&(r.wp.ocean||r.wp.id==='inlet'))?cls(v.wind,MY.windKt-5,MY.windKt-0.1):cls(v.wind,MY.windKt,MY.windKt+5);
-    return `<tr><td>${r.wp.name}<br><small style="color:var(--soft)">${Math.round(cum[WP.indexOf(r.wp)])} nm</small></td><td>${fmtT(r.t)}</td><td class="${cls(v.wave,MY.seasFt-1,MY.seasFt)}">${v.wave==null?'–':v.wave.toFixed(1)+' ft'}<br><small>${v.per==null?'':v.per.toFixed(0)+'s '+dirName(v.wdir)}</small></td><td class="${windCls}">${v.wind==null?'–':Math.round(v.wind)+' kt '+dirName(v.dir)}<br><small>${v.gust==null?'':'gusts '+Math.round(v.gust)}</small></td><td>${v.rain==null?'–':v.rain+'%'}</td></tr>`;}).join('');
+    return `<tr><td>${esc(r.wp.name)}<br><small style="color:var(--soft)">${Math.round(RT.cum[RT.wp.indexOf(r.wp)])} nm</small></td><td>${fmtT(r.t)}</td><td class="${cls(v.wave,MY.seasFt-1,MY.seasFt)}">${v.wave==null?'–':v.wave.toFixed(1)+' ft'}<br><small>${v.per==null?'':v.per.toFixed(0)+'s '+dirName(v.wdir)}</small></td><td class="${windCls}">${v.wind==null?'–':Math.round(v.wind)+' kt '+dirName(v.dir)}<br><small>${v.gust==null?'':'gusts '+Math.round(v.gust)}</small></td><td>${v.rain==null?'–':v.rain+'%'}</td></tr>`;}).join('');
 }
 function chop(w){if(w==null)return '–';if(w<10)return 'under 1 ft';if(w<15)return '1–2 ft';if(w<20)return '2–3 ft';return '3+ ft, sloppy';}
 function renderInside(o){
+  if(!RT.abaco)return;   // Sea of Abaco and Whale Cay: the Abaco route only
   const when=o?o.rows[o.rows.length-1].t:etTime(DAY,14);
   const k=hourKey(when), iv=at(FC.inside,k), wv=at(FC.whale,k);
   const rage=wv.wave!=null&&(wv.wave>=5||(wv.swell>=4&&wv.sdir!=null&&wv.sdir>=0&&wv.sdir<=110));
@@ -69,7 +70,7 @@ function renderInside(o){
 async function renderTFF(o){
   LASTSEL=o;
   const arr=o?o.rows[o.rows.length-1].t:null;
-  const dist=TOTAL_NM, hrs=dist/MY.cruiseKt;
+  const dist=RT.totalNm, hrs=dist/MY.cruiseKt;
   const fu=MY.fuel(dist), fuelLo=fu.lo, fuelHi=fu.hi, tank=MY.tankGal;
   const fuelLeft=tank-fuelHi<0?'more than your tank':`${tank-fuelHi}–${tank-fuelLo} left`;
   const di=FC.daily.time.indexOf(DAY);
@@ -77,22 +78,25 @@ async function renderTFF(o){
   let tideTxt='–',tideNote='';
   const dep=o?o.dep.getTime():null,arrMs=arr?arr.getTime():null,nowMs=Date.now(),isToday=etDate(new Date())===DAY,nowMark=isToday?{ms:nowMs,color:'#e8f1f7',dash:true}:null;
   const nowTxt=(level,ft)=>{if(!isToday)return '';const a=level(nowMs),b=level(nowMs+10*60e3);if(a==null)return '';return 'now '+fmtT(new Date(nowMs))+(ft?' · '+a.toFixed(1)+' ft':'')+(b==null?'':b>a?' · rising':' · falling');};
-  try{const ev=await noaaTides(DAY);const d0=etTime(DAY,0).getTime(),d1=etTime(DAY,24).getTime();
+  // Palm Beach (NOAA Lake Worth Pier): the Abaco route only. Other routes show the destination's model tide.
+  if(!RT.abaco){$('tidePB').innerHTML='';$('tidePB').style.display='none';}
+  else try{const ev=await noaaTides(DAY);const d0=etTime(DAY,0).getTime(),d1=etTime(DAY,24).getTime();
     tideTxt=ev.filter(e=>e.ms>=d0&&e.ms<d1).map(x=>`${x.type==='H'?'High':'Low'} ${fmtT(new Date(x.ms))}`).join(' · ');
     tideNote='Palm Beach tides: NOAA Lake Worth Pier (8722670). ';
     const lv=cosLevel(ev);drawTideCurve($('tidePB'),'PALM BEACH INLET TIDE',lv,ev,DAY,[nowMark,HOME?(arrMs&&{ms:arrMs,color:'#f2b33d',label:'arrive'}):(dep&&{ms:dep,color:'#2fbf71',label:'leave'})],nowTxt(lv,true));}
   catch(e){tideTxt='Tide service didn\'t load';$('tidePB').innerHTML='';}
-  const gpt=FC.route[GTI];
+  const gpt=FC.route[RT.abaco?GTI:FC.route.length-1];
   const glv=modelLevel(gpt);
-  if(!drawTideCurve($('tideGT'),'GREEN TURTLE TIDE (MODEL)',glv,modelEvents(gpt,DAY),DAY,[nowMark,HOME?(dep&&{ms:dep,color:'#2fbf71',label:'leave'}):(arrMs&&{ms:arrMs,color:'#f2b33d',label:'arrive'})],nowTxt(glv,false)))$('tideGT').innerHTML='';
-  const gt=tideAt(FC.route[GTI],DAY);
+  if(!drawTideCurve($('tideGT'),RT.abaco?'GREEN TURTLE TIDE (MODEL)':RT.dest.toUpperCase()+' TIDE (MODEL)',glv,modelEvents(gpt,DAY),DAY,[nowMark,HOME&&RT.abaco?(dep&&{ms:dep,color:'#2fbf71',label:'leave'}):(arrMs&&{ms:arrMs,color:'#f2b33d',label:'arrive'})],nowTxt(glv,false)))$('tideGT').innerHTML='';
+  const gt=tideAt(gpt,DAY);
   $('tff').innerHTML=`
-    <div><span>Distance (${ORIG} → ${DEST})</span><b>${Math.round(dist)} nm</b></div>
+    <div><span>Distance (${esc(RT.orig)} → ${esc(RT.dest)})</span><b>${Math.round(dist)} nm</b></div>
     <div><span>Run time at ${MY.cruiseKt} kt</span><b>${Math.floor(hrs)}h ${Math.round((hrs%1)*60)}m</b></div>
-    <div><span>Arrive ${DEST}</span><b>${arr?fmtT(arr):'–'}</b></div>
+    <div><span>Arrive ${esc(RT.dest)}</span><b>${arr?fmtT(arr):'–'}</b></div>
     <div><span>Fuel (${tank} gal tank${fu.estimate?', estimated burn':''})</span><b>${fuelLo}–${fuelHi} gal · ${fuelLeft}</b></div>
     <div><span>Sunrise / first light</span><b>${sunrise?fmtT(sunrise)+' / ~'+fmtT(new Date(sunrise.getTime()-25*60e3)):'–'}</b></div>
-    <div><span>Palm Beach tides</span><b style="font-size:14px">${tideTxt}</b></div>
-    <div style="grid-column:1/-1"><span>Green Turtle tide (model, rough)</span><b style="font-size:14px">${gt}</b></div>`;
-  $('tideNote').textContent=tideNote+'Green Turtle tide is from an ocean model, fine for timing but not for depth. Check your tide tables for skinny water.';
+    ${RT.abaco?`<div><span>Palm Beach tides</span><b style="font-size:14px">${tideTxt}</b></div>`:''}
+    <div style="grid-column:1/-1"><span>${RT.abaco?'Green Turtle':esc(RT.dest)} tide (model, rough)</span><b style="font-size:14px">${gt}</b></div>`;
+  $('tideNote').textContent=RT.abaco?tideNote+'Green Turtle tide is from an ocean model, fine for timing but not for depth. Check your tide tables for skinny water.'
+    :RT.dest+' tide is from an ocean model, fine for timing but not for depth. Check your tide tables, especially at the inlets and in skinny water.';
 }

@@ -6,7 +6,7 @@
 (function () {
   var S = window.CXSetup;
   var app = document.getElementById('ob');
-  var STEPS = 6;   // safety, questions, boat, limits, followers, tracking (route joins in row 9)
+  var STEPS = 7;   // safety, questions, boat, limits, route (row 9), followers, tracking
 
   // The 7 questions. Chips come from the mockup; route chips are only the
   // routes that exist today (the Bimini presets arrive in row 9).
@@ -44,7 +44,7 @@
   }
   function clip(s, n) { return String(s == null ? '' : s).replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n); }
   function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
-  function go(screen) { if (!st.form && /^(boat|limits|followers|tracking)$/.test(screen)) startForm(); st.screen = screen; render(); window.scrollTo(0, 0); }
+  function go(screen) { if (!st.form && /^(boat|limits|route|mymap|followers|tracking)$/.test(screen)) startForm(); st.screen = screen; render(); window.scrollTo(0, 0); }
 
   // Rough fuel burn when the captain taps "Not sure": by length, engines and
   // boat type. Shown in amber as an estimate to check after the first trip.
@@ -260,6 +260,8 @@
     var savedF = Array.isArray(s.followers) ? s.followers.map(function (x) { return { name: x.name || '', phone: x.phone || '' }; }) : null;
     var useAnsF = st.answers[6] && !st.answers[6].skip && (s.answersAt || 0) > (s.followersCheckedAt || 0);
     st.followers = useAnsF || !savedF ? f.followers.map(function (n) { return { name: n, phone: '' }; }) : savedF;
+    // Route (row 9): the saved pick, else Abaco. Only ready routes are offered (routes.js).
+    st.routeId = routeById(s.route && s.route.id, s).id;
     var L = s.limits || {};
     st.limits = { preset: L.preset || 'standard', seasFt: L.seasFt || 4, windKt: L.windKt || 15, noNorthInStream: L.noNorthInStream !== false };
   }
@@ -407,11 +409,150 @@
       h('p', { class: 'ob-help', text: 'Seas over your max, or north wind at your max in the Stream, is NO-GO. Wind over your max anywhere else is CROSSABLE, not comfortable. Standard uses the same seas and north-wind numbers as the Plan page today.' })
     ], h('button', { type: 'button', class: 'ob-next', id: 'obNext', text: 'Save my limits', onclick: function () {
       S.save({ limits: { preset: L.preset, seasFt: L.seasFt, windKt: L.windKt, noNorthInStream: L.noNorthInStream } });
+      go('route');
+    } }));
+  }
+
+  // ---------- Step 5: your route (MVP row 9) ----------
+  function route() {
+    var list = readyRoutes(S.load());
+    var cards = list.map(function (r) {
+      var on = st.routeId === r.id;
+      var pts = h('ol', { class: 'ptlist' }, r.points.map(function (p) {
+        return h('li', {}, [p.name, p.stream ? h('span', { class: 'stag', text: 'Stream' }) : null]);
+      }));
+      return h('button', { type: 'button', class: 'routecard' + (on ? ' on' : ''), 'aria-pressed': on ? 'true' : 'false', id: 'rt_' + r.id,
+        onclick: function () { st.routeId = r.id; render(); } }, [
+        h('b', { text: r.name }),
+        h('small', { text: 'About ' + Math.round(routeNm(r)) + ' nm \u00b7 ' + r.sub }),
+        on ? pts : null,
+        on && r.home.from ? h('small', { text: 'Trip home: the same route reversed, starting at ' + r.home.from + '.' }) : null,
+        on && r.mine ? h('small', { text: 'Trip home: the same route reversed.' }) : null
+      ]);
+    });
+    var hasMine = list.some(function (r) { return r.mine; });
+    cards.push(h('button', { type: 'button', class: 'routecard add', id: 'rtMine', onclick: function () { go('mymap'); } }, [
+      h('b', { text: hasMine ? 'Change my own route' : 'Tap my own points on the map' }),
+      h('small', { text: 'Anywhere. Name each point and mark which are in the Gulf Stream.' })
+    ]));
+    return stepFrame(5, 'Your route', function () { go('limits'); }, [
+      h('p', { class: 'ob-lede', text: 'Pick your usual crossing. The trip home flips it.' }),
+      h('div', { class: 'routes' }, cards),
+      h('p', { class: 'ob-help', text: '\u201cStream\u201d marks where the no-north-wind rule applies. Fort Lauderdale and Miami to Bimini are being added.' })
+    ], h('button', { type: 'button', class: 'ob-next', id: 'obNext', text: 'Use this route', onclick: function () {
+      S.save({ route: { id: st.routeId } });
       go('followers');
     } }));
   }
 
-  // ---------- Step 5: who follows you ----------
+  // ---------- Step 5b: my own route on the map (MVP row 9) ----------
+  // A fixed crosshair, as in the home port picker: move the map until the
+  // crosshair is on the spot, then "Add point here". A tap on the map moves
+  // it there too. (A tap alone did not register on RJ's iPad, Nov 25.)
+  // The map library loads only here, so the rest of Setup works with no signal.
+  var LEAFLET = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min';
+  function loadLeaflet() {
+    if (window.L) return Promise.resolve();
+    if (st.leafletLoading) return st.leafletLoading;
+    st.leafletLoading = new Promise(function (ok, fail) {
+      var css = document.createElement('link'); css.rel = 'stylesheet'; css.href = LEAFLET + '.css'; document.head.appendChild(css);
+      var js = document.createElement('script'); js.src = LEAFLET + '.js';
+      js.onload = function () { window.L ? ok() : fail(); };
+      js.onerror = function () { st.leafletLoading = null; js.remove(); fail(); };
+      document.head.appendChild(js);
+    });
+    return st.leafletLoading;
+  }
+  function legNm(a, b) {
+    var R = 3440.065, rad = function (d) { return d * Math.PI / 180; };
+    var dLat = rad(b.lat - a.lat), dLon = rad(b.lon - a.lon);
+    var x = Math.pow(Math.sin(dLat / 2), 2) + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.pow(Math.sin(dLon / 2), 2);
+    return 2 * R * Math.asin(Math.sqrt(x));
+  }
+  function mymap() {
+    var saved = (S.load() || {}).myRoute || {};
+    if (!st.myPts) st.myPts = Array.isArray(saved.points) ? saved.points.map(function (p) { return { name: p.name, lat: p.lat, lon: p.lon, stream: !!p.stream }; }) : [];
+    if (st.myName == null) st.myName = saved.name || 'My route';
+    var pts = st.myPts, msg = h('div', { class: 'obresult', 'aria-live': 'polite' });
+    var mapEl = h('div', { class: 'mymap', id: 'obMap', 'aria-label': 'Map for placing your route points' });
+    var wrap = h('div', { class: 'mapwrap' }, [mapEl, h('div', { class: 'xhair', 'aria-hidden': 'true' })]);
+    var mapNote = h('p', { class: 'ob-help', id: 'obMapNote', text: 'Loading the map\u2026' });
+    var listEl = h('ol', { class: 'mypts', id: 'obPts' });
+    var total = h('p', { class: 'ob-help', id: 'obTotal' });
+    var addBtn = h('button', { type: 'button', class: 'ob-next', id: 'obAddPt', disabled: true, text: 'Add point here' });
+    var map = null, layer = null;
+
+    function drawMap() {
+      if (!map) return;
+      layer.clearLayers();
+      if (pts.length > 1) L.polyline(pts.map(function (p) { return [p.lat, p.lon]; }), { color: '#0F5F7A', weight: 3, dashArray: '6 6' }).addTo(layer);
+      pts.forEach(function (p, i) {
+        L.marker([p.lat, p.lon], { interactive: false, keyboard: false, icon: L.divIcon({ className: 'ptpin' + (p.stream ? ' stream' : ''), html: String(i + 1), iconSize: [28, 28] }) }).addTo(layer);
+      });
+    }
+    function drawList() {
+      var nm = 0; for (var i = 1; i < pts.length; i++) nm += legNm(pts[i - 1], pts[i]);
+      total.textContent = pts.length ? pts.length + (pts.length === 1 ? ' point' : ' points') + (pts.length > 1 ? ' \u00b7 about ' + Math.round(nm) + ' nm' : '') : 'No points yet. Put the crosshair on your start and tap Add point here.';
+      listEl.replaceChildren.apply(listEl, pts.map(function (p, i) {
+        var nmIn = h('input', { type: 'text', value: p.name, maxlength: '30', autocomplete: 'off', id: 'pn_' + i, 'aria-label': 'Name of point ' + (i + 1) });
+        nmIn.addEventListener('input', function () { p.name = nmIn.value; });
+        var tick = h('input', { type: 'checkbox', id: 'ps_' + i, checked: p.stream });
+        tick.addEventListener('change', function () { p.stream = tick.checked; drawMap(); });
+        return h('li', {}, [
+          h('span', { class: 'pnum' + (p.stream ? ' stream' : ''), text: String(i + 1) }),
+          h('div', { class: 'pmain' }, [nmIn, h('label', { class: 'ptick', for: 'ps_' + i }, [tick, ' In the Gulf Stream'])]),
+          h('button', { type: 'button', class: 'rm', 'aria-label': 'Remove point ' + (i + 1), text: '\u00d7', onclick: function () { pts.splice(i, 1); drawList(); drawMap(); } })
+        ]);
+      }));
+      addBtn.disabled = !map || pts.length >= 12;
+      addBtn.textContent = pts.length >= 12 ? '12 points is the most' : 'Add point here';
+    }
+    addBtn.addEventListener('click', function () {
+      if (!map || pts.length >= 12) return;
+      var c = map.getCenter(), r5 = function (v) { return Math.round(v * 1e5) / 1e5; };
+      pts.push({ name: 'Point ' + (pts.length + 1), lat: r5(c.lat), lon: r5(((c.lng + 540) % 360) - 180), stream: false });
+      msg.textContent = '';
+      drawList(); drawMap();
+    });
+
+    var nameIn = h('input', { type: 'text', id: 'obRouteName', value: st.myName, maxlength: '40', autocomplete: 'off' });
+    nameIn.addEventListener('input', function () { st.myName = nameIn.value; });
+
+    var screen = stepFrame(5, 'Your own route', function () { st.myPts = null; st.myName = null; go('route'); }, [
+      h('p', { class: 'ob-lede', text: 'Move the map until the crosshair is on a point, then tap Add point here. Start to finish, in order.' }),
+      wrap, mapNote, addBtn, total, listEl,
+      h('label', { class: 'obfield' }, [h('span', { text: 'Route name' }), nameIn]),
+      h('p', { class: 'ob-help', text: 'Tick \u201cIn the Gulf Stream\u201d for points where the no-north-wind rule should apply. Points are for the forecast only, not a course to steer.' })
+    ], h('div', {}, [msg, h('button', { type: 'button', class: 'ob-next', id: 'obNext', text: 'Use my route', onclick: function () {
+      if (pts.length < 2) { msg.textContent = 'Add at least 2 points: a start and a finish.'; return; }
+      var out = pts.map(function (p, i) { return { name: clip(p.name, 30) || 'Point ' + (i + 1), lat: p.lat, lon: p.lon, stream: !!p.stream }; });
+      if (!S.save({ myRoute: { name: clip(st.myName, 40) || 'My route', points: out }, route: { id: 'mine' } })) { msg.textContent = 'Couldn\u2019t save on this device. Check that private browsing is off.'; return; }
+      st.routeId = 'mine'; st.myPts = null; st.myName = null;
+      go('route');
+    } })]));
+
+    drawList();
+    loadLeaflet().then(function () {
+      if (!document.body.contains(mapEl)) return;
+      map = L.map(mapEl, { zoomControl: true, attributionControl: true });
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}', { maxZoom: 15, maxNativeZoom: 13, attribution: 'Tiles \u00a9 Esri, GEBCO' }).addTo(map);
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 15, maxNativeZoom: 13 }).addTo(map);
+      L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '\u00a9 OpenSeaMap' }).addTo(map);
+      layer = L.layerGroup().addTo(map);
+      map.on('click', function (e) { map.panTo(e.latlng); });
+      if (pts.length) map.fitBounds(pts.map(function (p) { return [p.lat, p.lon]; }), { padding: [30, 30], maxZoom: 12 });
+      else map.setView([26.3, -79.4], 7);
+      setTimeout(function () { map.invalidateSize(); }, 120);
+      mapNote.textContent = 'Pinch to zoom. Numbered dots are your points; blue ones are in the Stream.';
+      drawList(); drawMap();
+    }).catch(function () {
+      mapNote.textContent = 'The map needs signal. Pick a route above for now, or try again when you\u2019re online.';
+      mapNote.className = 'ob-placeholder';
+    });
+    return screen;
+  }
+
+  // ---------- Step 6: who follows you ----------
   function phoneOK(p) { p = clip(p, 24); return p === '' || (/^[+()\d\s.-]+$/.test(p) && p.replace(/\D/g, '').length >= 7 && p.replace(/\D/g, '').length <= 15); }
   function followers() {
     var list = st.followers, msg = h('div', { class: 'obresult', 'aria-live': 'polite' });
@@ -424,7 +565,7 @@
       var rm = h('button', { type: 'button', class: 'rm', 'aria-label': 'Remove ' + (clip(fo.name, 40) || 'this follower'), text: '×', onclick: function () { list.splice(i, 1); render(); } });
       return h('div', { class: 'follower' }, [ini, h('div', { class: 'fins' }, [nm, ph]), rm]);
     });
-    return stepFrame(5, 'Who follows you', function () { go('limits'); }, [
+    return stepFrame(6, 'Who follows you', function () { go('route'); }, [
       h('p', { class: 'ob-lede', text: 'Who should get the link to follow you? They don’t need the app.' }),
       h('div', { class: 'followers' }, rows),
       list.length < 6 ? h('button', { type: 'button', class: 'addrow', id: 'obAdd', text: '+ Add a follower', onclick: function () {
@@ -450,7 +591,7 @@
     } })]));
   }
 
-  // ---------- Step 6: tracking on the water ----------
+  // ---------- Step 7: tracking on the water ----------
   // Location: asks the phone once so the question doesn't pop up at the dock.
   // The position it returns is not kept or sent. Keep screen on: the same
   // choice as Settings (cx:beta:prefs.keepAwake), which the Live screen reads
@@ -477,7 +618,7 @@
       h('span', {}, [h('b', { text: 'Keep screen on while sharing' }), h('small', { text: 'Stops the phone or iPad pausing tracking when it locks' })]),
       h('span', { class: 'sw' + (awake ? ' on' : ''), 'aria-hidden': 'true' })
     ]);
-    return stepFrame(6, 'Tracking on the water', function () { go('followers'); }, [
+    return stepFrame(7, 'Tracking on the water', function () { go('followers'); }, [
       h('p', { class: 'ob-lede', text: 'Two quick things so tracking works on the water.' }),
       locBtn,
       loc === 'no' ? h('p', { class: 'ob-placeholder', text: 'To turn it on: iPhone Settings → Privacy & Security → Location Services → Safari Websites → While Using the App.' }) : null,
@@ -499,8 +640,9 @@
     function show(kids) { box.replaceChildren.apply(box, kids); }
     if (typeof loadForecast !== 'function') return;
     Object.assign(MY, readMySetup());
+    Object.assign(RT, buildRoute());
     var day = etDate(new Date(Date.now() + 86400e3));
-    var label = h('span', { class: 'vlabel', text: 'Tomorrow \u00b7 ' + ORIG + ' \u2192 ' + DEST });
+    var label = h('span', { class: 'vlabel', text: 'Tomorrow \u00b7 ' + RT.orig + ' \u2192 ' + RT.dest });
     show([label, h('p', { class: 'ob-help', text: 'Checking tomorrow\u2019s forecast\u2026' })]);
     loadForecast().then(function () {
       var best = null;
@@ -513,7 +655,7 @@
       show([label,
         h('div', { class: 'vrow' }, [
           h('span', { class: 'vbadge ' + CLS[best.level], id: 'obWord', text: WORDS[best.level] }),
-          h('span', { class: 'vwhy' }, [h('b', { class: 'vsay', text: SAY[best.level] }), 'Best departure ', h('b', { text: fmtT(best.dep) }), '. Worst seas ' + best.worstWave.toFixed(1) + ' ft. ' + DEST + ' about ' + fmtT(arr) + '.'])
+          h('span', { class: 'vwhy' }, [h('b', { class: 'vsay', text: SAY[best.level] }), 'Best departure ', h('b', { text: fmtT(best.dep) }), '. Worst seas ' + best.worstWave.toFixed(1) + ' ft. ' + RT.dest + ' about ' + fmtT(arr) + '.'])
         ]),
         best.flags.length ? h('p', { class: 'ob-help', text: best.flags[0] }) : null,
         h('p', { class: 'ob-help', text: 'Judged with your limits: seas ' + MY.seasFt + ' ft, wind ' + MY.windKt + ' kt, at ' + MY.cruiseKt + ' kt. Forecasts can be wrong; the captain decides.' })
@@ -543,7 +685,7 @@
     ])])]);
   }
 
-  var SCREENS = { welcome: welcome, safety: safety, tell: tell, boat: boat, limits: limits, followers: followers, tracking: tracking, done: done };
+  var SCREENS = { welcome: welcome, safety: safety, tell: tell, boat: boat, limits: limits, route: route, mymap: mymap, followers: followers, tracking: tracking, done: done };
   // after: 'type' keeps the keyboard up for the next answer; 'scroll' shows the newest message.
   function render(after) {
     app.replaceChildren(st.screen === 'welcome' ? h('div', { class: 'ob' }, [previewBanner(), welcome()]) : SCREENS[st.screen]());

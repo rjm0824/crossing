@@ -18,7 +18,10 @@ function readMySetup() {
     seasFt: (L && num(L.seasFt, 1, 8)) || 4,          // today's Plan page: over 4 ft is NO-GO
     windKt: (L && num(L.windKt, 5, 30)) || 15,        // today's: north wind 15 kt+ in the Stream is NO-GO
     noNorth: !L || L.noNorthInStream !== false,
-    windRule: !!L                                     // any wind over the max is CROSSABLE, once limits are saved
+    windRule: !!L,                                    // any wind over the max is CROSSABLE, once limits are saved
+    // The chosen route (routes.js; row 9). Only Abaco is ready, so the Plan page's
+    // points don't change yet; switching them comes with the Bimini presets.
+    route: (typeof routeById === 'function') ? routeById(s && s.route && s.route.id, s) : null
   };
   // Fuel for a run: today's figures scaled by distance, or the captain's burn
   // with 20% on top for sea state and idling.

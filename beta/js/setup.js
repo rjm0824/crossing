@@ -17,7 +17,8 @@
 //     burnEstimate // true when burnGph is the rough estimate ("Not sure")
 //   },
 //   limits: { preset: 'cautious'|'standard'|'experienced'|'custom', seasFt, windKt, noNorthInStream },
-//   route: { id: 'abaco' },          // row 9 adds the other presets and tapped points
+//   route: { id: 'abaco' | 'mine' | ... },  // the chosen route (routes.js)
+//   myRoute: { name, points: [ { name, lat, lon, stream } ] },  // tapped on the map in Setup; 2 to 12 points
 //   followers: [ { name, phone } ],  // first names; phone optional, only pre-fills the text at Start trip
 //   answers: [ { text, chip } | { skip: true } ],  // the 7 setup questions, as tapped or typed
 //   answersAt, boatCheckedAt, followersCheckedAt,  // (ms) so newer answers refill the forms, but older ones never undo an edit

@@ -5,8 +5,9 @@ function initMap(){
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:15,maxNativeZoom:13,attribution:'Tiles © Esri, GEBCO, NOAA, Garmin'}).addTo(map);
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Reference/MapServer/tile/{z}/{y}/{x}',{maxZoom:15,maxNativeZoom:13}).addTo(map);
   L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png',{maxZoom:17,attribution:'© OpenSeaMap'}).addTo(map);
-  routeLine=L.polyline(TRACK.map(p=>[p.lat,p.lon]),{color:'#5cc8ff',weight:3,dashArray:'6 6'}).addTo(map);
-  WP.forEach((p,i)=>L.circleMarker([p.lat,p.lon],{radius:5,color:'#fff',weight:1,fillColor:p.ocean?'#f2b33d':'#5cc8ff',fillOpacity:1}).addTo(map).bindPopup(`<b>${p.name}</b><br>${Math.round(cum[i])} nm from the inlet`));
+  routeLine=L.polyline(RT.track.map(p=>[p.lat,p.lon]),   // RT: active-route.js (row 9)
+   {color:'#5cc8ff',weight:3,dashArray:'6 6'}).addTo(map);
+  RT.wp.forEach((p,i)=>L.circleMarker([p.lat,p.lon],{radius:5,color:'#fff',weight:1,fillColor:p.ocean?'#f2b33d':'#5cc8ff',fillOpacity:1}).addTo(map).bindPopup(`<b>${esc(p.name)}</b><br>${Math.round(RT.cum[i])} nm from ${RT.abaco?'the inlet':'the start'}`));
   map.fitBounds(routeLine.getBounds(),{padding:[20,20]});
   $('fullBtn').onclick=()=>{const on=document.body.classList.toggle('mapfull');$('fullBtn').textContent=on?'✕ Close':'⛶ Full screen';setTimeout(()=>{map.invalidateSize();if(on)map.fitBounds(routeLine.getBounds(),{padding:[20,20]});},150);};
   $('fitBtn').onclick=()=>map.fitBounds(routeLine.getBounds(),{padding:[20,20]});
@@ -28,9 +29,9 @@ async function loadRadar(){
 
 // ---------- GPX ----------
 function gpx(){
-  const pts=TRACK.map((p,i)=>`  <rtept lat="${p.lat}" lon="${p.lon}"><name>GNO${String(i+1).padStart(3,'0')}</name></rtept>`).join('\n');
-  const wps=WP.map(p=>`<wpt lat="${p.lat}" lon="${p.lon}"><name>${p.name}</name></wpt>`).join('\n');
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Goof n' Off Crossing" xmlns="http://www.topografix.com/GPX/1/1">\n${wps}\n<rte><name>${ORIG} to ${DEST}</name>\n${pts}\n</rte>\n</gpx>\n`;
+  const pts=RT.track.map((p,i)=>`  <rtept lat="${p.lat}" lon="${p.lon}"><name>GNO${String(i+1).padStart(3,'0')}</name></rtept>`).join('\n');
+  const wps=RT.wp.map(p=>`<wpt lat="${p.lat}" lon="${p.lon}"><name>${esc(p.name)}</name></wpt>`).join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Goof n' Off Crossing" xmlns="http://www.topografix.com/GPX/1/1">\n${wps}\n<rte><name>${esc(RT.orig)} to ${esc(RT.dest)}</name>\n${pts}\n</rte>\n</gpx>\n`;
 }
-$('gpxBtn').onclick=()=>{const b=new Blob([gpx()],{type:'application/gpx+xml'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='PBI-to-Green-Turtle.gpx';document.body.appendChild(a);a.click();a.remove();};
+$('gpxBtn').onclick=()=>{const b=new Blob([gpx()],{type:'application/gpx+xml'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=RT.abaco?'PBI-to-Green-Turtle.gpx':'my-route.gpx';document.body.appendChild(a);a.click();a.remove();};
 
