@@ -174,3 +174,9 @@ header{flex-wrap:wrap}
 .warnings.has{background:rgba(242,179,61,.1);border:1px solid var(--maybe);border-radius:10px;padding:8px 10px}
 .note.models{font-size:13px;color:var(--ink)}
 .note.models:empty{display:none}
+/* Row 14a: Next trip / Planning card on the Plan page. */
+.tripcard .tc{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.tripcard .tc small{flex:1 1 100%;color:var(--soft);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+.tripcard .tc b{font-size:17px}
+.tripcard .tc span{color:var(--soft);font-size:14px}
+.tripcard .btn{min-height:44px;display:inline-flex;align-items:center}

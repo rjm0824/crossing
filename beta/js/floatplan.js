@@ -48,7 +48,7 @@
   );
 
   // Trip
-  $('fpDir').textContent = (HOME ? 'Trip home' : 'Trip over') + ': ' + RT.orig + ' → ' + RT.dest;
+  $('fpDir').textContent = (HOME ? 'Trip home' : 'Trip over') + (TRIP_PLAN && TRIP_PLAN.name ? ' (' + TRIP_PLAN.name + ')' : '') + ': ' + RT.orig + ' → ' + RT.dest;
   var trip = $('fpTrip');
   trip.append(
     row('Route', RT.name + (HOME ? ' (reversed for the trip home)' : '') + ', about ' + Math.round(RT.totalNm) + ' nm'),

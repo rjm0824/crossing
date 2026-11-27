@@ -4,6 +4,9 @@ window.addEventListener('hashchange',()=>location.reload());
   const days=dayList();
   let saved=null;try{saved=localStorage.getItem('cx:beta:crossDay');}catch(e){}
   DAY=days.includes(saved)?saved:days[0];
+  // A trip opened from My Trips plans its own day (row 14a).
+  if(TRIP_PLAN&&days.includes(TRIP_PLAN.date))DAY=TRIP_PLAN.date;
+  renderTripCard();
   // The boat's name from setup (row 11); with no setup it reads as before.
   $('boatTitle').textContent=MY.boatName;
   document.title=(HOME?'Trip home · ':'Crossing · ')+MY.boatName;
@@ -105,7 +108,7 @@ window.addEventListener('hashchange',()=>location.reload());
   const other=HOME?location.pathname+h:location.pathname+'?trip=home'+h;
   // Route line with a ⇄ button to flip direction (mockup: route label and flip).
   const label=!RT.abaco?esc(RT.orig)+' → '+esc(RT.dest):HOME?'Guana Cay → Palm Beach':'Palm Beach → Green Turtle';
-  $('dirBar').innerHTML='<div class="rt"><small>'+(HOME?'Trip home':'Trip over')+'</small>'+label+'</div>'
+  $('dirBar').innerHTML='<div class="rt"><small>'+(HOME?'Trip home':'Trip over')+(TRIP_PLAN&&TRIP_PLAN.name?' \u00b7 '+esc(TRIP_PLAN.name):'')+'</small>'+label+'</div>'
     +'<a class="flip" href="'+other+'" aria-label="'+(HOME?'Switch to the trip over':'Switch to the trip home')+'">⇄ '+(HOME?'Trip over':'Trip home')+'</a>';
   if(!RT.abaco){$('depFrom').textContent='Departure options from '+RT.orig+'.';}
   else if(HOME){
@@ -113,3 +116,26 @@ window.addEventListener('hashchange',()=>location.reload());
     $('trackNote').textContent='Start the trip on the helm iPad, then send the family link. Family follow the boat on their own page. Nothing is shared until you are past Green Turtle, and sharing stops when you arrive.';
   }
 })();
+
+// ---------- Next trip / this trip card (row 14a) ----------
+// Without ?t=: the soonest saved trip, if any, with a way to plan it.
+// With ?t=: which saved trip this page is planning.
+function renderTripCard(){
+  const box=$('tripCard');if(!box||typeof MyTrips==='undefined')return;
+  const t=TRIP_PLAN||MyTrips.next();
+  if(!t){box.hidden=true;return;}
+  const n=MyTrips.daysOut(t.date),st=MyTrips.stage(t);
+  const when=MyTrips.fmtDate(t.date)+(n===0?' (today)':n===1?' (tomorrow)':n>1?' (in '+n+' days)':'');
+  const title=esc(t.name||(t.home?'Trip home':'Trip over'));
+  let body,btn='';
+  if(TRIP_PLAN){
+    body=st==='full'?'This page is planning this trip: its route, direction, day and followers.'
+      :'This trip is more than '+MyTrips.FULL_DAYS+' days out, so the departure times below are for the days the forecast covers. '+(st==='outlook'?'My Trips has its early outlook.':'Forecast opens '+MyTrips.fmtDate(MyTrips.forecastOpens(t))+'.');
+    btn='<a class="btn" href="index.html'+(HOME?'?trip=home':'')+'#captain">Back to my usual plan</a> <a class="btn" href="mytrips.html'+(HOME?'?trip=home':'')+'">My Trips</a>';
+  }else{
+    body=(t.home?'Trip home':'Trip over')+(st==='full'?' \u00b7 forecast ready.':st==='outlook'?' \u00b7 early outlook in My Trips.':' \u00b7 forecast opens '+MyTrips.fmtDate(MyTrips.forecastOpens(t))+'.');
+    btn=(st==='full'?'<a class="btn primary" href="'+MyTrips.planHref(t)+'">Plan this trip</a> ':'')+'<a class="btn" href="mytrips.html'+(HOME?'?trip=home':'')+'">My Trips</a>';
+  }
+  box.innerHTML='<div class="tc"><small>'+(TRIP_PLAN?'Planning':'Next trip')+'</small><b>'+title+'</b><span>'+when+'</span></div><p class="note" style="margin-top:6px">'+body+'</p><div class="track" style="margin-top:8px">'+btn+'</div>';
+  box.hidden=false;
+}
