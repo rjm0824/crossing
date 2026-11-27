@@ -15,6 +15,12 @@ echo "Files changed against main:"; printf '  %s\n' $changed
 if printf '%s\n' "$changed" | grep -Eq '^(index\.html|original/|tracker/Code\.gs)'; then
   bad "the live page, original/ or tracker/Code.gs changed (needs a promote PR or a hand redeploy)"
 else pass "live page, original/ and tracker/Code.gs untouched"; fi
+# next/ is frozen for the crossing (RJ, Nov 27) while the guard's FREEZE_NEXT=1.
+if grep -q '^FREEZE_NEXT=1' .claude/hooks/protect-live.sh; then
+  if printf '%s\n' "$changed" | grep -q '^next/'; then
+    bad "next/ changed while it is frozen for the crossing (new work goes in beta/)"
+  else pass "next/ untouched (frozen for the crossing)"; fi
+fi
 
 # 2. Secrets and wording in the added lines.
 added=$( { git diff "$base"...HEAD; git diff; } | grep '^+' | grep -v '^+++')
@@ -27,30 +33,37 @@ if printf '%s' "$added" | grep -Ei '\bsafe(ly)?\b' | grep -vqi 'safe-area'; then
 if printf '%s' "$added" | grep "no-cors" | grep -vq "never no-cors"; then
   bad "no-cors was added (requests must read the real answer)"; else pass "no no-cors"; fi
 
-# 3. The "Planning aid" line on every app page in next/.
-for f in next/index.html next/live.html next/family.html; do
+# 3. The "Planning aid" line on every app page in next/ and beta/.
+for f in next/index.html next/live.html next/family.html beta/index.html beta/live.html beta/family.html; do
   [ -f "$f" ] || continue
   if grep -q "Planning aid, not for navigation" "$f"; then pass "Planning aid line on $f"; else bad "Planning aid line missing on $f"; fi
 done
 
-# 4. Scripts load and the checks pass.
-loadfail=0
-for f in next/js/*.js; do node --check "$f" 2>/dev/null || { bad "$f does not load"; loadfail=1; }; done
-[ $loadfail -eq 0 ] && pass "every next/js file loads"
-if out=$(node --test next/test/trip.test.js 2>&1); then
-  pass "trip checks: $(printf '%s' "$out" | grep -E '^# pass' | sed 's/# //')"
-else bad "trip checks failed: $(printf '%s' "$out" | grep -E '^not ok' | head -5 | tr '\n' ' ')"; fi
+# 4. Scripts load and the checks pass (next/ and beta/).
+for d in next beta; do
+  [ -d "$d" ] || continue
+  loadfail=0
+  for f in $d/js/*.js; do node --check "$f" 2>/dev/null || { bad "$f does not load"; loadfail=1; }; done
+  [ $loadfail -eq 0 ] && pass "every $d/js file loads"
+  if out=$(node --test $d/test/trip.test.js 2>&1); then
+    pass "$d trip checks: $(printf '%s' "$out" | grep -E '^# pass' | sed 's/# //')"
+  else bad "$d trip checks failed: $(printf '%s' "$out" | grep -E '^not ok' | head -5 | tr '\n' ' ')"; fi
+done
+# Beta keeps its own saved data: no code line in beta/ may name cx:next: (comments are fine).
+if [ -d beta ] && grep -rn "cx:next:" beta --include=*.js --include=*.html | grep -vE '^[^:]+:[0-9]+:[[:space:]]*(//|<!--|\*)' | grep -q .; then
+  bad "beta/ code names cx:next: (beta must save under cx:beta: only)"
+elif [ -d beta ]; then pass "beta/ saves under its own names (no cx:next: in code)"; fi
 if printf '%s\n' "$changed" | grep -q '^tracker-service/'; then
   if [ -d tracker-service/node_modules ]; then
     (cd tracker-service && npm test >/dev/null 2>&1) && pass "tracker-service checks" || bad "tracker-service checks failed"
   else echo "NOTE  tracker-service changed: run npm ci and npm test in tracker-service/"; fi
 fi
 
-# 5. Version tags: a changed next/js or next/css file should carry a new ?v= tag.
-for f in $(printf '%s\n' "$changed" | grep -E '^next/(js|css)/'); do
-  name=$(basename "$f")
-  now=$(grep -hoE "${name}\?v=[0-9a-z]+" next/*.html 2>/dev/null | sort -u)
-  before=$(for p in next/index.html next/live.html next/family.html next/trip-test.html; do git show "$base:$p" 2>/dev/null; done | grep -oE "${name}\?v=[0-9a-z]+" | sort -u)
+# 5. Version tags: a changed next/ or beta/ js or css file should carry a new ?v= tag.
+for f in $(printf '%s\n' "$changed" | grep -E '^(next|beta)/(js|css)/'); do
+  name=$(basename "$f"); d=${f%%/*}
+  now=$(grep -hoE "${name}\?v=[0-9a-z]+" $d/*.html 2>/dev/null | sort -u)
+  before=$(for p in $d/*.html; do git show "$base:$p" 2>/dev/null; done | grep -oE "${name}\?v=[0-9a-z]+" | sort -u)
   if [ -n "$now" ] && [ "$now" = "$before" ]; then
     bad "$f changed but its ?v= tag did not (phones may keep the old copy)"
   fi

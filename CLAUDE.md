@@ -8,7 +8,8 @@ A boat-crossing planner (South Florida to the Bahamas first) being turned into a
 ## Hard rules
 - **Planning aid, never a navigation tool.** The captain decides. Keep the "Planning aid, not for navigation" line visible. No course-to-steer, no turn-by-turn, no "safe" wording.
 - **No secrets in the repo or the page.** No API keys, captain keys, logins, passport or card numbers. Keys live server-side (Apps Script Script Properties, later the tracker service's settings) and in RJ's Keeper. Never ask RJ to paste a key into chat.
-- **Preview first.** New work goes to the preview at `/next/` (`next/index.html`, shows a PREVIEW banner). The live `index.html` changes only through a separate "promote" pull request RJ approves.
+- **Preview first.** New work goes to a preview copy, never straight to the live page. The live `index.html` changes only through a separate "promote" pull request RJ approves.
+- **Crossing freeze (RJ, Nov 27, 2026).** `next/` (PREVIEW banner, amber) is what the helm iPad runs for the crossing home (Nov 29 to 30): no changes to `next/`, the tracker service, the live `index.html` or `original/` until RJ lifts the freeze after the crossing. **All new feature work goes in `beta/`** (`/beta/`, violet BETA banner). Beta saves on the phone under `cx:beta:` only and never reads or changes what `/next/` saved; it uses the existing preview tracker. The guard blocks edits to `next/` while `FREEZE_NEXT=1` in `.claude/hooks/protect-live.sh`; lifting it is RJ's call, by setting it to 0 in a pull request.
 - **Pull requests only.** Never push to `main`. RJ tests each PR in his daily 5:00-5:45 PM block and merges it himself.
 - **Don't touch `original/` or the `original-v0` branch.** They preserve the first version for history.
 - **Drafts first.** Nothing that sends messages, spends money, creates accounts or publishes outside this repo without RJ's explicit OK. Give a cost estimate for anything that costs money or runs on its own.
@@ -26,7 +27,7 @@ A boat-crossing planner (South Florida to the Bahamas first) being turned into a
 - **One thread for now.** Don't split into parallel Claude Code Project threads until the MVP spec and tracker service exist.
 
 ## Tools in this repo (Nov 26)
-- **Guard:** a hook (`.claude/hooks/protect-live.sh`) blocks edits to the live `index.html` and `original/`. That is intended; work in `next/`.
+- **Guard:** a hook (`.claude/hooks/protect-live.sh`) blocks edits to the live `index.html`, `original/` and (during the crossing freeze) `next/`. That is intended; work in `beta/`.
 - **`/pr-check`:** run before every pull request (checks, screenshots, drafted description; it never opens the pull request).
 - **Automatic checks:** GitHub Actions runs every check on each pull request; the Checks box must be green before RJ merges.
 
@@ -35,7 +36,8 @@ A boat-crossing planner (South Florida to the Bahamas first) being turned into a
 - `docs/feature-map.md`: every feature and its phase.
 - `docs/mockups/`: the approved clickable mockups and the boat placeholder drawing.
 - `docs/designs/`: design docs (EGM). `mvp.md` is the whole MVP plan; `tracker-service.md` is the first build.
-- `next/`: preview of the next version (from PR #1 onward).
+- `next/`: preview of the next version (from PR #1 onward). Frozen for the crossing.
+- `beta/`: second preview copy for new features (from Nov 27). After the crossing, beta replaces next (see `docs/promote-plan.md`).
 - `original/`: archived first version, view only.
 - `tracker/Code.gs`: the Apps Script tracker (RJ pastes and redeploys changes by hand).
 - Shared project doc (Google Doc, source of truth for decisions): "Crossing App — Project Doc (shared)" in RJ's Claude AI Shared Drive folder.
