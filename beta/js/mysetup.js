@@ -21,7 +21,19 @@ function readMySetup() {
     windRule: !!L,                                    // any wind over the max is CROSSABLE, once limits are saved
     // The chosen route (routes.js; row 9). Only Abaco is ready, so the Plan page's
     // points don't change yet; switching them comes with the Bimini presets.
-    route: (typeof routeById === 'function') ? routeById(s && s.route && s.route.id, s) : null
+    route: (typeof routeById === 'function') ? routeById(s && s.route && s.route.id, s) : null,
+    // Plan page part A (row 11): the boat's name, the followers' first names
+    // and the link to the captain's own papers folder (My Boat; https only).
+    boatName: (typeof b.name === 'string' && b.name.trim()) ? b.name.trim().slice(0, 40) : "Goof n' Off",
+    followers: (s && Array.isArray(s.followers) ? s.followers : [])
+      .map(f => String((f && f.name) || '').trim().slice(0, 40)).filter(Boolean),
+    papers: (typeof b.papers === 'string' && /^https:\/\/[^\s"'<>]+$/.test(b.papers)) ? b.papers : null
+  };
+  // "Haile and Mom", "Haile, Mom and Raul", or a plain fallback when none are saved.
+  my.followerList = function () {
+    const f = my.followers;
+    if (!f.length) return 'the people who follow you';
+    return f.length === 1 ? f[0] : f.slice(0, -1).join(', ') + ' and ' + f[f.length - 1];
   };
   // Fuel for a run: today's figures scaled by distance, or the captain's burn
   // with 20% on top for sea state and idling.
